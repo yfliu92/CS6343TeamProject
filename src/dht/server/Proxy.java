@@ -48,7 +48,7 @@ public class Proxy extends VM {
 	public void addNode(String IP) {
 		int nodeHash = Hashing.getHashValFromIP(IP);
 		// get the range of its next node range id
-		int existingVMId = Range.getVMIdFromHashVal(nodeHash);
+		int existingVMId = getVMIdFromHashVal(activeVMs, nodeHash);
 		
 		// only for ring implementation
 		// similar methods could be implemented for other DHT implementation

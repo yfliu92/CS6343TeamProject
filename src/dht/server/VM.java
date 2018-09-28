@@ -1,6 +1,6 @@
 package dht.server;
 import java.util.*;
-import dht.common.Range;
+import dht.common.*;
 
 public class VM {
 	int id;
@@ -10,4 +10,17 @@ public class VM {
 	List<VM> neighbors;
 	Proxy proxy;
 	Range hashRange;
+	
+	public static int getVMIdFromHashVal(List<VM> vmlist, int hashVal) {
+		int vmId = -1;
+		
+		for(VM vm: vmlist) {
+			if (vm.hashRange.rangeStart < hashVal && hashVal <= vm.hashRange.rangeEnd) {
+				vmId = vm.id;
+				break;
+			}
+		}
+		
+		return vmId;
+	}
 }

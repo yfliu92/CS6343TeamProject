@@ -15,9 +15,4 @@ public class Range {
 		this.rangeEnd = rangeEnd;
 		this.vmId = vmId;
 	}
-	
-	public static int getVMIdFromHashVal(int hashVal) {
-		int vmId = 0;
-		return vmId;
-	}
 }
