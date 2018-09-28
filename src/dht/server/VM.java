@@ -19,11 +19,7 @@ public class VM {
 		return hashRange;
 	}
 	
-	public void setRangeStart(int rangeStart) {
-		this.hashRange.rangeStart = rangeStart;
-	}
-	
-	public void setRangeEnd(int rangeEnd) {
-		this.hashRange.rangeEnd = rangeEnd;
+	public void setRange(Range range) {
+		this.hashRange = range;
 	}
 }

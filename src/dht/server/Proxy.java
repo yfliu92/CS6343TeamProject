@@ -33,7 +33,7 @@ public class Proxy extends VM {
 		return node;
 	}
 	
-	public VM findNode(String IP) {
+	public VM findNodeByIP(String IP) {
 		VM node = null;
 		for(VM vm: activeVMs) {
 			if (vm.IP.equals(IP)) {
@@ -77,7 +77,7 @@ public class Proxy extends VM {
 	}
 	
 	public void removeNode(String IP) {
-		VM vm = findNode(IP);
+		VM vm = findNodeByIP(IP);
 		int nodeHash = Hashing.getHashValFromIP(vm.IP);
 		
 		activeno--;

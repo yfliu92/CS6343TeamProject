@@ -16,7 +16,6 @@ public class Hashing {
 		
 		return hashVal;
 	}
-
 	
 	public static int getVMIdFromHashVal(int hashVal, int numVMs) {
 		int vmID = 0;
