@@ -6,6 +6,10 @@ public class Range {
 	int rangeEnd;
 	int rangeId;
 	
+	public Range() {
+		
+	}
+	
 	public Range(int rangeStart, int rangeEnd, int rangeId){
 		this.rangeStart = rangeStart;
 		this.rangeEnd = rangeEnd;

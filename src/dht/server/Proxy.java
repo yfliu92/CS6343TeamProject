@@ -9,6 +9,7 @@ public class Proxy extends VM {
 	int activeno;
 	
 	public Proxy(){
+		super();
 		activeVMs = new LinkedList<VM>();
 		activeno = 0;
 	}
