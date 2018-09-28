@@ -1,9 +1,9 @@
-package teama.common;
+package common;
 
 public class Hashing {
 	
 	public static int getHashValFromKeyword(String keyword, int maxNum) {
-		int hashVal = 0;
+		int hashVal = keyword.hashCode();
 		
 		return hashVal;
 	}
