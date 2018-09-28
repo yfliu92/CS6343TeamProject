@@ -2,22 +2,22 @@ package dht.common;
 
 // hash value range allocated to a vm
 public class Range {
-	int rangeStart;
-	int rangeEnd;
-	int rangeId;
+	public int rangeStart;
+	public int rangeEnd;
+	int vmId;
 	
 	public Range() {
 		
 	}
 	
-	public Range(int rangeStart, int rangeEnd, int rangeId){
+	public Range(int rangeStart, int rangeEnd, int vmId){
 		this.rangeStart = rangeStart;
 		this.rangeEnd = rangeEnd;
-		this.rangeId = rangeId;
+		this.vmId = vmId;
 	}
 	
-	public static int getRangeIdFromHashVal(int hashVal) {
-		int rangeId = 0;
-		return rangeId;
+	public static int getVMIdFromHashVal(int hashVal) {
+		int vmId = 0;
+		return vmId;
 	}
 }
