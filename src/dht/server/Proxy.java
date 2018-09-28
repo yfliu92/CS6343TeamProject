@@ -4,12 +4,10 @@ import dht.common.*;
 
 public class Proxy extends VM {
 	List<VM> activeVMs;
-	int activeno;
 	
 	public Proxy(){
 		super();
 		activeVMs = new LinkedList<VM>();
-		activeno = 0;
 	}
 	
 	public void printConfig() {
@@ -45,6 +43,7 @@ public class Proxy extends VM {
 		return node;
 	}
 	
+	// when receiving request to add node from a data node
 	public void addNode(String IP) {
 		int nodeHash = Hashing.getHashValFromIP(IP);
 		// get the range of its next node range id
@@ -71,16 +70,22 @@ public class Proxy extends VM {
 		// in ring implementation, the next node should be updated in its range
 		
 		RingRange.updateOtherVMs(activeVMs, (Proxy)this, nodeHash);
-		
-		
-		activeno++;
 	}
 	
+	// broadcast new node addition to all data nodes to update routing table
+	public void broadcastAddNode(VM newVM) {
+		
+	}
+	
+	// when receiving request to remove node from a data node
 	public void removeNode(String IP) {
 		VM vm = findNodeByIP(IP);
 		int nodeHash = Hashing.getHashValFromIP(vm.IP);
+	}
+	
+	// broadcast node removal to all data nodes to update routing table
+	public void broadcastRemoveNode(int vmId) {
 		
-		activeno--;
 	}
 	
 	public void loadBalance() {
