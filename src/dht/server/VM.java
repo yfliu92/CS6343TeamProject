@@ -11,16 +11,19 @@ public class VM {
 	Proxy proxy;
 	Range hashRange;
 	
-	public static int getVMIdFromHashVal(List<VM> vmlist, int hashVal) {
-		int vmId = -1;
-		
-		for(VM vm: vmlist) {
-			if (vm.hashRange.rangeStart < hashVal && hashVal <= vm.hashRange.rangeEnd) {
-				vmId = vm.id;
-				break;
-			}
-		}
-		
-		return vmId;
+	public int getId() {
+		return this.id;
+	}
+	
+	public Range getRange() {
+		return hashRange;
+	}
+	
+	public void setRangeStart(int rangeStart) {
+		this.hashRange.rangeStart = rangeStart;
+	}
+	
+	public void setRangeEnd(int rangeEnd) {
+		this.hashRange.rangeEnd = rangeEnd;
 	}
 }

@@ -48,28 +48,21 @@ public class Proxy extends VM {
 	public void addNode(String IP) {
 		int nodeHash = Hashing.getHashValFromIP(IP);
 		// get the range of its next node range id
-		int existingVMId = getVMIdFromHashVal(activeVMs, nodeHash);
-		
+
 		// only for ring implementation
 		// similar methods could be implemented for other DHT implementation
-		VM nextVM = findNodeById(existingVMId);
 		
-		int newVMId = activeno + 1;
-		int newRangeStart = nextVM.hashRange.rangeStart;
-		int newRangeEnd = nodeHash;
-		
-		int nextRangeStart = nodeHash + 1;
-		
-		Range newRange = new Range(newRangeStart, newRangeEnd, newVMId);
+		Range newRange = RingRange.getNewRange(activeVMs, (Proxy)this, nodeHash);
 		
 		VM vm = new VM();
 		
-		vm.id = newVMId;
+		vm.id = activeVMs.size() + 1;
 		vm.IP = IP;
 		vm.neighbors = new LinkedList<VM>();
 		vm.neighbors.addAll(activeVMs);  // for distributed version
 		vm.proxy = (Proxy)this; // for centralized version
 		vm.hashRange = newRange;
+		
 		activeVMs.add(vm);
 		
 		// all other nodes should update
@@ -77,7 +70,7 @@ public class Proxy extends VM {
 		// range of its other nodes should be updated, depending on which DHT method used.
 		// in ring implementation, the next node should be updated in its range
 		
-		nextVM.hashRange.rangeStart = nextRangeStart;
+		RingRange.updateOtherVMs(activeVMs, (Proxy)this, nodeHash);
 		
 		
 		activeno++;
