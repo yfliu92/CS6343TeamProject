@@ -1,5 +1,6 @@
-package server;
+package dht.server;
 import java.util.*;
+import dht.common.Range;
 
 public class VM {
 	int id;
@@ -8,4 +9,5 @@ public class VM {
 	String currentLoad;
 	List<VM> neighbors;
 	Proxy proxy;
+	Range hashRange;
 }
