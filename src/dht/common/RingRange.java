@@ -4,6 +4,9 @@ import java.util.List;
 import dht.server.*;
 
 public class RingRange extends Range {
+	int rangeStart;
+	int rangeEnd;
+	
 	public RingRange(int rangeStart, int rangeEnd, int vmId){
 		super();
 		this.rangeStart = rangeStart;
@@ -31,7 +34,7 @@ public class RingRange extends Range {
 		int vmId = -1;
 		
 		for(VM vm: vmlist) {
-			if (vm.getRange().rangeStart < hashVal && hashVal <= vm.getRange().rangeEnd) {
+			if (((RingRange)vm.getRange()).getRangeStart() < hashVal && hashVal <= ((RingRange)vm.getRange()).getRangeEnd()) {
 				vmId = vm.getId();
 				break;
 			}
@@ -48,7 +51,7 @@ public class RingRange extends Range {
 		VM nextVM = proxy.findNodeById(existingVMId);
 		
 		int newVMId = activeVMs.size() + 1;
-		int newRangeStart = nextVM.getRange().rangeStart;
+		int newRangeStart = ((RingRange)nextVM.getRange()).getRangeStart();
 		int newRangeEnd = nodeHash;
 		
 		Range newRange = new RingRange(newRangeStart, newRangeEnd, newVMId);
