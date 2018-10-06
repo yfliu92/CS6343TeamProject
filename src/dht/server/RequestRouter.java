@@ -31,7 +31,6 @@ public class RequestRouter extends Thread {
 	            // Send a welcome message to the client.
 	            System.out.println("Request received...");
 	            
-	            // Too heavy needs to be refactored into a parseRequest method that returns Request object
 	            while (true) {
 	                String input = in.readLine();
 	                if (input == null || input.equals(".")) {

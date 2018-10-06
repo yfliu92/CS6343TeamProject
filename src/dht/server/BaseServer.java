@@ -4,24 +4,23 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import dht.common.Configuration;
 import dht.server.RequestMap;
 import dht.server.RequestRouter;
 
 public class BaseServer {
-	protected String ipv4;
-	protected int port;
+	protected Configuration config;
 	protected volatile boolean isRunning;
 	protected RequestMap map;
 	
-	public BaseServer(String ip, int port)
+	public BaseServer(Configuration config)
 	{
-		this.ipv4 = ip;
-		this.port = port;
+		this.config = config;
 		this.isRunning = true;
 		this.map = null;
 	}
 	
-	public void BuildRouting() {
+	public void buildRouting() {
 		throw new UnsupportedOperationException("Need to override base build routing function for this server.");
 	}
 	
@@ -33,11 +32,11 @@ public class BaseServer {
 			return;
 		}
 		
-		System.out.println("==== Base JSON Server =====\n");
+		System.out.printf("==== Server with Mode: %s =====\n", this.config.getMode());
 
 		// Adapted from http://cs.lmu.edu/~ray/notes/javanetexamples/
-		try (ServerSocket listener = new ServerSocket(this.port)){
-			System.out.println("Binding to: " + this.ipv4 + ":" + Integer.toString(this.port));
+		try (ServerSocket listener = new ServerSocket(this.config.getPort())){
+			System.out.println("Binding to: " + this.config.getHost() + ":" + Integer.toString(this.config.getPort()));
 			while(true) {
 				Socket socket = listener.accept();
 				new RequestRouter(socket, map).start();

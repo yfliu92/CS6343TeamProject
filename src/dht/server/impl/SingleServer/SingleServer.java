@@ -1,16 +1,17 @@
 package dht.server.impl.SingleServer;
 
+import dht.common.Configuration;
 import dht.server.BaseServer;
 import dht.server.RequestMap;
 import dht.server.method.*;
 
 public class SingleServer extends BaseServer {
-	public SingleServer(String ip, int port) {
-		super(ip, port);
+	public SingleServer(Configuration config) {
+		super(config);
 	}
 	
 	@Override
-	public void BuildRouting()
+	public void buildRouting()
 	{
 		this.map = new RequestMap();
 		this.map.AddMethod("write", new WriteBaseMethod());
