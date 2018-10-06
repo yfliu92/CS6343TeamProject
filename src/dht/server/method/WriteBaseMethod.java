@@ -1,6 +1,6 @@
 package dht.server.method;
 
-public class WriteMethod extends Method {
+public class WriteBaseMethod extends Method {
 	@Override
 	public void run(String params)
 	{

@@ -8,20 +8,31 @@ import dht.server.RequestMap;
 import dht.server.RequestRouter;
 
 public class BaseServer {
-	String ipv4;
-	int port;
-	volatile boolean isRunning;
+	protected String ipv4;
+	protected int port;
+	protected volatile boolean isRunning;
+	protected RequestMap map;
 	
 	public BaseServer(String ip, int port)
 	{
 		this.ipv4 = ip;
 		this.port = port;
 		this.isRunning = true;
+		this.map = null;
+	}
+	
+	public void BuildRouting() {
+		throw new UnsupportedOperationException("Need to override base build routing function for this server.");
 	}
 	
 	public void run()
 	{
-		RequestMap map = new RequestMap();
+		if(this.map == null)
+		{
+			System.err.println("Server's map not configured before calling run;");
+			return;
+		}
+		
 		System.out.println("==== Base JSON Server =====\n");
 
 		// Adapted from http://cs.lmu.edu/~ray/notes/javanetexamples/
