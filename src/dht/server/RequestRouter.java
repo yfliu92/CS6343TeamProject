@@ -1,14 +1,12 @@
 package dht.server;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.net.Socket;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import dht.common.request.Request;
+import dht.common.request.RequestReader;
 
 public class RequestRouter extends Thread {
 	    private Socket socket;
@@ -34,25 +32,18 @@ public class RequestRouter extends Thread {
 	                    break;
 	                }
 	                System.out.println(input);
-	                JsonReader jsonReader = Json.createReader(new StringReader(input));
-	                try {
-	                	JsonObject jobj = jsonReader.readObject();
-		                // Parse request
-		    			// Adapted from https://javaee.github.io/jsonp/getting-started.html
-		                String method = jobj.getString("method");
-		                String to = jobj.getString("to");
-		                String from = jobj.getString("from");
-		                JsonObject params = jobj.getJsonObject("params");
-		                
-		                System.out.println(to + " received command to " + method + " from " + from + " with parameters " + params.toString());
-		                
-		                map.Execute(method, params.toString());
-		                
-		                String response = "{\"from\":\"" + to + "\",\"to\":\"" + from + "\", \"response\": \"OK\"}";
-		                socket.getOutputStream().write(response.getBytes());
-	                } catch (JsonException e ) {
-	                	System.err.println("Unable to parse request " + input);
+	                Request req = RequestReader.readRequest(input);
+	                ByteArrayOutputStream response;
+	                if(req != null)
+	                {
+	                	response = map.Execute(req).toByteStream();
+	                	response.write("\n".getBytes());
+	                } else {
+	                	response = new ByteArrayOutputStream();
+            			response.write("{\"status\":\"error\",\"message\":\"Could not parse request\"}\n".getBytes());
 	                }
+	                response.writeTo(socket.getOutputStream());
+	                response.close();
 	            }
 	        } catch (IOException e) {
 	        	System.out.println("++ Could not read socket ++");
