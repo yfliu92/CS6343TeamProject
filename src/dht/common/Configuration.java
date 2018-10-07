@@ -5,9 +5,11 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
 public class Configuration {
+	private static Configuration instance = null;
 	String host;
 	int port;
 	String mode; // single | ring | rush | elastic
+	int N;
 	
 	public static Options buildOptions()
 	{
@@ -49,11 +51,18 @@ public class Configuration {
 		return options;
 	}
 	
-	public Configuration()
+	private Configuration()
 	{
 		this.host = "";
 		this.port = 0;
 		this.mode = "";
+		this.N = 1 << 14;
+	}
+	
+	public static Configuration getInstance() {
+		if (instance == null)
+			instance = new Configuration();
+		return instance;
 	}
 	
 	public void setConfiguration(CommandLine cmd)

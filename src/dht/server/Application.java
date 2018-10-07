@@ -17,7 +17,8 @@ public class Application {
 		
 		Options options = Configuration.buildOptions();
 		CommandLineParser parser = new DefaultParser();
-		Configuration config = new Configuration();
+		Configuration config = Configuration.getInstance();
+		
 		try {
 			CommandLine cmd = parser.parse( options, args);
 			config.setConfiguration(cmd);

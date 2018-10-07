@@ -1,5 +1,7 @@
 package dht.server.method;
 
+import dht.common.request.Request;
+
 abstract public class Method {
-	public void run(String params) {};
+	public void run(Request req) {};
 }

@@ -10,6 +10,9 @@ import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+import dht.common.request.Request;
+import dht.common.request.RequestReader;
+
 public class RequestRouter extends Thread {
 	    private Socket socket;
 	    private RequestMap map;
@@ -34,25 +37,13 @@ public class RequestRouter extends Thread {
 	                    break;
 	                }
 	                System.out.println(input);
-	                JsonReader jsonReader = Json.createReader(new StringReader(input));
-	                try {
-	                	JsonObject jobj = jsonReader.readObject();
-		                // Parse request
-		    			// Adapted from https://javaee.github.io/jsonp/getting-started.html
-		                String method = jobj.getString("method");
-		                String to = jobj.getString("to");
-		                String from = jobj.getString("from");
-		                JsonObject params = jobj.getJsonObject("params");
+	                Request req = RequestReader.readRequest(input);
+	                if(req != null)
+	                	map.Execute(req);
 		                
-		                System.out.println(to + " received command to " + method + " from " + from + " with parameters " + params.toString());
-		                
-		                map.Execute(method, params.toString());
-		                
-		                String response = "{\"from\":\"" + to + "\",\"to\":\"" + from + "\", \"response\": \"OK\"}";
-		                socket.getOutputStream().write(response.getBytes());
-	                } catch (JsonException e ) {
-	                	System.err.println("Unable to parse request " + input);
-	                }
+//		                String response = "{\"from\":\"" + to + "\",\"to\":\"" + from + "\", \"response\": \"OK\"}";
+//		                socket.getOutputStream().write(response.getBytes());
+	               
 	            }
 	        } catch (IOException e) {
 	        	System.out.println("++ Could not read socket ++");
