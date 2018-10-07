@@ -9,8 +9,6 @@ import org.apache.commons.cli.ParseException;
 
 import dht.client.impl.SingleClient;
 import dht.common.Configuration;
-import dht.server.BaseServer;
-import dht.server.impl.SingleServer.SingleServer;
 
 public class Application {
 
