@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+
+import dht.common.Context;
 import dht.common.request.Request;
 import dht.common.request.RequestReader;
 
@@ -20,13 +22,14 @@ public class RequestRouter extends Thread {
 	    
 	    public void run() {
 	        try {
+	        	Context context = Context.getInstance();
 	            BufferedReader in = new BufferedReader(
 	                    new InputStreamReader(socket.getInputStream()));
 
 	            // Send a welcome message to the client.
 	            System.out.println("Request received...");
 	            
-	            while (true) {
+	            while (context.isRunning()) {
 	                String input = in.readLine();
 	                if (input == null || input.equals(".")) {
 	                    break;

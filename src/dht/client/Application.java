@@ -18,7 +18,6 @@ public class Application {
 		Options options = Configuration.buildOptions();
 		CommandLineParser parser = new DefaultParser();
 		Configuration config = Configuration.getInstance();
-		
 		try {
 			CommandLine cmd = parser.parse( options, args);
 			config.setConfiguration(cmd);
@@ -33,7 +32,7 @@ public class Application {
 					break;	
 			}
 			
-			for(int i =0; i < 1000; i++)
+			for(int i =0; i < 10; i++)
 			{
 				client.randomWrite();
 			}

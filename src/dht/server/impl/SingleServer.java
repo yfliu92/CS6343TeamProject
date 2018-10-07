@@ -14,6 +14,7 @@ public class SingleServer extends BaseServer {
 	public void buildRouting()
 	{
 		this.map = new RequestMap();
+		this.map.AddMethod("kill", new KillMethod());
 		this.map.AddMethod("write", new WriteBaseMethod());
 	}
 }
