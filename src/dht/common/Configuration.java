@@ -11,6 +11,7 @@ public class Configuration {
 	String mode; // single | ring | rush | elastic
 	String nodeid;
 	int N;
+	boolean sendKill;
 	
 	public static Options buildOptions()
 	{
@@ -20,6 +21,9 @@ public class Configuration {
 		
 		Option debug = new Option( "debug", "print debugging information" );
 		options.addOption(debug);
+		
+		Option kill = new Option( "kill", "Client sends kill command at the end of run" );
+		options.addOption(kill);
 		
 		Option hostname   = Option.builder("h")
 				.longOpt( "host" )
@@ -67,6 +71,7 @@ public class Configuration {
 		this.mode = "";
 		this.N = 1 << 14;
 		this.nodeid = "D101";
+		this.sendKill = false;
 	}
 	
 	public static Configuration getInstance() {
@@ -94,6 +99,9 @@ public class Configuration {
 		
 		if(cmd.hasOption("i"))
 			this.nodeid = cmd.getOptionValue("i");
+		
+		if(cmd.hasOption("kill"))
+			this.sendKill = true;
 	}
 	
 	public String getHost()
@@ -114,6 +122,11 @@ public class Configuration {
 	public String getNodeId()
 	{
 		return this.nodeid;
+	}
+	
+	public boolean sendKill()
+	{
+		return this.sendKill;
 	}
 
 }

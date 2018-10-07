@@ -36,6 +36,11 @@ public class Application {
 			{
 				client.randomWrite();
 			}
+			
+			if ( config.sendKill() )
+			{
+				client.sendKill();
+			}
 		} catch (ParseException e) {
 			// Print help message if we can't understand command line options
 			System.err.println("FATAL: Unable to parse command line: " + e.getMessage());
