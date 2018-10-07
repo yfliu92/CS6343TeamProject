@@ -1,4 +1,4 @@
-package dht.server.impl.SingleServer;
+package dht.server.impl;
 
 import dht.common.Configuration;
 import dht.server.BaseServer;

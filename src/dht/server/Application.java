@@ -8,7 +8,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import dht.common.Configuration;
-import dht.server.impl.SingleServer.SingleServer;
+import dht.server.impl.SingleServer;
 
 public class Application {
 	
