@@ -22,8 +22,15 @@ public class Application {
 			CommandLine cmd = parser.parse( options, args);
 			config.setConfiguration(cmd);
 			
-			// TODO: Implement logic for different server implementations based on config.mode
-			SingleServer server = new SingleServer(config);
+			BaseServer server = null;
+			
+			// TODO: Add new modes as they are available
+			switch(config.getMode()) {
+				case "single":
+				default:
+					server = new SingleServer(config);
+					break;	
+			}
 			
 			server.buildRouting();
 			server.run();

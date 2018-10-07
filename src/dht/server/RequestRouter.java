@@ -5,13 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.Socket;
-import java.util.HashMap;
-
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import dht.server.method.*;
 
 public class RequestRouter extends Thread {
 	    private Socket socket;
