@@ -4,29 +4,39 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import dht.common.Configuration;
 import dht.server.RequestMap;
 import dht.server.RequestRouter;
 
 public class BaseServer {
-	String ipv4;
-	int port;
-	volatile boolean isRunning;
+	protected Configuration config;
+	protected volatile boolean isRunning;
+	protected RequestMap map;
 	
-	public BaseServer(String ip, int port)
+	public BaseServer(Configuration config)
 	{
-		this.ipv4 = ip;
-		this.port = port;
+		this.config = config;
 		this.isRunning = true;
+		this.map = null;
+	}
+	
+	public void buildRouting() {
+		throw new UnsupportedOperationException("Need to override base build routing function for this server.");
 	}
 	
 	public void run()
 	{
-		RequestMap map = new RequestMap();
-		System.out.println("==== Base JSON Server =====\n");
+		if(this.map == null)
+		{
+			System.err.println("Server's map not configured before calling run;");
+			return;
+		}
+		
+		System.out.printf("==== Server with Mode: %s =====\n", this.config.getMode());
 
 		// Adapted from http://cs.lmu.edu/~ray/notes/javanetexamples/
-		try (ServerSocket listener = new ServerSocket(this.port)){
-			System.out.println("Binding to: " + this.ipv4 + ":" + Integer.toString(this.port));
+		try (ServerSocket listener = new ServerSocket(this.config.getPort())){
+			System.out.println("Binding to: " + this.config.getHost() + ":" + Integer.toString(this.config.getPort()));
 			while(true) {
 				Socket socket = listener.accept();
 				new RequestRouter(socket, map).start();
