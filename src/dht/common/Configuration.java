@@ -83,5 +83,10 @@ public class Configuration {
 	{
 		return this.port;
 	}
+	
+	public String getMode()
+	{
+		return this.mode;
+	}
 
 }

@@ -4,7 +4,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -23,13 +22,13 @@ public class Application {
 			CommandLine cmd = parser.parse( options, args);
 			config.setConfiguration(cmd);
 			
-			// TODO: Implement logic for different server implementations
+			// TODO: Implement logic for different server implementations based on config.mode
 			SingleServer server = new SingleServer(config);
 			
 			server.buildRouting();
 			server.run();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
+			// Print help message if we can't understand command line options
 			System.err.println("FATAL: Unable to parse command line: " + e.getMessage());
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp( "DHTServer", options );
