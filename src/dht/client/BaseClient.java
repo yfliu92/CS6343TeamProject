@@ -22,33 +22,50 @@ public class BaseClient {
 	{
 		Configuration config = Configuration.getInstance();
 		Context context = Context.getInstance();
-		
-		// https://systembash.com/a-simple-java-tcp-server-and-tcp-client/
-		Socket clientSocket;
-		try {
-			FileObject randomFile = FileObject.getRandom();
-			
-			// Possibly different based on file
-			clientSocket = new Socket(config.getHost(), config.getPort());
-			
-			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			
-			ByteArrayOutputStream randomWriteRequest = makeWriteRequest(randomFile, config, context);
-			
-			randomWriteRequest.writeTo(outToServer);
-			outToServer.write("\n".getBytes());
-			randomWriteRequest.close();
-			String response = inFromServer.readLine();
-			System.out.println("FROM SERVER: " + response);
-			clientSocket.close();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		FileObject randomFile = FileObject.getRandom();
+		try (ByteArrayOutputStream randomWriteRequest = makeWriteRequest(randomFile, config, context))
+		{
+			sendRequest(randomWriteRequest);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public void sendKill() 
+	{
+		Configuration config = Configuration.getInstance();
+		try (ByteArrayOutputStream killRequest = makeKillRequest(config))
+		{
+			sendRequest(killRequest);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void sendRequest(ByteArrayOutputStream requestOut)
+	{
+		// https://systembash.com/a-simple-java-tcp-server-and-tcp-client/
+		Configuration config = Configuration.getInstance();
+		Socket clientSocket;
+				try {
+					// Possibly different based on file/
+					// TODO: Implement routing strategy here
+					clientSocket = new Socket(config.getHost(), config.getPort());
+					
+					DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+					BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+					requestOut.writeTo(outToServer);
+					outToServer.write("\n".getBytes());
+					String response = inFromServer.readLine();
+					System.out.println("FROM SERVER: " + response);
+					clientSocket.close();
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 	}
 
 	private ByteArrayOutputStream makeWriteRequest(FileObject randomFile, Configuration config, Context context) {
@@ -69,6 +86,21 @@ public class BaseClient {
 				.add("id",ThreadLocalRandom.current().nextInt(0, 100000 + 1))
 				.add("method","write")
 				.add("parameters", params)
+				.build();
+		
+		writer.writeObject(jobj);
+		writer.close();
+		return baos;
+	}
+	
+	private ByteArrayOutputStream makeKillRequest(Configuration config) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		JsonWriter writer = Json.createWriter(baos);
+				
+		JsonObject jobj = Json.createObjectBuilder()
+				.add("from",config.getNodeId())
+				.add("to","D101")
+				.add("method","kill")
 				.build();
 		
 		writer.writeObject(jobj);

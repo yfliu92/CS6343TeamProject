@@ -18,7 +18,6 @@ public class Application {
 		Options options = Configuration.buildOptions();
 		CommandLineParser parser = new DefaultParser();
 		Configuration config = Configuration.getInstance();
-		
 		try {
 			CommandLine cmd = parser.parse( options, args);
 			config.setConfiguration(cmd);
@@ -36,6 +35,11 @@ public class Application {
 			for(int i =0; i < 1000; i++)
 			{
 				client.randomWrite();
+			}
+			
+			if ( config.sendKill() )
+			{
+				client.sendKill();
 			}
 		} catch (ParseException e) {
 			// Print help message if we can't understand command line options

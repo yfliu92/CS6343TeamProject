@@ -1,5 +1,6 @@
 package dht.common.request;
 
+import javax.json.JsonException;
 import javax.json.JsonObject;
 
 public class WriteRequest extends Request {
@@ -8,19 +9,23 @@ public class WriteRequest extends Request {
 	public int version;
 	public int size;
 	
-	public WriteRequest()
+	public WriteRequest(JsonObject jobj)
 	{
-		this.method = "write";
+		try {
+			this.method = "write";
+			this.fillHeader(jobj);
+			JsonObject params = jobj.getJsonObject("parameters");
+			this.key = params.getJsonNumber("key").intValue();
+			this.filename = params.getString("filename");
+			this.version = params.getJsonNumber("version").intValue();
+			this.size    = params.getJsonNumber("size").intValue();
+		} catch (JsonException e ) {
+	        	System.err.println("Write Request unable to parse write request " + jobj.toString() + e.getLocalizedMessage());
+        } catch (NullPointerException e ) {
+	        	System.err.println("Write Request null pointer exception" +  jobj.toString()  + e.getMessage());
+	    }
 	}
 
-	@Override
-	public void populateParameters(JsonObject jobj) {
-		this.key = jobj.getJsonNumber("key").intValue();
-		this.filename = jobj.getString("filename");
-		this.version = jobj.getJsonNumber("version").intValue();
-		this.size    = jobj.getJsonNumber("size").intValue();
-	}
-	
 	@Override
 	public String toString()
 	{

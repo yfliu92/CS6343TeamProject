@@ -18,25 +18,22 @@ public class RequestReader {
 			// Adapted from https://javaee.github.io/jsonp/getting-started.html
         	String method = jobj.getString("method").toLowerCase().trim();
             switch(method) {
+            	case "kill":
+            		req = new KillRequest(jobj);
+            		break;
             	case "write":
-            		req = new WriteRequest();
+            		req = new WriteRequest(jobj);
             		break;
         		default:
-        			req = new BadRequest();
+        			req = new BadRequest(jobj);
         			break;
             }
-            
-            req.to = jobj.getString("to");
-            req.from = jobj.getString("from");
-            req.epoch = jobj.getJsonNumber("epoch").longValue();
-            req.id    = jobj.getJsonNumber("id").intValue();
-            req.populateParameters(jobj.getJsonObject("parameters"));
             
         } catch (JsonException e ) {
         	System.err.println("Unable to parse request " + input + e.getLocalizedMessage());
         	req = null;
         } catch (NullPointerException e ) {
-        	System.err.println("Unable to find all required header fields" + input + e.getLocalizedMessage());
+        	System.err.println("Request Reader Null Pointer Exception " + input + e.getLocalizedMessage());
         	req = null;
         }
 		return req;
