@@ -1,7 +1,10 @@
 package dht.server.method;
 
 import dht.common.request.Request;
+import dht.common.response.Response;
 
 abstract public class Method {
-	public void run(Request req) {};
+	public Response run(Request req) {
+		return null;
+	};
 }

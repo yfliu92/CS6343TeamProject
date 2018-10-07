@@ -3,6 +3,7 @@ package dht.server;
 import java.util.HashMap;
 
 import dht.common.request.Request;
+import dht.common.response.Response;
 import dht.server.method.Method;
 
 public class RequestMap {
@@ -17,9 +18,9 @@ public class RequestMap {
 		this.map.put(method_key, method);
 	}
 	
-	public void Execute(Request req)
+	public Response Execute(Request req)
 	{
 		Method method = this.map.get(req.method);
-		method.run(req);
+		return method.run(req);
 	}
 }

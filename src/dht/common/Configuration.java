@@ -9,6 +9,7 @@ public class Configuration {
 	String host;
 	int port;
 	String mode; // single | ring | rush | elastic
+	String nodeid;
 	int N;
 	
 	public static Options buildOptions()
@@ -48,6 +49,14 @@ public class Configuration {
 			    .build();
 		options.addOption(mode);
 		
+		Option nodeid = Option.builder("i")
+				.longOpt( "node-id" )
+				.desc( "Set the server's node ID"  )
+			    .hasArg()
+			    .argName( "nodeid" )
+			    .build();
+		options.addOption(nodeid);
+		
 		return options;
 	}
 	
@@ -57,6 +66,7 @@ public class Configuration {
 		this.port = 0;
 		this.mode = "";
 		this.N = 1 << 14;
+		this.nodeid = "D101";
 	}
 	
 	public static Configuration getInstance() {
@@ -81,6 +91,9 @@ public class Configuration {
 			this.mode = cmd.getOptionValue("p");
 		else
 			System.err.println("Must provide mode parameter");
+		
+		if(cmd.hasOption("i"))
+			this.nodeid = cmd.getOptionValue("i");
 	}
 	
 	public String getHost()
@@ -96,6 +109,11 @@ public class Configuration {
 	public String getMode()
 	{
 		return this.mode;
+	}
+	
+	public String getNodeId()
+	{
+		return this.nodeid;
 	}
 
 }

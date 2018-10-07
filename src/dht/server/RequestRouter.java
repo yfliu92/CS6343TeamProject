@@ -1,15 +1,10 @@
 package dht.server;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.net.Socket;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
 import dht.common.request.Request;
 import dht.common.request.RequestReader;
 
@@ -38,12 +33,17 @@ public class RequestRouter extends Thread {
 	                }
 	                System.out.println(input);
 	                Request req = RequestReader.readRequest(input);
+	                ByteArrayOutputStream response;
 	                if(req != null)
-	                	map.Execute(req);
-		                
-//		                String response = "{\"from\":\"" + to + "\",\"to\":\"" + from + "\", \"response\": \"OK\"}";
-//		                socket.getOutputStream().write(response.getBytes());
-	               
+	                {
+	                	response = map.Execute(req).toByteStream();
+	                	response.write("\n".getBytes());
+	                } else {
+	                	response = new ByteArrayOutputStream();
+            			response.write("{\"status\":\"error\",\"message\":\"Could not parse request\"}\n".getBytes());
+	                }
+	                response.writeTo(socket.getOutputStream());
+	                response.close();
 	            }
 	        } catch (IOException e) {
 	        	System.out.println("++ Could not read socket ++");
