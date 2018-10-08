@@ -1,6 +1,7 @@
 package dht.common;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -33,6 +34,16 @@ public class FileObject implements Serializable {
 	public int getKey()
 	{
 		return this.key;
+	}
+	
+	public byte[] getKeyByteArray()
+	{
+		return convertIntToByteArray(key);
+	}
+	
+	public static byte[] convertIntToByteArray(int key)
+	{
+		return ByteBuffer.allocate(4).putInt(key).array();
 	}
 	
 	public static FileObject getRandom()

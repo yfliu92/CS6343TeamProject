@@ -7,6 +7,7 @@ import java.net.SocketTimeoutException;
 
 import dht.common.Configuration;
 import dht.common.Context;
+import dht.common.repository.Repository;
 import dht.server.RequestMap;
 import dht.server.RequestRouter;
 
@@ -55,6 +56,7 @@ public class BaseServer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		Repository.getInstance().shutdown();
 	}
 	
 }
