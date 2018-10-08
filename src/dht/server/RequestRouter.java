@@ -36,15 +36,22 @@ public class RequestRouter extends Thread {
 	                }
 	                System.out.println(input);
 	                Request req = RequestReader.readRequest(input);
-	                ByteArrayOutputStream response;
-	                if(req != null)
-	                {
+	                ByteArrayOutputStream response = null;
+	                try {
 	                	response = map.Execute(req).toByteStream();
-	                	response.write("\n".getBytes());
-	                } else {
-	                	response = new ByteArrayOutputStream();
-            			response.write("{\"status\":\"error\",\"message\":\"Could not parse request\"}\n".getBytes());
+	                } catch(NoSuchMethodException e) {
+	                	System.err.println(e.getLocalizedMessage());
 	                }
+	                
+	                if(req == null || response == null)
+	                {
+	                	response = new ByteArrayOutputStream();
+            			response.write("{\"status\":\"error\",\"message\":\"Could not parse request\"}".getBytes());
+            			String error_type = (req == null) ? "1" : "0";
+            			System.err.println("RequestRouter.run: No response provided by req " + error_type);
+	                }
+	                
+	                response.write("\n".getBytes());
 	                response.writeTo(socket.getOutputStream());
 	                response.close();
 	            }

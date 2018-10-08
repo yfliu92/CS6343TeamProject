@@ -24,6 +24,9 @@ public class RequestReader {
             	case "write":
             		req = new WriteRequest(jobj);
             		break;
+            	case "read":
+            		req = new ReadRequest(jobj);
+            		break;
         		default:
         			req = new BadRequest(jobj);
         			break;

@@ -3,6 +3,8 @@ package dht.common.request;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 
+import dht.common.FileObject;
+
 public class WriteRequest extends Request {
 	public int key;
 	public String filename;
@@ -39,5 +41,15 @@ public class WriteRequest extends Request {
 				.append(this.version).append(" ")
 				.append(this.size).append(" ")
 				.toString();
+	}
+	
+	public FileObject getFileObject()
+	{
+		return new FileObject(
+					this.filename,
+					this.version,
+					this.size,
+					System.currentTimeMillis()
+				);
 	}
 }

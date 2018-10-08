@@ -16,5 +16,6 @@ public class SingleServer extends BaseServer {
 		this.map = new RequestMap();
 		this.map.AddMethod("kill", new KillMethod());
 		this.map.AddMethod("write", new WriteBaseMethod());
+		this.map.AddMethod("read", new ReadBaseMethod());
 	}
 }

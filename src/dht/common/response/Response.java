@@ -17,7 +17,14 @@ public class Response {
 	public String status;
 	public String message;
 	public String rtable;
+	public JsonObject params;
 	public boolean needs_rtable;
+	
+	protected Response(String method)
+	{
+		this.full = true;
+		this.method = method;
+	}
 	
 	// Use this to build partial/ACK type responses
 	public Response(boolean isFull, String method, String status)
@@ -57,6 +64,10 @@ public class Response {
 			
 			if(needs_rtable)
 				jobjb.add("rtable",this.rtable);
+			
+			if(this.params != null)
+				jobjb.add("parameters",this.params);
+			
 		} else {
 				jobjb = Json.createObjectBuilder()
 						.add("method",this.method)
@@ -67,5 +78,18 @@ public class Response {
 		writer.writeObject(jobj);
 		writer.close();
 		return baos;
+	}
+	
+	public void fillHeader(JsonObject jobj)
+	{
+		try {
+	        this.to = jobj.getString("to");
+	        this.from = jobj.getString("from");
+	        this.epoch = jobj.getJsonNumber("epoch").longValue();
+	        this.id    = jobj.getJsonNumber("id").intValue();
+		} catch (NullPointerException e)
+		{
+			System.err.println("Response Fill Header Missing Values (null ptr)" + jobj.toString() + e.getLocalizedMessage());
+		}
 	}
 }
