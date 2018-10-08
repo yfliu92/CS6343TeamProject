@@ -93,7 +93,7 @@ public class Configuration {
 			System.err.println("Must provide port parameter");
 		
 		if(cmd.hasOption("m"))
-			this.mode = cmd.getOptionValue("p");
+			this.mode = cmd.getOptionValue("m");
 		else
 			System.err.println("Must provide mode parameter");
 		
