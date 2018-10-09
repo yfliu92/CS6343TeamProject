@@ -15,6 +15,7 @@ import dht.common.FileObject;
 
 public class Repository {
 	private static Repository instance = null;
+	private static int connection_count = 0;
 	private HaloDB db;
 	
 	private Repository() 
@@ -85,21 +86,28 @@ public class Repository {
 
         // The directory will be created if it doesn't exist and all database files will be stored in this directory
         String directory = Integer.toString(config.getPort()) + "directory";
-
-        // Open the database. Directory will be created if it doesn't exist.
-        // If we are opening an existing database HaloDB needs to scan all the
-        // index files to create the in-memory index, which, depending on the db size, might take a few minutes.
-        try {
-			this.db = HaloDB.open(directory, options);
-		} catch (HaloDBException e) {
-			System.err.println("Unable to create HaloDB repository: " + e.getLocalizedMessage());
-		}
+        
+        if(Repository.connection_count == 0)
+        {
+        	Repository.connection_count++;
+	        // Open the database. Directory will be created if it doesn't exist.
+	        // If we are opening an existing database HaloDB needs to scan all the
+	        // index files to create the in-memory index, which, depending on the db size, might take a few minutes.
+	        try {
+				this.db = HaloDB.open(directory, options);
+			} catch (HaloDBException e) {
+				System.err.println("REPOSITORY CONSTRUCTOR: Unable to create HaloDB repository: " + e.getLocalizedMessage());
+			}
+        } else {
+        	System.err.println("REPOSITORY CONSTRUCTOR: DB connection already created ");
+        }
 	}
 	
 	public void shutdown()
 	{
 		try {
 			this.db.close();
+			Repository.connection_count--;
 		} catch (HaloDBException e) {
 			e.printStackTrace();
 		}

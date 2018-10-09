@@ -30,6 +30,8 @@ public class BaseServer {
 	public void run()
 	{
 		Context context = Context.getInstance();
+		Repository repo = Repository.getInstance(); // Get database started early
+		
 		if(this.map == null)
 		{
 			System.err.println("Server's map not configured before calling run;");
