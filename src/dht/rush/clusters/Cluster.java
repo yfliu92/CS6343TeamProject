@@ -2,6 +2,7 @@ package dht.rush.clusters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Cluster {
@@ -10,8 +11,7 @@ public class Cluster {
     private int epoch;
     private String ip;
     private double weight;
-    private boolean isActive;
-    private Map<Cluster, ArrayList<Cluster>> cachedMap;
+    private Map<Cluster, List<Cluster>> cachedMap;
 
     public Cluster(int id, String name, int epoch, String ip, double weight) {
         this.id = id;
@@ -19,7 +19,6 @@ public class Cluster {
         this.epoch = epoch;
         this.ip = ip;
         this.weight = weight;
-        this.isActive = true;
         this.cachedMap = new HashMap<>();
     }
 
@@ -63,19 +62,11 @@ public class Cluster {
         this.weight = weight;
     }
 
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public Map<Cluster, ArrayList<Cluster>> getCachedMap() {
+    public Map<Cluster, List<Cluster>> getCachedMap() {
         return cachedMap;
     }
 
-    public void setCachedMap(Map<Cluster, ArrayList<Cluster>> cachedMap) {
+    public void setCachedMap(Map<Cluster, List<Cluster>> cachedMap) {
         this.cachedMap = cachedMap;
     }
 }

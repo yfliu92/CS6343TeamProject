@@ -7,11 +7,9 @@
 
 <config>
     <!-- Central server ip and the root url for HTTP request  -->
-    <ip>http://192.168.0.200</ip>
+    <ip>192.168.0.200</ip>
     <!-- All nodes will use this port as default port number -->
     <port>8100</port>
-    <!-- The root url for ceph methods -->
-    <rootUrl>/ceph</rootUrl>
 
     <!-- Number of Replicas -->
     <replicationDegree>3</replicationDegree>
@@ -21,19 +19,23 @@
             <weight>4</weight>
             <nodes>
                 <node>
-                    <ip>http://192.168.0.201</ip>
+                    <ip>192.168.0.201</ip>
+                    <port>8100</port>
                     <weight>1</weight>
                 </node>
                 <node>
-                    <ip>http://192.168.0.202</ip>
+                    <ip>192.168.0.202</ip>
+                    <port>8100</port>
                     <weight>1</weight>
                 </node>
                 <node>
-                    <ip>http://192.168.0.203</ip>
+                    <ip>192.168.0.203</ip>
+                    <port>8100</port>
                     <weight>1</weight>
                 </node>
                 <node>
-                    <ip>http://192.168.0.204</ip>
+                    <ip>192.168.0.204</ip>
+                    <port>8100</port>
                     <weight>1</weight>
                 </node>
             </nodes>
@@ -42,19 +44,23 @@
             <weight>4</weight>
             <nodes>
                 <node>
-                    <ip>http://192.168.0.205</ip>
+                    <ip>192.168.0.205</ip>
+                    <port>8100</port>
                     <weight>1</weight>
                 </node>
                 <node>
-                    <ip>http://192.168.0.206</ip>
+                    <ip>192.168.0.206</ip>
+                    <port>8100</port>
                     <weight>1</weight>
                 </node>
                 <node>
-                    <ip>http://192.168.0.207</ip>
+                    <ip>192.168.0.207</ip>
+                    <port>8100</port>
                     <weight>1</weight>
                 </node>
                 <node>
-                    <ip>http://192.168.0.208</ip>
+                    <ip>192.168.0.208</ip>
+                    <port>8100</port>
                     <weight>1</weight>
                 </node>
             </nodes>
