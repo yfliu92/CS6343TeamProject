@@ -5,3 +5,13 @@
 
 ## version
 Latest release v0.1
+
+## server/client test
+cd /src   
+javac dht/server/server.java
+javac dht/client/client.java
+javac dht/client/controlclient.java
+java dht/server/server   
+java dht/client/client find aifanfa
+java dht/client/client loadbalance 3 6
+java dht/client/controlclient
