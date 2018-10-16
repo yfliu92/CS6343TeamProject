@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Author     : Yafeng Liu
+    Description: Configuration file for the cluster to build
+-->
+
+<config>
+    <!-- Central server ip and the root url for HTTP request  -->
+    <ip>http://192.168.0.200</ip>
+    <!-- All nodes will use this port as default port number -->
+    <port>8100</port>
+    <!-- The root url for ceph methods -->
+    <rootUrl>/ceph</rootUrl>
+
+    <!-- Number of Replicas -->
+    <replicationDegree>3</replicationDegree>
+
+    <subClusters>
+        <subCluster>
+            <weight>4</weight>
+            <nodes>
+                <node>
+                    <ip>http://192.168.0.201</ip>
+                    <weight>1</weight>
+                </node>
+                <node>
+                    <ip>http://192.168.0.202</ip>
+                    <weight>1</weight>
+                </node>
+                <node>
+                    <ip>http://192.168.0.203</ip>
+                    <weight>1</weight>
+                </node>
+                <node>
+                    <ip>http://192.168.0.204</ip>
+                    <weight>1</weight>
+                </node>
+            </nodes>
+        </subCluster>
+        <subCluster>
+            <weight>4</weight>
+            <nodes>
+                <node>
+                    <ip>http://192.168.0.205</ip>
+                    <weight>1</weight>
+                </node>
+                <node>
+                    <ip>http://192.168.0.206</ip>
+                    <weight>1</weight>
+                </node>
+                <node>
+                    <ip>http://192.168.0.207</ip>
+                    <weight>1</weight>
+                </node>
+                <node>
+                    <ip>http://192.168.0.208</ip>
+                    <weight>1</weight>
+                </node>
+            </nodes>
+        </subCluster>
+    </subClusters>
+</config>

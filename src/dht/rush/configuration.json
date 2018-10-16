@@ -1,0 +1,96 @@
+{
+  "epoch": 0,
+  "physicalNodes": 8,
+  "root": {
+    "id": -1,
+    "name": "root",
+    "ip": "192.168.0.200",
+    "weight": 8,
+    "type": "ROOT",
+    "children": [
+      {
+        "id": -2,
+        "name": "sub1",
+        "weight": 4,
+        "type": "SUB_CLUSTER",
+        "enabled": true,
+        "children": [
+          {
+            "id": 0,
+            "name": "osd0",
+            "ip": "192.168.0.202",
+            "weight": 1,
+            "type": "LEAF_SUB_CLUSTER",
+            "enabled": true
+          },
+          {
+            "id": 1,
+            "name": "osd1",
+            "ip": "192.168.0.203",
+            "weight": 1,
+            "type": "LEAF_SUB_CLUSTER",
+            "enabled": true
+          },
+          {
+            "id": 2,
+            "name": "osd2",
+            "ip": "192.168.0.204",
+            "weight": 1,
+            "type": "LEAF_SUB_CLUSTER",
+            "enabled": true
+          },
+          {
+            "id": 3,
+            "name": "osd3",
+            "ip": "192.168.0.205",
+            "weight": 1,
+            "type": "LEAF_SUB_CLUSTER",
+            "enabled": true
+          }
+        ]
+      },
+      {
+        "id": -3,
+        "name": "sub1",
+        "weight": 4,
+        "type": "SUB_CLUSTER",
+        "status": "active",
+        "children": [
+          {
+            "id": 0,
+            "name": "osd0",
+            "ip": "192.168.0.207",
+            "weight": 1,
+            "type": "LEAF_SUB_CLUSTER",
+            "enabled": true
+          },
+          {
+            "id": 1,
+            "name": "osd1",
+            "ip": "192.168.0.208",
+            "weight": 1,
+            "type": "LEAF_SUB_CLUSTER",
+            "enabled": true
+          },
+          {
+            "id": 2,
+            "name": "osd2",
+            "ip": "192.168.0.209",
+            "weight": 1,
+            "type": "LEAF_SUB_CLUSTER",
+            "enabled": true
+          },
+          {
+            "id": 3,
+            "name": "osd3",
+            "ip": "192.168.0.210",
+            "weight": 1,
+            "type": "LEAF_SUB_CLUSTER",
+            "enabled": true
+          }
+        ]
+      }
+    ]
+
+  }
+}
