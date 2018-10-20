@@ -9,7 +9,7 @@ public class Proxy{
     private String proxyID = "PROXY";
     private int totalHashSlots = 10000;
     private String[] routeTable;
-    private List<Node> activeNodes = new LinkedList<>();
+    private List<PhysicalNode> activeNodes = new LinkedList<>();
 
     public String getProxyID() {
         return proxyID;
@@ -35,11 +35,11 @@ public class Proxy{
         this.routeTable = routeTable;
     }
 
-    public List<Node> getActiveNodes() {
+    public List<PhysicalNode> getActiveNodes() {
         return activeNodes;
     }
 
-    public void setActiveNodes(List<Node> activeNodes) {
+    public void setActiveNodes(List<PhysicalNode> activeNodes) {
         this.activeNodes = activeNodes;
     }
 
@@ -49,7 +49,7 @@ public class Proxy{
         int newLoadPerNode = totalHashSlots / newNumOfActiveNodes;
         int num_slots_to_migrate = newLoadPerNode / activeNodes.size();
         LinkedList<Pair<Integer,Integer>> loadForNewNode = new LinkedList<>();
-        for (Node node : activeNodes){
+        for (PhysicalNode node : activeNodes){
             int count = num_slots_to_migrate;
             LinkedList<Pair<Integer,Integer>> newLoad = new LinkedList<>();
             for (Pair<Integer, Integer> pair : node.getCurrentLoad()){
@@ -81,17 +81,17 @@ public class Proxy{
             node.updateLoad(newLoad);
         }
 
-        Node newNode = new Node(newNodeID, ip, loadForNewNode);
+        PhysicalNode newNode = new PhysicalNode(newNodeID, ip, loadForNewNode);
         activeNodes.add(newNode);
     }
 
     public void deleteNode(String nodeID){
-        Node node = findNodeById(nodeID);
+        PhysicalNode node = findNodeById(nodeID);
     }
 
-    public Node findNodeById(String ID) {
-        Node res = null;
-        for(Node node : activeNodes) {
+    public PhysicalNode findNodeById(String ID) {
+        PhysicalNode res = null;
+        for(PhysicalNode node : activeNodes) {
             if (node.getNodeID().equals(ID)) {
                 res = node;
                 break;

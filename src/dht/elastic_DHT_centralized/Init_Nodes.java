@@ -8,7 +8,7 @@ public class Init_Nodes {
     public void initialize(int totalHashSlots, List<String> activeIPs){
         int numOfActiveNodes = activeIPs.size();
         int slotsPerNode = totalHashSlots / numOfActiveNodes;
-        List<Node> activeNodes = new LinkedList<>();
+        List<PhysicalNode> activeNodes = new LinkedList<>();
         String[] routeTable= new String[totalHashSlots];
 
         for (int i = 0; i < numOfActiveNodes; i++){
@@ -22,7 +22,7 @@ public class Init_Nodes {
             Pair p = new Pair(start, end);
             LinkedList<Pair<Integer, Integer>> initialLoad = new LinkedList<>();
             initialLoad.add(p);
-            Node node = new Node(id, activeIPs.get(i), initialLoad);
+            PhysicalNode node = new PhysicalNode(id, activeIPs.get(i), initialLoad);
             activeNodes.add(node);
             for (int j = start; j < end; j++){
                 routeTable[j] = id;
