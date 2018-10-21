@@ -2,14 +2,14 @@ package dht.elastic_DHT_centralized;
 
 import javafx.util.Pair;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Proxy{
-    private String proxyID = "PROXY";
-    private int totalHashSlots = 10000;
-    private String[] routeTable;
-    private List<PhysicalNode> activeNodes = new LinkedList<>();
+public class Proxy extends PhysicalNode{
+    private String id = "PROXY";
+    private TableWithEpoch table;
+    private HashMap<Integer, PhysicalNode> members = new HashMap<>();
 
     public String getProxyID() {
         return proxyID;
@@ -19,32 +19,26 @@ public class Proxy{
         this.proxyID = proxyID;
     }
 
-    public int getTotalHashSlots() {
-        return totalHashSlots;
-    }
-
-    public void setTotalHashSlots(int totalHashSlots) {
-        this.totalHashSlots = totalHashSlots;
-    }
-
-    public String[] getRouteTable() {
-        return routeTable;
-    }
-
-    public void setRouteTable(String[] routeTable) {
-        this.routeTable = routeTable;
-    }
-
-    public List<PhysicalNode> getActiveNodes() {
-        return activeNodes;
-    }
-
-    public void setActiveNodes(List<PhysicalNode> activeNodes) {
-        this.activeNodes = activeNodes;
+    public void setProxy(PhysicalNode proxy) {
+        this.proxy = proxy;
     }
 
     public void addNode(String ip){
         String newNodeID =  "D" + ip.substring(ip.length() - 3);
+
+    }
+    public void add(List<PhysicalNode> nodes){
+
+    }
+    public void remove(PhysicalNode node){
+
+    }
+    public void remove(List<PhysicalNode> nodes){
+
+    }
+
+    public void addNode(String ip){
+
         int newNumOfActiveNodes = activeNodes.size() + 1;
         int newLoadPerNode = totalHashSlots / newNumOfActiveNodes;
         int num_slots_to_migrate = newLoadPerNode / activeNodes.size();
