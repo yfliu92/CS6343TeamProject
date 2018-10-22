@@ -101,7 +101,7 @@ public class PhysicalNode {
         Indexable pre3 = lookupTable.getTable().pre(index-2);
         // Check if this physical node already exits in the physicalNodeMap
         if (!lookupTable.getPhysicalNodeMap().containsKey(physicalNodeID)){
-            List<VirtualNode> list = new LinkedList<>();
+            List<VirtualNode> list = new ArrayList<>();
             list.add(vNode);
             PhysicalNode physicalNode = new PhysicalNode(physicalNodeID, ip, port, STATUS_ACTIVE, list);
             lookupTable.getPhysicalNodeMap().put(physicalNodeID, physicalNode);
@@ -129,6 +129,7 @@ public class PhysicalNode {
         System.out.println("\tTranfering data for hash range of (" + start +", " + end + ")");
     }
 
+    // Delete virtual node by its hash value
     public void deleteNode(int hash) {
         Indexable vNode = new VirtualNode(hash);
         int index = Collections.binarySearch(lookupTable.getTable(), vNode);
@@ -161,4 +162,63 @@ public class PhysicalNode {
         lookupTable.setEpoch(timestamp.getTime());
     }
 
+    //// Delete virtual node by its hash value
+    public void deleteNode(Indexable node){
+        int index = Collections.binarySearch(lookupTable.getTable(), node);
+        if (index < 0){
+            return;
+        }
+
+        Indexable next1 = lookupTable.getTable().next(index);
+        Indexable next2 = lookupTable.getTable().next(index+1);
+        Indexable next3 = lookupTable.getTable().next(index+2);
+        Indexable pre1 = lookupTable.getTable().pre(index);
+        Indexable pre2 = lookupTable.getTable().pre(index-1);
+        Indexable pre3 = lookupTable.getTable().pre(index-2);
+
+        // Delete the virtual node from the ring of virtual nodes
+        Indexable virtualNodeToDelete = lookupTable.getTable().remove(index);
+
+        dataTransfer(virtualNodeToDelete, next1, pre3.getHash()+1, pre2.getHash());
+        dataTransfer(virtualNodeToDelete, next2, pre2.getHash()+1, pre1.getHash());
+        dataTransfer(virtualNodeToDelete, next3, pre1.getHash()+1, node.getHash());
+
+        // Update the local timestamp
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        lookupTable.setEpoch(timestamp.getTime());
+    }
+
+    public void failNode(String ip, int port){
+        String physicalNodeID =  "D" + ip.substring(ip.length() - 3)+ "-" + Integer.toString(port);
+        lookupTable.getPhysicalNodeMap().get(physicalNodeID).setStatus(STATUS_INACTIVE);
+        List<VirtualNode> virtualNodes = lookupTable.getPhysicalNodeMap().get(physicalNodeID).getVirtualNodes();
+        if (virtualNodes.size() == 0){
+            return;
+        }
+        for (VirtualNode node : virtualNodes ){
+            deleteNode(node);
+        }
+        // Set the virtual node list of the failed node to be empty
+        lookupTable.getPhysicalNodeMap().get(physicalNodeID).setVirtualNodes(new ArrayList<VirtualNode>());
+    }
+
+    // Change the position of a virtual node on the ring to balance load
+    public void loadBalance(int oldHash, int newHash){
+        VirtualNode node = new VirtualNode(oldHash);
+        int index = Collections.binarySearch(lookupTable.getTable(), node);
+        if (index < 0){
+            System.out.println("hash " + oldHash + " is not a virtual node.");
+            return;
+        }
+        Indexable nodeToMove = lookupTable.getTable().get(index);
+        nodeToMove.setHash(newHash);
+        // Get the 3rd successor of the virtual node
+        Indexable thirdSuccessor = lookupTable.getTable().next(index+2);
+        if (newHash > oldHash) {
+            dataTransfer(thirdSuccessor, nodeToMove, oldHash + 1, newHash);
+        }
+        else if (newHash < oldHash){
+            dataTransfer(nodeToMove, thirdSuccessor,newHash + 1, oldHash);
+        }
+    }
 }
