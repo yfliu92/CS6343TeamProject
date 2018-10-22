@@ -1,14 +1,12 @@
 package dht.rush.clusters;
 
-import dht.rush.clusters.Cluster;
-import dht.rush.clusters.ClusterType;
-
 // Root node is the central server
 public class Root extends Cluster {
     private ClusterType type;
 
-    public Root(int id, String name, int epoch, String ip, double weight) {
-        super(id, name, epoch, ip, weight);
+    public Root(String id, String ip, String port, String parentId, int numberOfChildren, double weight, Boolean isActive) {
+        super(id, ip, port, parentId, numberOfChildren, weight, isActive);
         this.type = ClusterType.ROOT;
     }
+
 }
