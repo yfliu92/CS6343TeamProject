@@ -29,7 +29,7 @@ public class BinarySearchList extends ArrayList<Indexable> {
         else {
             index = -(index + 1);
             this.add(index, t);
-
+            t.setIndex(index);
             return true;
         }
     }
@@ -56,7 +56,7 @@ public class BinarySearchList extends ArrayList<Indexable> {
 
         if (index < 0)
             index = -(index + 1);
-        else if (index >= size())
+        if (index >= size())
             index = 0;
 
         node = get(index);
@@ -74,7 +74,7 @@ public class BinarySearchList extends ArrayList<Indexable> {
         if (index < 0)
             index = size() - index;
         Indexable node = super.get(index);
-        node.setIndex(index); // set current index in the table, for fast access to successor and predecessor
+        //node.setIndex(index); // set current index in the table, for fast access to successor and predecessor
 
         return node;
     }
@@ -86,12 +86,15 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *          Time Complexity O(1)
      */
     public Indexable next(Indexable node) {
-        if (node.getIndex() < 0) // no index cache
-            return null;
-        else if (node.getIndex() + 1 >= size()) // current node is the last element in list
+        int index = Collections.binarySearch(this, node);
+        return next(index);
+    }
+
+    public Indexable next(int index) {
+        if (index + 1 >= size()) // current node is the last element in list
             return get(0);
         else
-            return get(node.getIndex() + 1);
+            return get(index + 1);
     }
 
     /**
@@ -101,11 +104,13 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *          Time Complexity O(1)
      */
     public Indexable pre(Indexable node) {
-        if (node.getIndex() < 0) // no index cache
-            return null;
-        else if (node.getIndex() == 0) // current node is the first element in list
+        int index = Collections.binarySearch(this, node);
+        return pre(index);
+    }
+    public Indexable pre(int index) {
+        if (index == 0) // current node is the  first element in list
             return get(size() - 1);
         else
-            return get(node.getIndex() - 1);
+            return get(index - 1);
     }
 }

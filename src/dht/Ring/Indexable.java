@@ -8,4 +8,8 @@ public interface Indexable extends Comparable<Indexable>{
     int getIndex();
 
     void setIndex(int index);
+
+    String getPhysicalNodeId();
+
+    void setPhysicalNodeId(String physicalNodeId);
 }
