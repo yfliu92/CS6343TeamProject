@@ -222,5 +222,8 @@ public class PhysicalNode {
         }
     }
 
+    public void read(String key){
+
+    }
 
 }
