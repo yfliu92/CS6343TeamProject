@@ -148,9 +148,9 @@ public class PhysicalNode {
         // Delete the virtual node from the ring of virtual nodes
         Indexable virtualNodeToDelete = lookupTable.getTable().remove(index);
 
-        dataTransfer(virtualNodeToDelete, next1, pre3.getHash()+1, pre2.getHash());
-        dataTransfer(virtualNodeToDelete, next2, pre2.getHash()+1, pre1.getHash());
-        dataTransfer(virtualNodeToDelete, next3, pre1.getHash()+1, hash);
+        dataTransfer(pre2, next1, pre3.getHash()+1, pre2.getHash());
+        dataTransfer(pre1, next2, pre2.getHash()+1, pre1.getHash());
+        dataTransfer(next1, next3, pre1.getHash()+1, hash);
 
         // Remove the virtual node from its physcial node's virtual node list
         List<VirtualNode> list = lookupTable.getPhysicalNodeMap().get(virtualNodeToDelete.getPhysicalNodeId()).getVirtualNodes();
@@ -179,9 +179,9 @@ public class PhysicalNode {
         // Delete the virtual node from the ring of virtual nodes
         Indexable virtualNodeToDelete = lookupTable.getTable().remove(index);
 
-        dataTransfer(virtualNodeToDelete, next1, pre3.getHash()+1, pre2.getHash());
-        dataTransfer(virtualNodeToDelete, next2, pre2.getHash()+1, pre1.getHash());
-        dataTransfer(virtualNodeToDelete, next3, pre1.getHash()+1, node.getHash());
+        dataTransfer(pre2, next1, pre3.getHash()+1, pre2.getHash());
+        dataTransfer(pre1, next2, pre2.getHash()+1, pre1.getHash());
+        dataTransfer(next1, next3, pre1.getHash()+1, node.getHash());
 
         // Update the local timestamp
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -221,4 +221,6 @@ public class PhysicalNode {
             dataTransfer(nodeToMove, thirdSuccessor,newHash + 1, oldHash);
         }
     }
+
+
 }
