@@ -222,26 +222,46 @@ public class PhysicalNode {
         }
     }
 
-    public void writeRequest(String key){
+    public int hashFunction(String s){
         // Set it to 64 here just for test purpose. It will be defined in the configuration file.
         int maxHash = 64;
-        int hash = String.valueOf(key).hashCode() % maxHash;
-        Indexable hashValue = new VirtualNode(hash);
+        int hash = String.valueOf(s).hashCode() % maxHash;
+        return hash;
+    }
+    public void writeRequest(String key){
+        int hash = hashFunction(key);
+        Indexable hashValue = new VirtualNode(hashFunction(key));
         Indexable vNode = lookupTable.getTable().find(hashValue);
-        int index = Collections.binarySearch(lookupTable.getTable(), vNode);
         // Store replica in two successors
-        Indexable replica_1 = lookupTable.getTable().next(index);
-        Indexable replica_2 = lookupTable.getTable().next(index + 1);
-        write(vNode);
-        write(replica_1);
-        write(replica_2);
+        Indexable replica_1 = lookupTable.getTable().next(vNode);
+        Indexable replica_2 = lookupTable.getTable().next(replica_1);
+        write(vNode, hash);
+        write(replica_1, hash);
+        write(replica_2, hash);
     }
 
-    public void write(Indexable virtualNode){
+    public void write(Indexable virtualNode, int hash){
         String address = lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getAddress() + " (port: " +
                 lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getPort() + ")";
-        System.out.println("Connecting to " + address + " to write on virtual node " + virtualNode.getHash());
+        System.out.println("Connecting to " + address + " to write on virtual node " + virtualNode.getHash() +
+                " for hash value " + hash);
         System.out.println("Writing completed");
     }
 
+    public void readRequest(String key){
+        int hash = hashFunction(key);
+        Indexable hashValue = new VirtualNode();
+        Indexable vNode = lookupTable.getTable().find(hashValue);
+        Indexable replica_1 = lookupTable.getTable().next(vNode);
+        Indexable replica_2 = lookupTable.getTable().next(replica_1);
+        read(vNode, hash);
+        read(replica_1, hash);
+        read(replica_2, hash);
+    }
+    public void read(Indexable virtualNode, int hash){
+        String address = lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getAddress() + " (port: " +
+                lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getPort() + ")";
+        System.out.println("Connecting to " + address + " to read for hash value " + hash);
+        System.out.println("Reading completed");
+    }
 }
