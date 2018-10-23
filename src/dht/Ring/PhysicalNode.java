@@ -3,6 +3,11 @@ package dht.Ring;
 import java.sql.Timestamp;
 import java.util.*;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+
 public class PhysicalNode {
 
     private String id;
@@ -22,6 +27,8 @@ public class PhysicalNode {
     public final static String STATUS_INACTIVE = "inactive";
 
     public PhysicalNode() {
+    	this.lookupTable = new LookupTable();
+    	this.virtualNodes = new ArrayList<>();
     }
 
     public PhysicalNode(String ID, String ip, int port, String status, List<VirtualNode> nodes){
@@ -30,6 +37,7 @@ public class PhysicalNode {
         this.port = port;
         this.status = status;
         this.virtualNodes = nodes;
+        this.lookupTable = new LookupTable();
     }
 
     public String getId() {
@@ -79,6 +87,27 @@ public class PhysicalNode {
     public void setVirtualNodes(List<VirtualNode> virtualNodes) {
         this.virtualNodes = virtualNodes;
     }
+    
+    public String addNode(String ip, int port) {
+    	int hash = lookupTable.getTable().getRanHash();
+//    	JsonObjectBuilder result = Json.createObjectBuilder();
+    	
+    	String result = "";
+    	if (hash >= 0) {
+    		addNode(ip, port, hash);
+//        	result.add("success", true);
+//        	result.add("message", "Node added successfully, hash " + hash);
+    		result = "true|Node added successfully, hash " + hash;
+    	}
+    	else {
+//        	result.add("success", false);
+//        	result.add("message", "Virtual node exhausted");
+    		result = "false|Virtual node exhausted";
+    	}
+    	
+//    	return result.build().toString();
+    	return result;
+    }
 
     public void addNode(String ip, int port, int hash){
         // Create an id for the new physical node
@@ -93,6 +122,8 @@ public class PhysicalNode {
         }
         // Get the index of the inserted virtual node in the BinarySearchList
         int index = vNode.getIndex();
+        System.out.println("newly added node index " + index);
+        
         Indexable next1 = lookupTable.getTable().next(index);
         Indexable next2 = lookupTable.getTable().next(index+1);
         Indexable next3 = lookupTable.getTable().next(index+2);
@@ -130,12 +161,12 @@ public class PhysicalNode {
     }
 
     // Delete virtual node by its hash value
-    public void deleteNode(int hash) {
+    public String deleteNode(int hash) {
         Indexable vNode = new VirtualNode(hash);
         int index = Collections.binarySearch(lookupTable.getTable(), vNode);
         if (index < 0){
             System.out.println("hash " + hash + " is not a virtual node.");
-            return;
+            return "false|" + "hash " + hash + " is not a virtual node.";
         }
 
         Indexable next1 = lookupTable.getTable().next(index);
@@ -160,6 +191,8 @@ public class PhysicalNode {
         // Update the local timestamp
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         lookupTable.setEpoch(timestamp.getTime());
+        
+        return "true|virtual node " + hash + " removed successfully";
     }
 
     //// Delete virtual node by its hash value

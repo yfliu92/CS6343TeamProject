@@ -2,6 +2,7 @@ package dht.Ring;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.*;
 
 public class LookupTable {
 
@@ -14,6 +15,8 @@ public class LookupTable {
     private ReplicaPlacementAlgorithm algorithm;
 
     public LookupTable() {
+    	this.table = new BinarySearchList();
+    	this.physicalNodeMap = new HashMap<>();
     }
 
     public List<PhysicalNode> getReplicas(int hash) {

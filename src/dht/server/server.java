@@ -8,6 +8,8 @@ import java.util.Date;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import dht.Ring.*;
+
 public class server {
 
 	public static String getFindInfo(String input) {

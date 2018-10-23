@@ -2,9 +2,18 @@ package dht.Ring;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
+import java.util.*;
+
+import dht.common.Hashing;
 
 public class BinarySearchList extends ArrayList<Indexable> {
+	boolean[] occupied = new boolean[Hashing.MAX_HASH];
+	List<Indexable> list;
 
+	public BinarySearchList() {
+		list = new ArrayList<Indexable>();
+	}
     /**
      * @Param  Node to be added
      * @return false if virtual node with the same hash is already in list
@@ -20,7 +29,7 @@ public class BinarySearchList extends ArrayList<Indexable> {
      */
     @Override
     public boolean add(Indexable t) {
-        int index = Collections.binarySearch(this, t);
+        int index = Collections.binarySearch(this.list, t);
 
         if (index >= 0) {
             // virtual node is already in the list
@@ -28,10 +37,52 @@ public class BinarySearchList extends ArrayList<Indexable> {
         }
         else {
             index = -(index + 1);
-            this.add(index, t);
+            this.list.add(index, t);
             t.setIndex(index);
+            occupied[t.getHash()] = true;
             return true;
         }
+    }
+    
+    public boolean checkExist(int hash) {
+    	VirtualNode vNode = new VirtualNode(hash);
+    	int index = Collections.binarySearch(this.list, vNode);
+        if (index < 0) {
+        	return false;
+        }
+        else {
+        	return true;
+        }
+    }
+    
+    public int getRanHash() {
+    	Random ran = new Random();
+    	int hash = ran.nextInt(Hashing.MAX_HASH);
+    	int count = 0;
+    	while(checkExist(hash)) {
+    		hash = ran.nextInt(Hashing.MAX_HASH);
+    		count++;
+    		
+    		if (count > Hashing.MAX_HASH / 10) {
+    			break;
+    		}
+    	}
+    	
+    	if (count > 1000) {
+    		boolean isfound = false;
+    		for(int i = 0; i < occupied.length; i++) {
+    			if (!occupied[i]) {
+    				hash = i;
+    				isfound = true;
+    				break;
+    			}
+    		}
+    		if (!isfound) {
+    			hash = -1;
+    		}
+    	}
+    	
+    	return hash;
     }
 
     /**
@@ -52,11 +103,11 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *          Time Complexity O(log n)
      */
     public Indexable find(Indexable node) {
-        int index = Collections.binarySearch(this, node);
+        int index = Collections.binarySearch(this.list, node);
 
         if (index < 0)
             index = -(index + 1);
-        if (index >= size())
+        if (index >= this.list.size())
             index = 0;
 
         node = get(index);
@@ -71,9 +122,13 @@ public class BinarySearchList extends ArrayList<Indexable> {
      */
     @Override
     public Indexable get(int index) {
-        if (index < 0)
-            index = size() - index;
-        Indexable node = super.get(index);
+        if (index < 0) {
+//        	index = this.list.size() - index;
+        	index = 0;
+        }
+            
+//        Indexable node = super.get(index);
+        Indexable node = this.list.get(index);
         //node.setIndex(index); // set current index in the table, for fast access to successor and predecessor
 
         return node;
@@ -86,15 +141,20 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *          Time Complexity O(1)
      */
     public Indexable next(Indexable node) {
-        int index = Collections.binarySearch(this, node);
+        int index = Collections.binarySearch(this.list, node);
         return next(index);
     }
 
     public Indexable next(int index) {
-        if (index + 1 >= size()) // current node is the last element in list
-            return get(0);
-        else
+        if (index + 1 >= this.list.size()) // current node is the last element in list 
+        {
+        	System.out.println("big index " + index + " size " + this.list.size());
+        	return get(0);
+        }
+        else {
+        	System.out.println("index " + index + " size " + this.list.size());
             return get(index + 1);
+        }
     }
 
     /**
@@ -104,12 +164,12 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *          Time Complexity O(1)
      */
     public Indexable pre(Indexable node) {
-        int index = Collections.binarySearch(this, node);
+        int index = Collections.binarySearch(this.list, node);
         return pre(index);
     }
     public Indexable pre(int index) {
         if (index == 0) // current node is the  first element in list
-            return get(size() - 1);
+            return get(this.list.size() - 1);
         else
             return get(index - 1);
     }
