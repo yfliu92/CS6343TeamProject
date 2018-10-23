@@ -3,7 +3,7 @@ package dht.Ring;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class BinarySearchList extends ArrayList<Indexable> {
+public class BinarySearchList extends ArrayList<VirtualNode> {
 
     /**
      * @Param  Node to be added
@@ -19,7 +19,7 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *          Time Complexity O(log n)
      */
     @Override
-    public boolean add(Indexable t) {
+    public boolean add(VirtualNode t) {
         int index = Collections.binarySearch(this, t);
 
         if (index >= 0) {
@@ -51,7 +51,7 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *
      *          Time Complexity O(log n)
      */
-    public Indexable find(Indexable node) {
+    public VirtualNode find(VirtualNode node) {
         int index = Collections.binarySearch(this, node);
 
         if (index < 0)
@@ -70,12 +70,12 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *          Index is cached to the node, for fast access of its successor.
      */
     @Override
-    public Indexable get(int index) {
+    public VirtualNode get(int index) {
         if (index < 0)
             index = size() + index;
         else if (index >= size())
             index = index % size();
-        Indexable node = super.get(index);
+        VirtualNode node = super.get(index);
         //node.setIndex(index); // set current index in the table, for fast access to successor and predecessor
 
         return node;
@@ -87,12 +87,12 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *
      *          Time Complexity O(1)
      */
-    public Indexable next(Indexable node) {
+    public VirtualNode next(VirtualNode node) {
         int index = Collections.binarySearch(this, node);
         return next(index);
     }
 
-    public Indexable next(int index) {
+    public VirtualNode next(int index) {
         if (index + 1 == size()) // current node is the last element in list
             return get(0);
         else if (index + 1 > size())
@@ -107,11 +107,11 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *
      *          Time Complexity O(1)
      */
-    public Indexable pre(Indexable node) {
+    public VirtualNode pre(VirtualNode node) {
         int index = Collections.binarySearch(this, node);
         return pre(index);
     }
-    public Indexable pre(int index) {
+    public VirtualNode pre(int index) {
         if (index == 0) // current node is the  first element in list
             return get(size() - 1);
         else
