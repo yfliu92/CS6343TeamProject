@@ -87,4 +87,44 @@ public class ClusterStructureMap {
         }
         return status;
     }
+
+    public int deletePhysicalNode(String subCLusterId, String ip, String port) {
+        Cluster root = this.getChildrenList().get("R");
+        int status = 0;
+
+        // "1": success delete
+        // "2": No such a sub cluster
+        // "3": No such a physical node in the specific subcluster
+        // "4": Found the node, but already inactive
+
+        if (root.getCachedTreeStructure().getChildrenList().containsKey(subCLusterId)) {
+            Cluster sub = root.getCachedTreeStructure().getChildrenList().get(subCLusterId);
+            Set<Map.Entry<String, Cluster>> set = sub.getCachedTreeStructure().getChildrenList().entrySet();
+
+            boolean isExist = false;
+            for (Map.Entry<String, Cluster> entry : set) {
+                Cluster c = entry.getValue();
+                String cip = c.getIp();
+                String cport = c.getPort();
+                if (cip.equals(ip) && cport.equals(port)) {
+                    isExist = true;
+                    if(c.getActive()) {
+                        c.setActive(false);
+                        status = 1;
+                        this.addEpoch();
+                    } else {
+                        status = 4;
+                    }
+                    break;
+                }
+            }
+            if (!isExist) {
+                status = 3;
+            }
+        } else {
+            System.out.println("No such subcluster");
+            status = 2;
+        }
+        return status;
+    }
 }

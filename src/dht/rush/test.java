@@ -26,19 +26,30 @@ public class test {
             InputStream inputStream = socket.getInputStream();
             OutputStream outputStream = socket.getOutputStream();
 
-            /******aadNode******/
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             JsonWriter writer = Json.createWriter(baos);
+            /******aadNode******/
 
+//            JsonObject params = Json.createObjectBuilder()
+//                    .add("subClusterId", "S0")
+//                    .add("ip", "testip")
+//                    .add("port", "testPort")
+//                    .add("weight", "1.0")
+//                    .build();
+//
+//            JsonObject jobj = Json.createObjectBuilder()
+//                    .add("method", "addNode")
+//                    .add("parameters", params)
+//                    .build();
+            /********deleteNode************/
             JsonObject params = Json.createObjectBuilder()
                     .add("subClusterId", "S0")
-                    .add("ip", "testip")
-                    .add("port", "testPort")
-                    .add("weight", "1.0")
+                    .add("ip", "192.168.0.201")
+                    .add("port", "8100")
                     .build();
 
             JsonObject jobj = Json.createObjectBuilder()
-                    .add("method", "addNode")
+                    .add("method", "deleteNode")
                     .add("parameters", params)
                     .build();
 

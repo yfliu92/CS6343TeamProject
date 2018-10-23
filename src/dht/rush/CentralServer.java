@@ -4,6 +4,7 @@ import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
 import dht.rush.clusters.Root;
 import dht.rush.commands.AddNodeCommand;
+import dht.rush.commands.DeleteNodeCommand;
 import dht.rush.commands.ServerCommand;
 import dht.rush.utils.ConfigurationUtil;
 import dht.rush.utils.StreamUtil;
@@ -65,14 +66,23 @@ public class CentralServer {
     private ServerCommand dispatchCommand(JsonObject requestObject) throws IOException {
         String method = requestObject.getString("method");
         ServerCommand serverCommand = null;
+        JsonObject params = null;
         switch (method.toLowerCase()) {
             case "addnode":
                 serverCommand = new AddNodeCommand();
-                JsonObject params = requestObject.getJsonObject("parameters");
+                params = requestObject.getJsonObject("parameters");
                 ((AddNodeCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
                 ((AddNodeCommand) serverCommand).setIp(params.getString("ip"));
                 ((AddNodeCommand) serverCommand).setPort(params.getString("port"));
                 ((AddNodeCommand) serverCommand).setWeight(Double.parseDouble(params.getString("weight")));
+                ((AddNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                break;
+            case "deletenode":
+                serverCommand = new DeleteNodeCommand();
+                params = requestObject.getJsonObject("parameters");
+                ((AddNodeCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
+                ((AddNodeCommand) serverCommand).setIp(params.getString("ip"));
+                ((AddNodeCommand) serverCommand).setPort(params.getString("port"));
                 ((AddNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 break;
             default:
