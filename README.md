@@ -19,6 +19,7 @@ java dht/client/controlclient
 javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar dht/Ring/ProxyServer.java
 
 javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
+javac -cp ../lib/javax.json-api-1.1.2.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
 
 java dht/Ring/ProxyServer
 
