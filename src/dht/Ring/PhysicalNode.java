@@ -220,6 +220,8 @@ public class PhysicalNode {
         else if (delta < 0){
             dataTransfer(node, thirdSuccessor,newHash + 1, oldHash);
         }
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        lookupTable.setEpoch(timestamp.getTime());
     }
 
     public int hashFunction(String s){
@@ -238,6 +240,9 @@ public class PhysicalNode {
         write(vNode, hash);
         write(replica_1, hash);
         write(replica_2, hash);
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        lookupTable.setEpoch(timestamp.getTime());
+
     }
 
     // A helper function for writeRequest() method
