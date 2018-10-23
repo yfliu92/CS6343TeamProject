@@ -112,7 +112,11 @@ public class BinarySearchList extends ArrayList<VirtualNode> {
         return pre(index);
     }
     public VirtualNode pre(int index) {
-        if (index == 0) // current node is the  first element in list
+        if (index < 0) {
+            index = size() + index;
+            return get(index - 1);
+        }
+        else if (index == 0) // current node is the  first element in list
             return get(size() - 1);
         else
             return get(index - 1);

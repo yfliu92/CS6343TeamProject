@@ -60,11 +60,21 @@ public class Init {
 
         // The following part is for local test
         // Try adding a node
+        System.out.println("\n" + "Before adding the node, Ring contains " + P1.getLookupTable().getRing().size() + " virtual nodes");
+        for(VirtualNode node : P1.getLookupTable().getRing()) {
+            System.out.print(node.getHash() + " ");
+        }
+
         P1.addNode("192.168.0.100", 8004, 44);
+
+        System.out.println("\n" + "After adding the node, Ring contains " + P1.getLookupTable().getRing().size() + " virtual nodes");
+        for(VirtualNode node : P1.getLookupTable().getRing()) {
+            System.out.print(node.getHash() + " ");
+        }
 
         // Try delete a node
 //        P1.deleteNode(49);
-//        System.out.println("\n" + "Ring contains " + P1.getLookupTable().getRing().size() + " virtual nodes");
+//        System.out.println("\n" + "After deleting, Ring contains " + P1.getLookupTable().getRing().size() + " virtual nodes");
 //        for(VirtualNode node : P1.getLookupTable().getRing()) {
 //            System.out.print(node.getHash() + " ");
 //        }
