@@ -121,6 +121,7 @@ public class PhysicalNode {
             lookupTable.getPhysicalNodeMap().get(physicalNodeID).getVirtualNodes().add(vNode);
         }
 
+        System.out.println("Adding node at " + hash + ":");
         dataTransfer(next1, vNode, pre3.getHash()+1, pre2.getHash());
         dataTransfer(next2, vNode, pre2.getHash()+1, pre1.getHash());
         dataTransfer(next3, vNode, pre1.getHash()+1, hash);
@@ -148,6 +149,7 @@ public class PhysicalNode {
         // Delete the virtual node from the ring of virtual nodes
         VirtualNode virtualNodeToDelete = lookupTable.getTable().remove(index);
 
+        System.out.println("\nDeleting node at " + hash + ":");
         dataTransfer(pre2, next1, pre3.getHash()+1, pre2.getHash());
         dataTransfer(pre1, next2, pre2.getHash()+1, pre1.getHash());
         dataTransfer(next1, next3, pre1.getHash()+1, hash);
@@ -179,6 +181,7 @@ public class PhysicalNode {
         // Delete the virtual node from the ring of virtual nodes
         VirtualNode virtualNodeToDelete = lookupTable.getTable().remove(index);
 
+        System.out.println("\nDeleting node at " + node.getHash() + ":");
         dataTransfer(pre2, next1, pre3.getHash()+1, pre2.getHash());
         dataTransfer(pre1, next2, pre2.getHash()+1, pre1.getHash());
         dataTransfer(next1, next3, pre1.getHash()+1, node.getHash());

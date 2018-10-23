@@ -59,10 +59,12 @@ public class Init {
 
 
 
-
+        // The following part is for local test
+        // Try adding a node
         P1.addNode("192.168.0.100", 8004, 44);
-
+        // Try delete a node
         P1.deleteNode(49);
+
 //        HashMap<String, PhysicalNode> temp = P1.getLookupTable().getPhysicalNodeMap();
 //        for (HashMap.Entry<String, PhysicalNode> entry : temp.entrySet()){
 //            System.out.println(entry.getKey() + " "+ entry.getValue());
