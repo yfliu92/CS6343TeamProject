@@ -122,13 +122,21 @@ public class BinarySearchList extends ArrayList<Indexable> {
      */
     @Override
     public Indexable get(int index) {
-        if (index < 0) {
-//        	index = this.list.size() - index;
-        	index = 0;
-        }
-            
-//        Indexable node = super.get(index);
+//<<<<<<< HEAD
+//        if (index < 0) {
+////        	index = this.list.size() - index;
+//        	index = 0;
+//        }
+//            
+////        Indexable node = super.get(index);
+//        Indexable node = this.list.get(index);
+//=======
+        if (index < 0)
+            index = this.list.size() + index;
+        else if (index >= this.list.size())
+            index = index % this.list.size();
         Indexable node = this.list.get(index);
+//>>>>>>> fdc2aa80cf46d1adaa66f2886193a35b15a776c7
         //node.setIndex(index); // set current index in the table, for fast access to successor and predecessor
 
         return node;
@@ -146,15 +154,23 @@ public class BinarySearchList extends ArrayList<Indexable> {
     }
 
     public Indexable next(int index) {
-        if (index + 1 >= this.list.size()) // current node is the last element in list 
-        {
-        	System.out.println("big index " + index + " size " + this.list.size());
-        	return get(0);
-        }
-        else {
-        	System.out.println("index " + index + " size " + this.list.size());
+//<<<<<<< HEAD
+//        if (index + 1 >= this.list.size()) // current node is the last element in list 
+//        {
+//        	System.out.println("big index " + index + " size " + this.list.size());
+//        	return get(0);
+//        }
+//        else {
+//        	System.out.println("index " + index + " size " + this.list.size());
+//=======
+        if (index + 1 == this.list.size()) // current node is the last element in list
+            return get(0);
+        else if (index + 1 > this.list.size())
+            return get((index + 1) % this.list.size());
+        else
+//>>>>>>> fdc2aa80cf46d1adaa66f2886193a35b15a776c7
             return get(index + 1);
-        }
+//        }
     }
 
     /**

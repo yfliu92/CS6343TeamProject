@@ -12,16 +12,16 @@ public class LookupTable {
 
     private HashMap<String, PhysicalNode> physicalNodeMap;
 
-    private ReplicaPlacementAlgorithm algorithm;
+    //private ReplicaPlacementAlgorithm algorithm;
 
     public LookupTable() {
     	this.table = new BinarySearchList();
     	this.physicalNodeMap = new HashMap<>();
     }
 
-    public List<PhysicalNode> getReplicas(int hash) {
-        return algorithm.getReplicas(this, hash);
-    }
+//    public List<PhysicalNode> getReplicas(int hash) {
+//        return algorithm.getReplicas(this, hash);
+//    }
 
     public long getEpoch() {
         return epoch;
@@ -47,11 +47,11 @@ public class LookupTable {
         this.physicalNodeMap = physicalNodeMap;
     }
 
-    public ReplicaPlacementAlgorithm getAlgorithm() {
-        return algorithm;
-    }
-
-    public void setAlgorithm(ReplicaPlacementAlgorithm algorithm) {
-        this.algorithm = algorithm;
-    }
+//    public ReplicaPlacementAlgorithm getAlgorithm() {
+//        return algorithm;
+//    }
+//
+//    public void setAlgorithm(ReplicaPlacementAlgorithm algorithm) {
+//        this.algorithm = algorithm;
+//    }
 }
