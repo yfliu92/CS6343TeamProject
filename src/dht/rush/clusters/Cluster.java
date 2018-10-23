@@ -1,50 +1,41 @@
 package dht.rush.clusters;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Cluster {
-    private int id;
-    private String name;
-    private int epoch;
+    private String id;  // ip:port
     private String ip;
+    private String port;
+    private int numberOfChildren;
     private double weight;
-    private Map<Cluster, List<Cluster>> cachedMap;
+    private Boolean isActive;
+    private String parentId;
 
-    public Cluster(int id, String name, int epoch, String ip, double weight) {
-        this.id = id;
-        this.name = name;
-        this.epoch = epoch;
-        this.ip = ip;
-        this.weight = weight;
-        this.cachedMap = new HashMap<>();
+    private ClusterStructureMap cachedTreeStructure;
+
+    public Cluster() {
+        this.cachedTreeStructure = new ClusterStructureMap();
     }
 
-    public int getId() {
+    public Cluster(String id, String ip, String port, String parentId, int numberOfChildren, double weight, Boolean isActive) {
+        this.id = id;
+        this.ip = ip;
+        this.port = port;
+        this.parentId = parentId;
+        this.numberOfChildren = numberOfChildren;
+        this.weight = weight;
+        this.isActive = isActive;
+        this.cachedTreeStructure = new ClusterStructureMap();
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getEpoch() {
-        return epoch;
-    }
-
-    public void setEpoch(int epoch) {
-        this.epoch = epoch;
-    }
 
     public String getIp() {
         return ip;
@@ -52,6 +43,22 @@ public class Cluster {
 
     public void setIp(String ip) {
         this.ip = ip;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public int getNumberOfChildren() {
+        return numberOfChildren;
+    }
+
+    public void setNumberOfChildren(int numberOfChildren) {
+        this.numberOfChildren = numberOfChildren;
     }
 
     public double getWeight() {
@@ -62,11 +69,27 @@ public class Cluster {
         this.weight = weight;
     }
 
-    public Map<Cluster, List<Cluster>> getCachedMap() {
-        return cachedMap;
+    public Boolean getActive() {
+        return isActive;
     }
 
-    public void setCachedMap(Map<Cluster, List<Cluster>> cachedMap) {
-        this.cachedMap = cachedMap;
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    public String getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
+    }
+
+    public ClusterStructureMap getCachedTreeStructure() {
+        return cachedTreeStructure;
+    }
+
+    public void setCachedTreeStructure(ClusterStructureMap cachedTreeStructure) {
+        this.cachedTreeStructure = cachedTreeStructure;
     }
 }

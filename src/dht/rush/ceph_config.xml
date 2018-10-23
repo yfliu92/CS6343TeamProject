@@ -7,7 +7,7 @@
 
 <config>
     <!-- Central server ip and the root url for HTTP request  -->
-    <ip>192.168.0.200</ip>
+    <ip>localhost</ip>
     <!-- All nodes will use this port as default port number -->
     <port>8100</port>
 
@@ -16,54 +16,48 @@
 
     <subClusters>
         <subCluster>
-            <weight>4</weight>
-            <nodes>
-                <node>
-                    <ip>192.168.0.201</ip>
-                    <port>8100</port>
-                    <weight>1</weight>
-                </node>
-                <node>
-                    <ip>192.168.0.202</ip>
-                    <port>8100</port>
-                    <weight>1</weight>
-                </node>
-                <node>
-                    <ip>192.168.0.203</ip>
-                    <port>8100</port>
-                    <weight>1</weight>
-                </node>
-                <node>
-                    <ip>192.168.0.204</ip>
-                    <port>8100</port>
-                    <weight>1</weight>
-                </node>
-            </nodes>
+            <node>
+                <ip>192.168.0.201</ip>
+                <port>8100</port>
+                <weight>1</weight>
+            </node>
+            <node>
+                <ip>192.168.0.202</ip>
+                <port>8100</port>
+                <weight>1</weight>
+            </node>
+            <node>
+                <ip>192.168.0.203</ip>
+                <port>8100</port>
+                <weight>1</weight>
+            </node>
+            <node>
+                <ip>192.168.0.204</ip>
+                <port>8100</port>
+                <weight>1</weight>
+            </node>
         </subCluster>
         <subCluster>
-            <weight>4</weight>
-            <nodes>
-                <node>
-                    <ip>192.168.0.205</ip>
-                    <port>8100</port>
-                    <weight>1</weight>
-                </node>
-                <node>
-                    <ip>192.168.0.206</ip>
-                    <port>8100</port>
-                    <weight>1</weight>
-                </node>
-                <node>
-                    <ip>192.168.0.207</ip>
-                    <port>8100</port>
-                    <weight>1</weight>
-                </node>
-                <node>
-                    <ip>192.168.0.208</ip>
-                    <port>8100</port>
-                    <weight>1</weight>
-                </node>
-            </nodes>
+            <node>
+                <ip>192.168.0.205</ip>
+                <port>8100</port>
+                <weight>1</weight>
+            </node>
+            <node>
+                <ip>192.168.0.206</ip>
+                <port>8100</port>
+                <weight>1</weight>
+            </node>
+            <node>
+                <ip>192.168.0.207</ip>
+                <port>8100</port>
+                <weight>1</weight>
+            </node>
+            <node>
+                <ip>192.168.0.208</ip>
+                <port>8100</port>
+                <weight>1</weight>
+            </node>
         </subCluster>
     </subClusters>
 </config>
