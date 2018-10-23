@@ -93,8 +93,10 @@ public class BinarySearchList extends ArrayList<Indexable> {
     }
 
     public Indexable next(int index) {
-        if (index + 1 >= size()) // current node is the last element in list
+        if (index + 1 == size()) // current node is the last element in list
             return get(0);
+        else if (index + 1 > size())
+            return get((index + 1) % size());
         else
             return get(index + 1);
     }
