@@ -31,29 +31,29 @@ public class DeleteNodeCommand extends ServerCommand {
         JsonObject params = null;
         if (status == 1) {
             params = Json.createObjectBuilder()
-                    .add("message", "Delete success :" + clusterStructureMap.getEpoch())
+                    .add("message", "Delete success, epoch:" + clusterStructureMap.getEpoch())
                     .add("status", "OK")
                     .build();
         } else if (status == 2) {
             params = Json.createObjectBuilder()
                     .add("message", "No such a subcluster")
-                    .add("status", "ERROR")
+                    .add("status", "ERROR, , epoch:" + clusterStructureMap.getEpoch())
                     .build();
         } else if (status == 3) {
             params = Json.createObjectBuilder()
                     .add("message", "The node isn't in the sub cluster.")
-                    .add("status", "ERROR")
+                    .add("status", "ERROR, epoch:" + clusterStructureMap.getEpoch())
                     .build();
         } else if (status == 4) {
             params = Json.createObjectBuilder()
                     .add("message", "The node is inactive.")
-                    .add("status", "ERROR")
+                    .add("status", "ERROR, epoch:" + clusterStructureMap.getEpoch())
                     .build();
         }
         writer.writeObject(params);
         writer.close();
         baos.writeTo(outputStream);
-        outputStream.write("\n".getBytes());
+        outputStream.write("\n" .getBytes());
         outputStream.flush();
     }
 

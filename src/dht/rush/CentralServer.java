@@ -80,10 +80,10 @@ public class CentralServer {
             case "deletenode":
                 serverCommand = new DeleteNodeCommand();
                 params = requestObject.getJsonObject("parameters");
-                ((AddNodeCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
-                ((AddNodeCommand) serverCommand).setIp(params.getString("ip"));
-                ((AddNodeCommand) serverCommand).setPort(params.getString("port"));
-                ((AddNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((DeleteNodeCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
+                ((DeleteNodeCommand) serverCommand).setIp(params.getString("ip"));
+                ((DeleteNodeCommand) serverCommand).setPort(params.getString("port"));
+                ((DeleteNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 break;
             default:
                 System.out.println("Unknown Request");
