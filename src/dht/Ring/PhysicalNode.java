@@ -98,18 +98,18 @@ public class PhysicalNode {
         // Assume just 1 virtual node maps to this physical node
         VirtualNode vNode = new VirtualNode(hash, physicalNodeID);
         // Put the virtual node on the ring
-        if (lookupTable.getTable().add(vNode) == false){
+        if (lookupTable.getRing().add(vNode) == false){
             System.out.println("This virtual node already exists!");
             return;
         }
         // Get the index of the inserted virtual node in the BinarySearchList
         int index = vNode.getIndex();
-        VirtualNode next1 = lookupTable.getTable().next(index);
-        VirtualNode next2 = lookupTable.getTable().next(index+1);
-        VirtualNode next3 = lookupTable.getTable().next(index+2);
-        VirtualNode pre1 = lookupTable.getTable().pre(index);
-        VirtualNode pre2 = lookupTable.getTable().pre(index-1);
-        VirtualNode pre3 = lookupTable.getTable().pre(index-2);
+        VirtualNode next1 = lookupTable.getRing().next(index);
+        VirtualNode next2 = lookupTable.getRing().next(index+1);
+        VirtualNode next3 = lookupTable.getRing().next(index+2);
+        VirtualNode pre1 = lookupTable.getRing().pre(index);
+        VirtualNode pre2 = lookupTable.getRing().pre(index-1);
+        VirtualNode pre3 = lookupTable.getRing().pre(index-2);
         // Check if this physical node already exits in the physicalNodeMap
         if (!lookupTable.getPhysicalNodeMap().containsKey(physicalNodeID)){
             List<VirtualNode> list = new ArrayList<>();
@@ -134,20 +134,20 @@ public class PhysicalNode {
     // Delete virtual node by its hash value
     public void deleteNode(int hash) {
         VirtualNode vNode = new VirtualNode(hash);
-        int index = Collections.binarySearch(lookupTable.getTable(), vNode);
+        int index = Collections.binarySearch(lookupTable.getRing(), vNode);
         if (index < 0){
             System.out.println("hash " + hash + " is not a virtual node.");
             return;
         }
-        VirtualNode next1 = lookupTable.getTable().next(index);
-        VirtualNode next2 = lookupTable.getTable().next(index+1);
-        VirtualNode next3 = lookupTable.getTable().next(index+2);
-        VirtualNode pre1 = lookupTable.getTable().pre(index);
-        VirtualNode pre2 = lookupTable.getTable().pre(index-1);
-        VirtualNode pre3 = lookupTable.getTable().pre(index-2);
+        VirtualNode next1 = lookupTable.getRing().next(index);
+        VirtualNode next2 = lookupTable.getRing().next(index+1);
+        VirtualNode next3 = lookupTable.getRing().next(index+2);
+        VirtualNode pre1 = lookupTable.getRing().pre(index);
+        VirtualNode pre2 = lookupTable.getRing().pre(index-1);
+        VirtualNode pre3 = lookupTable.getRing().pre(index-2);
 
         // Delete the virtual node from the ring of virtual nodes
-        VirtualNode virtualNodeToDelete = lookupTable.getTable().remove(index);
+        VirtualNode virtualNodeToDelete = lookupTable.getRing().remove(index);
 
         System.out.println("\nDeleting node at " + hash + ":");
         dataTransfer(pre2, next1, pre3.getHash()+1, pre2.getHash());
@@ -166,20 +166,20 @@ public class PhysicalNode {
 
     //// Delete virtual node by its hash value
     public void deleteNode(VirtualNode node){
-        int index = Collections.binarySearch(lookupTable.getTable(), node);
+        int index = Collections.binarySearch(lookupTable.getRing(), node);
         if (index < 0){
             return;
         }
 
-        VirtualNode next1 = lookupTable.getTable().next(index);
-        VirtualNode next2 = lookupTable.getTable().next(index+1);
-        VirtualNode next3 = lookupTable.getTable().next(index+2);
-        VirtualNode pre1 = lookupTable.getTable().pre(index);
-        VirtualNode pre2 = lookupTable.getTable().pre(index-1);
-        VirtualNode pre3 = lookupTable.getTable().pre(index-2);
+        VirtualNode next1 = lookupTable.getRing().next(index);
+        VirtualNode next2 = lookupTable.getRing().next(index+1);
+        VirtualNode next3 = lookupTable.getRing().next(index+2);
+        VirtualNode pre1 = lookupTable.getRing().pre(index);
+        VirtualNode pre2 = lookupTable.getRing().pre(index-1);
+        VirtualNode pre3 = lookupTable.getRing().pre(index-2);
 
         // Delete the virtual node from the ring of virtual nodes
-        VirtualNode virtualNodeToDelete = lookupTable.getTable().remove(index);
+        VirtualNode virtualNodeToDelete = lookupTable.getRing().remove(index);
 
         System.out.println("\nDeleting node at " + node.getHash() + ":");
         dataTransfer(pre2, next1, pre3.getHash()+1, pre2.getHash());
@@ -209,14 +209,14 @@ public class PhysicalNode {
     public void loadBalance(int delta, VirtualNode node){ // move the node clockwise if delta > 0, counterclockwise if delta < 0
         int oldHash = node.getHash();
         int newHash = oldHash + delta;
-        int index = Collections.binarySearch(lookupTable.getTable(), node);
+        int index = Collections.binarySearch(lookupTable.getRing(), node);
         if (index < 0){
             System.out.println("hash " + oldHash + " is not a virtual node.");
             return;
         }
         node.setHash(newHash);
         // Get the 3rd successor of the virtual node
-        VirtualNode thirdSuccessor = lookupTable.getTable().next(index+2);
+        VirtualNode thirdSuccessor = lookupTable.getRing().next(index+2);
         if (delta > 0) {
             dataTransfer(thirdSuccessor, node, oldHash + 1, newHash);
         }
@@ -236,10 +236,10 @@ public class PhysicalNode {
     public void writeRequest(String key){
         int hash = hashFunction(key);
         VirtualNode hashValue = new VirtualNode(hashFunction(key));
-        VirtualNode vNode = lookupTable.getTable().find(hashValue);
+        VirtualNode vNode = lookupTable.getRing().find(hashValue);
         // Store replica in two successors
-        VirtualNode replica_1 = lookupTable.getTable().next(vNode);
-        VirtualNode replica_2 = lookupTable.getTable().next(replica_1);
+        VirtualNode replica_1 = lookupTable.getRing().next(vNode);
+        VirtualNode replica_2 = lookupTable.getRing().next(replica_1);
         write(vNode, hash);
         write(replica_1, hash);
         write(replica_2, hash);
@@ -260,9 +260,9 @@ public class PhysicalNode {
     public void readRequest(String key){
         int hash = hashFunction(key);
         VirtualNode hashValue = new VirtualNode();
-        VirtualNode vNode = lookupTable.getTable().find(hashValue);
-        VirtualNode replica_1 = lookupTable.getTable().next(vNode);
-        VirtualNode replica_2 = lookupTable.getTable().next(replica_1);
+        VirtualNode vNode = lookupTable.getRing().find(hashValue);
+        VirtualNode replica_1 = lookupTable.getRing().next(vNode);
+        VirtualNode replica_2 = lookupTable.getRing().next(replica_1);
         read(vNode, hash);
         read(replica_1, hash);
         read(replica_2, hash);

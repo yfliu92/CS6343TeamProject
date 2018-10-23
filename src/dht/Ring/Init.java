@@ -47,7 +47,7 @@ public class Init {
         table.add(V42);
         table.add(V49);
         table.add(V56);
-        t.setTable(table);
+        t.setRing(table);
         HashMap<String, PhysicalNode> physicalNodeMap = new HashMap<>();
         physicalNodeMap.put("D100-8001", P1);
         physicalNodeMap.put("D100-8002", P2);
@@ -58,19 +58,29 @@ public class Init {
         P3.setLookupTable(t);
 
 
-
         // The following part is for local test
         // Try adding a node
         P1.addNode("192.168.0.100", 8004, 44);
+
         // Try delete a node
-        P1.deleteNode(49);
+//        P1.deleteNode(49);
+//        System.out.println("\n" + "Ring contains " + P1.getLookupTable().getRing().size() + " virtual nodes");
+//        for(VirtualNode node : P1.getLookupTable().getRing()) {
+//            System.out.print(node.getHash() + " ");
+//        }
 
 //        HashMap<String, PhysicalNode> temp = P1.getLookupTable().getPhysicalNodeMap();
 //        for (HashMap.Entry<String, PhysicalNode> entry : temp.entrySet()){
 //            System.out.println(entry.getKey() + " "+ entry.getValue());
 //        }
-        //System.out.println(V28.getPhysicalNodeId());
-        //System.out.println(P1.getLookupTable().getPhysicalNodeMap());
+//        System.out.println(V28.getPhysicalNodeId());
+//        System.out.println(P1.getLookupTable().getPhysicalNodeMap());
+
+//        System.out.println(P1.getLookupTable().getRing().size());
+//
+//        for(VirtualNode node : P1.getLookupTable().getRing()) {
+//            System.out.println(node.getHash());
+//        }
 
     }
 }

@@ -6,7 +6,7 @@ public class LookupTable {
 
     private long epoch;
 
-    private BinarySearchList table;
+    private BinarySearchList ring;
 
     private HashMap<String, PhysicalNode> physicalNodeMap;
 
@@ -21,12 +21,12 @@ public class LookupTable {
         this.epoch = epoch;
     }
 
-    public BinarySearchList getTable() {
-        return table;
+    public BinarySearchList getRing() {
+        return ring;
     }
 
-    public void setTable(BinarySearchList table) {
-        this.table = table;
+    public void setRing(BinarySearchList ring) {
+        this.ring = ring;
     }
 
     public HashMap<String, PhysicalNode> getPhysicalNodeMap() {
