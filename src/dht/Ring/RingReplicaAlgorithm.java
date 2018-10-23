@@ -8,7 +8,7 @@ public class RingReplicaAlgorithm implements ReplicaPlacementAlgorithm {
     public final static int NUMBER_OF_REPLICAS = 3;
 
     @Override
-    public List<PhysicalNode> getReplicas(LookupTable table, Indexable node) {
+    public List<PhysicalNode> getReplicas(LookupTable table, VirtualNode node) {
         List<PhysicalNode> replicas = new ArrayList<>();
 
         VirtualNode replica = (VirtualNode) table.getTable().find(node);

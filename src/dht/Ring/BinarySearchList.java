@@ -7,46 +7,12 @@ import java.util.*;
 
 import dht.common.Hashing;
 
-public class BinarySearchList extends ArrayList<Indexable> {
+public class BinarySearchList extends ArrayList<VirtualNode> {
 	boolean[] occupied = new boolean[Hashing.MAX_HASH];
-	List<Indexable> list;
-
-	public BinarySearchList() {
-		list = new ArrayList<Indexable>();
-	}
-    /**
-     * @Param  Node to be added
-     * @return false if virtual node with the same hash is already in list
-     *          true if insertion succeed
-     *
-     *          This function first uses binary search {@see Collections.binarySearch} to locate where the new
-     *          node should be added to.
-     *
-     *          Collections.binarySearch returns non-negative index if the node is found.
-     *          Otherwise, returns -(insertion point) - 1.
-     *
-     *          Time Complexity O(log n)
-     */
-    @Override
-    public boolean add(Indexable t) {
-        int index = Collections.binarySearch(this.list, t);
-
-        if (index >= 0) {
-            // virtual node is already in the list
-            return false;
-        }
-        else {
-            index = -(index + 1);
-            this.list.add(index, t);
-            t.setIndex(index);
-            occupied[t.getHash()] = true;
-            return true;
-        }
-    }
     
     public boolean checkExist(int hash) {
     	VirtualNode vNode = new VirtualNode(hash);
-    	int index = Collections.binarySearch(this.list, vNode);
+    	int index = Collections.binarySearch(this, vNode);
         if (index < 0) {
         	return false;
         }
@@ -84,6 +50,35 @@ public class BinarySearchList extends ArrayList<Indexable> {
     	
     	return hash;
     }
+    /**
+     * @Param  Node to be added
+     * @return false if virtual node with the same hash is already in list
+     *          true if insertion succeed
+     *
+     *          This function first uses binary search {@see Collections.binarySearch} to locate where the new
+     *          node should be added to.
+     *
+     *          Collections.binarySearch returns non-negative index if the node is found.
+     *          Otherwise, returns -(insertion point) - 1.
+     *
+     *          Time Complexity O(log n)
+     */
+    @Override
+    public boolean add(VirtualNode t) {
+        int index = Collections.binarySearch(this, t);
+
+        if (index >= 0) {
+            // virtual node is already in the list
+            return false;
+        }
+        else {
+            index = -(index + 1);
+            this.add(index, t);
+            t.setIndex(index);
+            occupied[t.getHash()] = true;
+            return true;
+        }
+    }
 
     /**
      * @Param  Node dummy node with hash
@@ -102,12 +97,12 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *
      *          Time Complexity O(log n)
      */
-    public Indexable find(Indexable node) {
-        int index = Collections.binarySearch(this.list, node);
+    public VirtualNode find(VirtualNode node) {
+        int index = Collections.binarySearch(this, node);
 
         if (index < 0)
             index = -(index + 1);
-        if (index >= this.list.size())
+        if (index >= size())
             index = 0;
 
         node = get(index);
@@ -121,22 +116,12 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *          Index is cached to the node, for fast access of its successor.
      */
     @Override
-    public Indexable get(int index) {
-//<<<<<<< HEAD
-//        if (index < 0) {
-////        	index = this.list.size() - index;
-//        	index = 0;
-//        }
-//            
-////        Indexable node = super.get(index);
-//        Indexable node = this.list.get(index);
-//=======
+    public VirtualNode get(int index) {
         if (index < 0)
-            index = this.list.size() + index;
-        else if (index >= this.list.size())
-            index = index % this.list.size();
-        Indexable node = this.list.get(index);
-//>>>>>>> fdc2aa80cf46d1adaa66f2886193a35b15a776c7
+            index = size() + index;
+        else if (index >= size())
+            index = index % size();
+        VirtualNode node = super.get(index);
         //node.setIndex(index); // set current index in the table, for fast access to successor and predecessor
 
         return node;
@@ -148,29 +133,18 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *
      *          Time Complexity O(1)
      */
-    public Indexable next(Indexable node) {
-        int index = Collections.binarySearch(this.list, node);
+    public VirtualNode next(VirtualNode node) {
+        int index = Collections.binarySearch(this, node);
         return next(index);
     }
 
-    public Indexable next(int index) {
-//<<<<<<< HEAD
-//        if (index + 1 >= this.list.size()) // current node is the last element in list 
-//        {
-//        	System.out.println("big index " + index + " size " + this.list.size());
-//        	return get(0);
-//        }
-//        else {
-//        	System.out.println("index " + index + " size " + this.list.size());
-//=======
-        if (index + 1 == this.list.size()) // current node is the last element in list
+    public VirtualNode next(int index) {
+        if (index + 1 == size()) // current node is the last element in list
             return get(0);
-        else if (index + 1 > this.list.size())
-            return get((index + 1) % this.list.size());
+        else if (index + 1 > size())
+            return get((index + 1) % size());
         else
-//>>>>>>> fdc2aa80cf46d1adaa66f2886193a35b15a776c7
             return get(index + 1);
-//        }
     }
 
     /**
@@ -179,13 +153,13 @@ public class BinarySearchList extends ArrayList<Indexable> {
      *
      *          Time Complexity O(1)
      */
-    public Indexable pre(Indexable node) {
-        int index = Collections.binarySearch(this.list, node);
+    public VirtualNode pre(VirtualNode node) {
+        int index = Collections.binarySearch(this, node);
         return pre(index);
     }
-    public Indexable pre(int index) {
+    public VirtualNode pre(int index) {
         if (index == 0) // current node is the  first element in list
-            return get(this.list.size() - 1);
+            return get(size() - 1);
         else
             return get(index - 1);
     }

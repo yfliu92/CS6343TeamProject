@@ -94,10 +94,17 @@ public class PhysicalNode {
     	
     	String result = "";
     	if (hash >= 0) {
-    		addNode(ip, port, hash);
-//        	result.add("success", true);
-//        	result.add("message", "Node added successfully, hash " + hash);
-    		result = "true|Node added successfully, hash " + hash;
+    		
+    		try {
+        		addNode(ip, port, hash);
+//            	result.add("success", true);
+//            	result.add("message", "Node added successfully, hash " + hash);
+        		result = "true|Node added successfully, hash " + hash;
+    		}
+    		catch(Exception ee) {
+    			result = "false|expection when adding node - " + ee.toString();
+    		}
+
     	}
     	else {
 //        	result.add("success", false);
@@ -265,11 +272,11 @@ public class PhysicalNode {
     }
     public void writeRequest(String key){
         int hash = hashFunction(key);
-        Indexable hashValue = new VirtualNode(hashFunction(key));
-        Indexable vNode = lookupTable.getTable().find(hashValue);
+        VirtualNode hashValue = new VirtualNode(hashFunction(key));
+        VirtualNode vNode = lookupTable.getTable().find(hashValue);
         // Store replica in two successors
-        Indexable replica_1 = lookupTable.getTable().next(vNode);
-        Indexable replica_2 = lookupTable.getTable().next(replica_1);
+        VirtualNode replica_1 = lookupTable.getTable().next(vNode);
+        VirtualNode replica_2 = lookupTable.getTable().next(replica_1);
         write(vNode, hash);
         write(replica_1, hash);
         write(replica_2, hash);
@@ -289,10 +296,10 @@ public class PhysicalNode {
 
     public void readRequest(String key){
         int hash = hashFunction(key);
-        Indexable hashValue = new VirtualNode();
-        Indexable vNode = lookupTable.getTable().find(hashValue);
-        Indexable replica_1 = lookupTable.getTable().next(vNode);
-        Indexable replica_2 = lookupTable.getTable().next(replica_1);
+        VirtualNode hashValue = new VirtualNode();
+        VirtualNode vNode = lookupTable.getTable().find(hashValue);
+        VirtualNode replica_1 = lookupTable.getTable().next(vNode);
+        VirtualNode replica_2 = lookupTable.getTable().next(replica_1);
         read(vNode, hash);
         read(replica_1, hash);
         read(replica_2, hash);
