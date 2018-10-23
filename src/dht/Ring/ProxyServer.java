@@ -47,7 +47,7 @@ public class ProxyServer extends PhysicalNode {
 //			return "remove";
 		}
 		else if (command.getAction().equals("info")) {
-			return "info";
+			return super.listNodes();
 		}
 		else {
 			return "";

@@ -273,7 +273,7 @@ public class control_client {
         {
             if(cmds.isEmpty() == true)
             {
-                String cmd = console.readLine("Input your command (help/exit/read file):");
+                String cmd = console.readLine("Input your command (help/exit/read file/add **/remove **/loadbalance **/info):");
                 cmds.addElement(cmd);
             }
             String cmd = cmds.remove(0);
