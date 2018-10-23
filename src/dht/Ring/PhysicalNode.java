@@ -88,6 +88,18 @@ public class PhysicalNode {
         this.virtualNodes = virtualNodes;
     }
     
+    public String listNodes() {
+    	BinarySearchList list = lookupTable.getTable();
+    	StringBuilder result = new StringBuilder(); 
+    	result.append("Existing nodes (" + list.size() + "): ");
+    	
+    	for(int i = 0; i < list.size(); i++) {
+    		result.append("\nVirtual Node" + list.get(i).getHash() + ", Physical Node: " + list.get(i).getPhysicalNodeId());
+    	}
+    	
+    	return result.toString();
+    }
+    
     public String addNode(String ip, int port) {
     	int hash = lookupTable.getTable().getRanHash();
 //    	JsonObjectBuilder result = Json.createObjectBuilder();
@@ -102,7 +114,7 @@ public class PhysicalNode {
         		result = "true|Node added successfully, hash " + hash;
     		}
     		catch(Exception ee) {
-    			result = "false|expection when adding node - " + ee.toString();
+    			result = "false|expection when adding node (with hash " + hash + ") - " + ee.toString();
     		}
 
     	}
