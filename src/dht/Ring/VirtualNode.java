@@ -1,6 +1,6 @@
 package dht.Ring;
 
-public class VirtualNode implements Indexable {
+public class VirtualNode implements Comparable<VirtualNode> {
 
     private int hash;
 
@@ -46,8 +46,7 @@ public class VirtualNode implements Indexable {
         this.index = index;
     }
 
-    @Override
-    public int compareTo(Indexable o) {
+    public int compareTo(VirtualNode o) {
         return Integer.compare(this.hash, o.getHash());
     }
 }
