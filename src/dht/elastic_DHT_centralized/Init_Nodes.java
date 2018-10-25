@@ -1,11 +1,12 @@
-//package dht.elastic_DHT_centralized;
-//
-//import java.util.LinkedList;
-//import java.util.List;
-//import javafx.util.Pair;
-//
-//public class Init_Nodes {
-//    public void initialize(int totalHashSlots, List<String> activeIPs){
+package dht.elastic_DHT_centralized;
+
+import javafx.util.Pair;
+
+import java.util.LinkedList;
+import java.util.List;
+
+public class Init_Nodes {
+    public void initialize(int totalHashSlots, List<String> activeIPs){
 //        int numOfActiveNodes = activeIPs.size();
 //        int slotsPerNode = totalHashSlots / numOfActiveNodes;
 //        List<PhysicalNode> activeNodes = new LinkedList<>();
@@ -31,6 +32,6 @@
 //        Proxy proxy = new Proxy();
 //        proxy.setRouteTable(routeTable);
 //        proxy.setActiveNodes(activeNodes);
-//    }
-//
-//}
+    }
+
+}

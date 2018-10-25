@@ -1,8 +1,5 @@
 package dht.elastic_DHT_centralized;
 
-import java.util.HashMap;
-import java.util.List;
-
 public class PhysicalNode {
 
     private String id;
@@ -11,20 +8,15 @@ public class PhysicalNode {
 
     private int port;
 
-    private String status; // active, inactive, failed
+    private String status; // "active", "inactive"
 
-    private TableWithEpoch table;
-
-    private HashMap<Integer, BucketEntry> bucketList;
-
-    public final static String STATUS_ACTIVE = "active";
-
-    public final static String STATUS_INACTIVE = "inactive";
+    private LookupTable lookupTable;
 
     public PhysicalNode() {
     }
-    public PhysicalNode(String id, String ip, int port, String status){
-        this.id = id;
+
+    public PhysicalNode (String ip, int port, String status){
+        this.id = ip + Integer.toString(port);
         this.ip = ip;
         this.port = port;
         this.status = status;
@@ -62,24 +54,13 @@ public class PhysicalNode {
         this.status = status;
     }
 
-    public TableWithEpoch getTable() {
-        return table;
+    public LookupTable getLookupTable() {
+        return lookupTable;
     }
 
-    public void setTable(TableWithEpoch table) {
-        this.table = table;
+    public void setLookupTable(LookupTable lookupTable) {
+        this.lookupTable = lookupTable;
     }
-
-    public HashMap<Integer, BucketEntry> getBucketList() {
-        return bucketList;
-    }
-
-    public void setBucketList(HashMap<Integer, BucketEntry> bucketList) {
-        this.bucketList = bucketList;
-    }
-
-
-
 
 
 }
