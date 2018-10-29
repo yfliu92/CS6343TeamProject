@@ -22,20 +22,23 @@ public class ProxyServer extends PhysicalNode {
 		super();
 	}
 
-	public static void initializeRing(){
+	public static String initializeRing(){
         try {
+            // Read from the configuration file "config_ring.xml"
             String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
             System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
             Document document = reader.read(inputFile);
-            // Read from the configuration file "config_ring.xml"
+
+            // Read the elements in the configuration file
             numOfReplicas = Integer.parseInt(document.getRootElement().element("replicationLevel").getStringValue());
             int hashRange = Integer.parseInt(document.getRootElement().element("hashRange").getStringValue());
             int virtualNodesMapping = Integer.parseInt(document.getRootElement().element("virtualNodesMapping").getStringValue());
             Element nodes = document.getRootElement().element("nodes");
             List<Element> listOfNodes = nodes.elements();
             int numOfNodes = listOfNodes.size();
+
             BinarySearchList table = new BinarySearchList();
             HashMap<String, PhysicalNode> physicalNodes = new HashMap<>();
 
@@ -75,17 +78,21 @@ public class ProxyServer extends PhysicalNode {
             for (PhysicalNode node : physicalNodes.values()){
                 node.setLookupTable(t);
             }
-            // Print out all the virtual nodes defined during initialization
-//            for(VirtualNode node : t.getRing()) {
-//                System.out.print(node.getHash() + " ");
-//            }
-//            System.out.println();
-//            for (HashMap.Entry<String, PhysicalNode> entry : t.getPhysicalNodeMap().entrySet()){
-//                System.out.println(entry.getKey() + " "+ entry.getValue());
-//            }
+
+            String result = "After initialization, virtual nodes include: \n";
+            for(VirtualNode node : t.getTable()) {
+                result += node.getHash() + " ";
+            }
+
+            result += "physical node IDS: ";
+            for (String id : t.getPhysicalNodeMap().keySet()){
+                result += id + ", ";
+            }
+            return result;
 
         }catch(DocumentException e) {
             e.printStackTrace();
+            return "Initialization unsuccessful.";
         }
     }
 

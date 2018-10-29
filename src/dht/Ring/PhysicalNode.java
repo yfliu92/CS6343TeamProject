@@ -221,7 +221,7 @@ public class PhysicalNode {
         // Delete the virtual node from the ring of virtual nodes
         VirtualNode virtualNodeToDelete = lookupTable.getTable().remove(index);
 
-        String result = "true|virtual node \" + hash + \" removed successfully";
+        String result = "true|virtual node " + hash + " removed successfully";
         for (int i = 0; i < successors.size(); i++){
             if (i != successors.size() - 1)
                 result += dataTransfer(predecessors.get(predecessors.size() - 2 - i), successors.get(i), predecessors.get(predecessors.size() - 1 - i).getHash() + 1, predecessors.get(successors.size() - 2 - i).getHash());
@@ -260,7 +260,7 @@ public class PhysicalNode {
 
         // Delete the virtual node from the ring of virtual nodes
         VirtualNode virtualNodeToDelete = lookupTable.getTable().remove(index);
-        String result = "true|virtual node \" + node.getHash() + \" removed successfully";
+        String result = "true|virtual node " + node.getHash() + " removed successfully";
         for (int i = 0; i < successors.size(); i++){
             if (i != successors.size() - 1)
                 result += dataTransfer(predecessors.get(predecessors.size() - 2 - i), successors.get(i), predecessors.get(predecessors.size() - 1 - i).getHash() + 1, predecessors.get(successors.size() - 2 - i).getHash());
