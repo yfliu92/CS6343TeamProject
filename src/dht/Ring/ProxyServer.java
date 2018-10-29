@@ -16,6 +16,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 public class ProxyServer extends PhysicalNode {
+    public static int numOfReplicas = 3;
 
 	public ProxyServer(){
 		super();
@@ -29,7 +30,7 @@ public class ProxyServer extends PhysicalNode {
             SAXReader reader = new SAXReader();
             Document document = reader.read(inputFile);
             // Read from the configuration file "config_ring.xml"
-            int numberOfReplicas = Integer.parseInt(document.getRootElement().element("replicationLevel").getStringValue());
+            numOfReplicas = Integer.parseInt(document.getRootElement().element("replicationLevel").getStringValue());
             int hashRange = Integer.parseInt(document.getRootElement().element("hashRange").getStringValue());
             int virtualNodesMapping = Integer.parseInt(document.getRootElement().element("virtualNodesMapping").getStringValue());
             Element nodes = document.getRootElement().element("nodes");
@@ -74,10 +75,11 @@ public class ProxyServer extends PhysicalNode {
             for (PhysicalNode node : physicalNodes.values()){
                 node.setLookupTable(t);
             }
+            // Print out all the virtual nodes defined during initialization
 //            for(VirtualNode node : t.getRing()) {
 //                System.out.print(node.getHash() + " ");
 //            }
-//
+//            System.out.println();
 //            for (HashMap.Entry<String, PhysicalNode> entry : t.getPhysicalNodeMap().entrySet()){
 //                System.out.println(entry.getKey() + " "+ entry.getValue());
 //            }
