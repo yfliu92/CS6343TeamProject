@@ -32,12 +32,15 @@ public class PhysicalNode {
     	this.lookupTable = new LookupTable();
     	this.virtualNodes = new ArrayList<>();
     }
-
-    public PhysicalNode(String ID, String ip, int port, String status, List<VirtualNode> nodes){
+    public PhysicalNode(String ID, String ip, int port, String status){
         this.id = ID;
         this.address = ip;
         this.port = port;
         this.status = status;
+    }
+
+    public PhysicalNode(String ID, String ip, int port, String status, List<VirtualNode> nodes){
+        this(ID, ip, port, status);
         this.virtualNodes = nodes;
         this.lookupTable = new LookupTable();
     }
@@ -102,33 +105,33 @@ public class PhysicalNode {
     	return result.toString();
     }
     
-//    public String addNode(String ip, int port) {
-//    	int hash = lookupTable.getTable().getRanHash();
-////    	JsonObjectBuilder result = Json.createObjectBuilder();
-//
-//    	String result = "";
-//    	if (hash >= 0) {
-//
-//    		try {
-//        		addNode(ip, port, hash);
-////            	result.add("success", true);
-////            	result.add("message", "Node added successfully, hash " + hash);
-//        		result = "true|Node added successfully, hash " + hash;
-//    		}
-//    		catch(Exception ee) {
-//    			result = "false|exception when adding node (with hash " + hash + ") - " + ee.toString();
-//    		}
-//
-//    	}
-//    	else {
-////        	result.add("success", false);
-////        	result.add("message", "Virtual node exhausted");
-//    		result = "false|Virtual node exhausted";
-//    	}
-//
-////    	return result.build().toString();
-//    	return result;
-//    }
+    public String addNode(String ip, int port) {
+    	int hash = lookupTable.getTable().getRanHash();
+//    	JsonObjectBuilder result = Json.createObjectBuilder();
+
+    	String result = "";
+    	if (hash >= 0) {
+
+    		try {
+        		addNode(ip, port, hash);
+//            	result.add("success", true);
+//            	result.add("message", "Node added successfully, hash " + hash);
+        		result = "true|Node added successfully, hash " + hash;
+    		}
+    		catch(Exception ee) {
+    			result = "false|exception when adding node (with hash " + hash + ") - " + ee.toString();
+    		}
+
+    	}
+    	else {
+//        	result.add("success", false);
+//        	result.add("message", "Virtual node exhausted");
+    		result = "false|Virtual node exhausted";
+    	}
+
+//    	return result.build().toString();
+    	return result;
+    }
 
     public String dataTransfer(VirtualNode fromNode, VirtualNode toNode, int start, int end){
         StringBuilder result = new StringBuilder();
@@ -291,49 +294,49 @@ public class PhysicalNode {
         return result;
     }
 
-    public int hashFunction(String s){
-        int hash = String.valueOf(s).hashCode() % Hashing.MAX_HASH;
-        return hash;
-    }
-    public void writeRequest(String key){
-        int hash = hashFunction(key);
-        VirtualNode hashValue = new VirtualNode(hashFunction(key));
-        VirtualNode vNode = lookupTable.getTable().find(hashValue);
-        // Store replica in two successors
-        VirtualNode replica_1 = lookupTable.getTable().next(vNode);
-        VirtualNode replica_2 = lookupTable.getTable().next(replica_1);
-        write(vNode, hash);
-        write(replica_1, hash);
-        write(replica_2, hash);
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        lookupTable.setEpoch(timestamp.getTime());
-
-    }
-
-    // A helper function for writeRequest() method
-    public void write(VirtualNode virtualNode, int hash){
-        String address = lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getAddress() + " (port: " +
-                lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getPort() + ")";
-        System.out.println("\nConnecting to " + address + " to write on virtual node " + virtualNode.getHash() +
-                " for hash value " + hash);
-        System.out.println("Writing completed");
-    }
-
-    public void readRequest(String key){
-        int hash = hashFunction(key);
-        VirtualNode hashValue = new VirtualNode();
-        VirtualNode vNode = lookupTable.getTable().find(hashValue);
-        VirtualNode replica_1 = lookupTable.getTable().next(vNode);
-        VirtualNode replica_2 = lookupTable.getTable().next(replica_1);
-        read(vNode, hash);
-        read(replica_1, hash);
-        read(replica_2, hash);
-    }
-    public void read(VirtualNode virtualNode, int hash){
-        String address = lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getAddress() + " (port: " +
-                lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getPort() + ")";
-        System.out.println("\nConnecting to " + address + " to read for hash value " + hash);
-        System.out.println("Reading completed");
-
-    }
+//    public int hashFunction(String s){
+//        int hash = String.valueOf(s).hashCode() % Hashing.MAX_HASH;
+//        return hash;
+//    }
+//    public void writeRequest(String key){
+//        int hash = hashFunction(key);
+//        VirtualNode hashValue = new VirtualNode(hashFunction(key));
+//        VirtualNode vNode = lookupTable.getTable().find(hashValue);
+//        // Store replica in two successors
+//        VirtualNode replica_1 = lookupTable.getTable().next(vNode);
+//        VirtualNode replica_2 = lookupTable.getTable().next(replica_1);
+//        write(vNode, hash);
+//        write(replica_1, hash);
+//        write(replica_2, hash);
+//        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+//        lookupTable.setEpoch(timestamp.getTime());
+//
+//    }
+//
+//    // A helper function for writeRequest() method
+//    public void write(VirtualNode virtualNode, int hash){
+//        String address = lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getAddress() + " (port: " +
+//                lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getPort() + ")";
+//        System.out.println("\nConnecting to " + address + " to write on virtual node " + virtualNode.getHash() +
+//                " for hash value " + hash);
+//        System.out.println("Writing completed");
+//    }
+//
+//    public void readRequest(String key){
+//        int hash = hashFunction(key);
+//        VirtualNode hashValue = new VirtualNode();
+//        VirtualNode vNode = lookupTable.getTable().find(hashValue);
+//        VirtualNode replica_1 = lookupTable.getTable().next(vNode);
+//        VirtualNode replica_2 = lookupTable.getTable().next(replica_1);
+//        read(vNode, hash);
+//        read(replica_1, hash);
+//        read(replica_2, hash);
+//    }
+//    public void read(VirtualNode virtualNode, int hash){
+//        String address = lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getAddress() + " (port: " +
+//                lookupTable.getPhysicalNodeMap().get(virtualNode.getPhysicalNodeId()).getPort() + ")";
+//        System.out.println("\nConnecting to " + address + " to read for hash value " + hash);
+//        System.out.println("Reading completed");
+//
+//    }
 }
