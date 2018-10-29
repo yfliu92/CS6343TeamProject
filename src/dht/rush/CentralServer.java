@@ -5,6 +5,7 @@ import dht.rush.clusters.ClusterStructureMap;
 import dht.rush.clusters.Root;
 import dht.rush.commands.AddNodeCommand;
 import dht.rush.commands.DeleteNodeCommand;
+import dht.rush.commands.GetNodesCommand;
 import dht.rush.commands.ServerCommand;
 import dht.rush.utils.ConfigurationUtil;
 import dht.rush.utils.StreamUtil;
@@ -84,6 +85,13 @@ public class CentralServer {
                 ((DeleteNodeCommand) serverCommand).setIp(params.getString("ip"));
                 ((DeleteNodeCommand) serverCommand).setPort(params.getString("port"));
                 ((DeleteNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                break;
+
+            case "getnodes":
+                serverCommand = new GetNodesCommand();
+                params = requestObject.getJsonObject("parameters");
+                ((GetNodesCommand) serverCommand).setPgid(params.getString("pgid"));
+                ((GetNodesCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 break;
             default:
                 System.out.println("Unknown Request");

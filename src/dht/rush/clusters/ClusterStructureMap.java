@@ -1,9 +1,8 @@
 package dht.rush.clusters;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import dht.rush.utils.RushUtil;
+
+import java.util.*;
 
 public class ClusterStructureMap {
     private int epoch;
@@ -78,6 +77,8 @@ public class ClusterStructureMap {
                 String newClusterId = "N" + newId;
                 Cluster c = new PhysicalNode(newClusterId, ip, port, subCLusterId, 0, weight, true, 100);
                 sub.getCachedTreeStructure().getChildrenList().put(newClusterId, c);
+                sub.getSubClusters().add(c);
+                sub.setNumberOfChildren(sub.getNumberOfChildren() + 1);
                 this.addEpoch();
                 status = 1;
             }
@@ -108,7 +109,7 @@ public class ClusterStructureMap {
                 String cport = c.getPort();
                 if (cip.equals(ip) && cport.equals(port)) {
                     isExist = true;
-                    if(c.getActive()) {
+                    if (c.getActive()) {
                         c.setActive(false);
                         status = 1;
                         this.addEpoch();
@@ -126,5 +127,57 @@ public class ClusterStructureMap {
             status = 2;
         }
         return status;
+    }
+
+    /**
+     * Based on the placementGroupID and r, get the cluster(physical node)
+     *
+     * @param placementGroupID
+     * @param r
+     * @return Cluster
+     */
+    public Cluster rush(String placementGroupID, int r) {
+        Cluster root = this.getChildrenList().get("R");
+        Queue<Cluster> queue = new LinkedList<>();
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            Cluster node = queue.poll();
+
+            List<Cluster> list = node.getSubClusters();
+            for (int i = 0; i < list.size(); i++) {
+                Cluster child = list.get(i);
+                if (child == null || !child.getActive()) {
+                    continue;
+                }
+                double rushHash = RushUtil.rushHash(placementGroupID, r, child.getId());
+                double ratio = weightRatio(i, list);
+
+                if (rushHash < ratio) {
+                    if (child instanceof PhysicalNode) {
+                        return child;
+                    } else {
+                        queue.add(child);
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        return null;
+    }
+
+    private double weightRatio(int i, List<Cluster> children) {
+        double sum = 0;
+
+        for (int index = i; index < children.size(); index++) {
+            Cluster cluster = children.get(index);
+            if (cluster.getActive()) {
+                sum += cluster.getWeight();
+            }
+        }
+
+        return sum == 0 ? 1 : children.get(i).getWeight() / sum;
     }
 }
