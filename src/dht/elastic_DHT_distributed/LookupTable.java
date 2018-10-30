@@ -5,7 +5,9 @@ import java.util.HashMap;
 
 public class LookupTable {
     private long epoch;
-    private ArrayList<HashMap<String, String>> bucketsTable;
+    // Integer represents the index of the hash bucket
+    // HashMap<String, String> stores the replicas for that hash bucket
+    private HashMap<Integer, HashMap<String, String>> bucketsTable;
     private HashMap<String, PhysicalNode> physicalNodesMap;
 
     public LookupTable() {
@@ -19,11 +21,11 @@ public class LookupTable {
         this.epoch = epoch;
     }
 
-    public ArrayList<HashMap<String, String>> getBucketsTable() {
+    public HashMap<Integer, HashMap<String, String>> getBucketsTable() {
         return bucketsTable;
     }
 
-    public void setBucketsTable(ArrayList<HashMap<String, String>> bucketsTable) {
+    public void setBucketsTable(HashMap<Integer, HashMap<String, String>> bucketsTable) {
         this.bucketsTable = bucketsTable;
     }
 

@@ -22,7 +22,7 @@ public class ProxyServer extends PhysicalNode {
 		super();
 	}
 
-	public static String initializeRing(){
+	public static void initializeRing(){
         try {
             // Read from the configuration file "config_ring.xml"
             String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
@@ -79,20 +79,18 @@ public class ProxyServer extends PhysicalNode {
                 node.setLookupTable(t);
             }
 
-            String result = "After initialization, virtual nodes include: \n";
-            for(VirtualNode node : t.getTable()) {
-                result += node.getHash() + " ";
-            }
-
-            result += "physical node IDS: ";
-            for (String id : t.getPhysicalNodeMap().keySet()){
-                result += id + ", ";
-            }
-            return result;
-
+//            String result = "After initialization, virtual nodes include: \n";
+//            for(VirtualNode node : t.getTable()) {
+//                result += node.getHash() + " ";
+//            }
+//
+//            result += "physical node IDS: ";
+//            for (String id : t.getPhysicalNodeMap().keySet()){
+//                result += id + ", ";
+//            }
+//            System.out.print(result);
         }catch(DocumentException e) {
             e.printStackTrace();
-            return "Initialization unsuccessful.";
         }
     }
 
@@ -139,6 +137,7 @@ public class ProxyServer extends PhysicalNode {
 		ProxyServer proxy = new ProxyServer();
 		//Initialize the ring cluster
 		initializeRing();
+
     	System.out.println("server running at 9091");
         ServerSocket listener = new ServerSocket(9091);;
 
