@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Ring>
-    // Number of replicas
-    <replicationLevel>3</replicationLevel>
     <proxy>
         <ip>192.168.0.200</ip>
         <port>8100</port>
     </proxy>
-    <hashRange>1000</hashRange>
     <nodes>
         <node>
             <ip>192.168.0.201</ip>
