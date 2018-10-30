@@ -114,12 +114,15 @@ public class ProxyServer extends PhysicalNode {
 			return getFindInfo(command.getInput());
 		}
 		else if (command.getAction().equals("loadbalance")) {
-			return getLoadBalanceResult("command.node1", "command.node2");
+			int delta = Integer.valueOf(command.getCommandSeries().get(0));
+			int hash = Integer.valueOf(command.getCommandSeries().get(1));
+			return super.loadBalance(delta, hash);
 		}
 		else if (command.getAction().equals("add")) {
 			String ip = command.getCommandSeries().get(0);
 			int port = Integer.valueOf(command.getCommandSeries().get(1));
-			String result = super.addNode(ip, port);
+			int hash = command.getCommandSeries().size() == 3 ? Integer.valueOf(command.getCommandSeries().get(2)) : -1;
+			String result = hash == -1 ? super.addNode(ip, port) : super.addNode(ip, port, hash);
 			return result;
 		}
 		else if (command.getAction().equals("remove")) {

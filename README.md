@@ -25,6 +25,7 @@ javac -cp /Users/jj/Downloads/dom4j-2.1.1.jar dht/Ring/*.java dht/server/Command
 
 javac -cp ../lib/javax.json-api-1.1.2.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
 javac -cp ../lib/dom4j-2.1.1.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
+javac -classpath ../lib/\* dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
 
 ## run Ring server
 -- java dht/Ring/ProxyServer
@@ -33,6 +34,7 @@ javac -cp ../lib/dom4j-2.1.1.jar dht/Ring/*.java dht/server/Command.java dht/com
 
 java -classpath .:/Users/jj/Downloads/javax.json-1.0.jar dht/Ring/ProxyServer
 java -classpath .:/Users/jj/Downloads/dom4j-2.1.1.jar dht/Ring/ProxyServer
+java -classpath .:../lib/\* dht/Ring/ProxyServer
 
 ## compile and run control client
 javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar control_client/control_client.java dht/server/Command.java
@@ -41,9 +43,12 @@ javac -classpath ../lib/\* control_client/control_client.java dht/server/Command
 java control_client/control_client
 java -classpath .:../lib/\* control_client/control_client
 
-## compile Rush server
+## compile and run Rush server
 -- javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar dht/rush/test.java dht/rush/clusters/*.java dht/rush/utils/*.java
 javac -classpath ../lib/\* dht/rush/*.java dht/rush/clusters/*.java dht/rush/commands/*.java dht/rush/utils/*.java -Xlint:unchecked
 java -classpath .:../lib/\* dht/rush/CentralServer
 java -classpath .:../lib/\* dht/rush/test
 
+## compile and run Elastic DHT server
+javac -classpath ../lib/\* dht/elastic_DHT_centralized/*.java dht/server/Command.java
+java -classpath .:../lib/\* dht/elastic_DHT_centralized/ProxyServer

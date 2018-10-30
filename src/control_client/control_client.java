@@ -232,7 +232,6 @@ public class control_client {
     	System.out.println("Sending command" + " ---- " + timeStamp);
             output.println(command);
         String response = input.readLine();
-//        JOptionPane.showMessageDialog(null, answer);
         timeStamp = new Date().toString();
         System.out.println("Response received: " + response + " ---- " + timeStamp);
         
@@ -248,9 +247,6 @@ public class control_client {
             jsonObject = jsonReader.readObject();
             return jsonObject;
         }
-//        if (jsonObject == null) {
-//            throw new Exception("Empty Request!");
-//        }
         return jsonObject;
     }
     
@@ -259,9 +255,6 @@ public class control_client {
     	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
-//    	System.out.println(command.getAction() + " " + command.getInput());
-        
-
         
         JsonObject params = null;
         JsonObject jobj = null;
@@ -326,20 +319,13 @@ public class control_client {
                 System.out.println("REPONSE STATUS: " + res.getString("status") + ", " + "message: " + res.getString("message"));
             }
          }
-//        inputStream.close();
-
-//        String response = input.readLine();
-//        timeStamp = new Date().toString();
-//        System.out.println("response Received: " + response + " ---- " + timeStamp);
     }
     
-    public void processCommandRing(String cmd, Vector<String> cmds) throws IOException {
+    public void processCommandRing(String cmd, Vector<String> cmds, int dhtType) throws IOException {
         Command command = new Command(cmd);
         if(command.getAction().equals("help"))
         {
-            System.out.println("--> insert/remove/query physical/virtual [node]");
-            System.out.println("--> query/do loadbalance");
-            System.out.println("--> report datastructure");
+            System.out.println(getHelpText(dhtType));
         }
         else if(command.getAction().equals("exit"))
         {
@@ -380,39 +366,16 @@ public class control_client {
         }
         else
         {
-//            switch(command.getAction())
-//            {
-//                case "add":
-//                    DHT_server.insert_physical_node();
-//                    break;
-//                case "remove":
-//                    DHT_server.remove_physical_node(0);
-//                    break;
-//                case "find":
-//                    DHT_server.query_physical_node();
-//                    break;
-//                case "addvirt":
-//                    DHT_server.insert_virtual_node();
-//                    break;
-//                case "removevirt":
-//                    DHT_server.remove_virtual_node(0);
-//                    break;
-//                case "findvirt":
-//                    DHT_server.query_virtual_node();
-//                    break;
-//                case "info":
-//                    DHT_server.query_loadbalance();
-//                    break;
-//                case "loadbalance":
-//                    DHT_server.do_loadbalance();
-//                    break;
-//                case "report datastructure":
-//                    DHT_server.report_datastructure();
-//                    break;
-//            }
-        	
         	sendCommandStr(cmd);
         }
+    }
+    
+    public void processCommandRing(String cmd, Vector<String> cmds) throws IOException {
+    	processCommandRing(cmd, cmds, 1);
+    }
+    
+    public void processCommandElastic(String cmd, Vector<String> cmds) throws IOException {
+    	processCommandRing(cmd, cmds, 3);
     }
     
     public void processCommand(int typeDHT, String cmd, Vector<String> cmds) throws Exception {
@@ -424,6 +387,7 @@ public class control_client {
 	    		processCommandRush(cmd, cmds);
 	    		break;
 	    	case 3:
+	    		processCommandElastic(cmd, cmds);
 	    		break;
     	}
     }
@@ -432,13 +396,13 @@ public class control_client {
     	String tip = "";
     	switch(dhtType) {
 	    	case 1:
-	    		tip = "\nadd <IP> <Port>\nremove <hash>\nloadbalance **\ninfo/help/exit/read file\n";
+	    		tip = "\nadd <IP> <Port>\nadd <IP> <Port> <hash>\nremove <hash>\nloadbalance <delta> <hash>\ninfo/help/exit/read file\n";
 	    		break;
 	    	case 2:
 	    		tip = "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689\ngetnodes <pgid> | example: getnodes PG1\nhelp\n";
 	    		break;
 	    	case 3:
-	    		tip = "\nadd <IP> <Port>\nremove <hash>\nloadbalance **\ninfo/help/exit/read file\n";
+	    		tip = "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>\ninfo/help/exit/read file\n";
 	    		break;
     	}
     	
@@ -459,22 +423,18 @@ public class control_client {
         Console console = System.console();
         String dht = console.readLine("Please select from: 1 , 2 or 3:");
         String dhtName = "";
-//        dht_table DHT_server = new DHT_example();
         if(dht.equals("1"))
         {
-//            DHT_server = initialize_DHT1();
             port = 9091;
             dhtName = "Ring";
         }
         if(dht.equals("2"))
         {
-//            DHT_server = initialize_DHT2();
             port = 8100;
             dhtName = "Rush";
         }
         if(dht.equals("3"))
         {
-//            DHT_server = initialize_DHT3();
             port = 9093;
             dhtName = "Elastic DHT";
         }

@@ -56,6 +56,21 @@ public class Proxy{
     public String dataTransfer(String fromID, String toID, int hash){
         return "\nFrom " + fromID + " to " + toID + ": transferring data for bucket " + Integer.toString(hash);
     }
+    
+    public String listNodes() {
+    	HashMap<Integer, HashMap<String, String>> map = lookupTable.getBucketsTable();
+    	StringBuilder result = new StringBuilder(); 
+    	result.append("Existing buckets (" + map.size() + "): ");
+    	
+    	for(HashMap.Entry<Integer, HashMap<String, String>> entry: map.entrySet()) {
+    		result.append("\nBucket " + entry.getKey() + ", size " + entry.getValue().size());
+    		for(HashMap.Entry<String, String> subentry: entry.getValue().entrySet()) {
+    			result.append("\n    key " + subentry.getKey() + ", value " + subentry.getValue());
+    		}
+    	}
+    	
+    	return result.toString();
+    }
 
     // Add a physical node without specifying for what range of buckets
     public String addNode(String ip, int port){
