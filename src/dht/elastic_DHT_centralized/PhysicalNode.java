@@ -20,6 +20,7 @@ public class PhysicalNode {
         this.ip = ip;
         this.port = port;
         this.status = status;
+        this.lookupTable = new LookupTable();
     }
 
     public String getId() {
