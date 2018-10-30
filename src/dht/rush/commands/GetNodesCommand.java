@@ -24,7 +24,7 @@ public class GetNodesCommand extends ServerCommand {
         int r = 0;
         int count = 0;
         Map<Integer, Cluster> ret = new HashMap<>();
-        Map<String, Cluster> map = new HashMap();
+        Map<String, Cluster> map = new HashMap<>();
         while (count < 3) {
             Cluster cluster = clusterStructureMap.rush(pgid, r);
             if (cluster != null && !map.containsKey(cluster.getId())) {
@@ -51,6 +51,14 @@ public class GetNodesCommand extends ServerCommand {
         baos.writeTo(outputStream);
         outputStream.write("\n".getBytes());
         outputStream.flush();
+        
+        System.out.println();
+        if (params != null) {
+            System.out.println("Response Sent -- " + params.toString());
+        }
+        else {
+        	System.out.println("Response Sent");
+        }
     }
 
     public String getPgid() {

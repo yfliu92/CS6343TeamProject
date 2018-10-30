@@ -4,6 +4,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.*;
+import java.util.Date;
 
 
 /**
@@ -17,8 +18,9 @@ public class StreamUtil {
         String str;
         JsonObject jsonObject = null;
 
-
         while ((str = br.readLine()) != null) {
+        	System.out.println("Request received: " + str + " ---- " + new Date().toString());
+
             JsonReader jsonReader = Json.createReader(new StringReader(str));
             jsonObject = jsonReader.readObject();
             return jsonObject;
@@ -26,6 +28,31 @@ public class StreamUtil {
         if (jsonObject == null) {
             throw new Exception("Empty Request!");
         }
+        return jsonObject;
+    }
+    
+    public static JsonObject parseRequest(BufferedReader br) throws Exception {
+        String str;
+        JsonObject jsonObject = null;
+
+        while ((str = br.readLine()) != null) {
+        	System.out.println("Request received: " + str + " ---- " + new Date().toString());
+
+            JsonReader jsonReader = Json.createReader(new StringReader(str));
+            jsonObject = jsonReader.readObject();
+            return jsonObject;
+        }
+//        if (jsonObject == null) {
+//            throw new Exception("Empty Request!");
+//        }
+        return jsonObject;
+    }
+    
+    public static JsonObject parseRequest(String str) {
+    	System.out.println("Request received: " + str + " ---- " + new Date().toString());
+
+        JsonReader jsonReader = Json.createReader(new StringReader(str));
+        JsonObject jsonObject = jsonReader.readObject();
         return jsonObject;
     }
 

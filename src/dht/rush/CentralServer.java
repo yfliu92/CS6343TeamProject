@@ -16,6 +16,7 @@ import javax.json.JsonReader;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Date;
 import java.util.HashMap;
 
 public class CentralServer {
@@ -25,7 +26,9 @@ public class CentralServer {
     public static void main(String[] args) {
         CentralServer cs = new CentralServer();
         String rootPath = System.getProperty("user.dir");
-        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+//        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+
+        String xmlPath = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
         cs.clusterStructureMap = ConfigurationUtil.parseConfig(xmlPath, cs.root);
 
         if (cs.clusterStructureMap == null) {
@@ -46,19 +49,42 @@ public class CentralServer {
         ServerSocket serverSocket = new ServerSocket(port);
         InputStream inputStream = null;
         OutputStream outputStream = null;
-
+        BufferedReader in = null;
+        PrintWriter out = null;
+        
+        System.out.println("Rush server running at " + port);
         while (true) {
             try {
                 Socket clientSocket = serverSocket.accept();
+                System.out.println("Connection accepted" + " ---- " + new Date().toString());
+                
                 inputStream = clientSocket.getInputStream();
                 outputStream = clientSocket.getOutputStream();
-                JsonObject requestObject = StreamUtil.parseRequest(inputStream);
-                ServerCommand command = dispatchCommand(requestObject);
-                command.setInputStream(inputStream);
-                command.setOutputStream(outputStream);
-                command.run();
-                StreamUtil.closeSocket(inputStream);
+            	
+                
+                in = new BufferedReader(new InputStreamReader(inputStream));
+                out = new PrintWriter(outputStream, true);
+                String str;
+                JsonObject requestObject = null;
+            	while(true) {
+            		str = in.readLine();
+            		if (str != null) {
+                		requestObject = StreamUtil.parseRequest(str);
+                    	if (requestObject != null) {
+                            ServerCommand command = dispatchCommand(requestObject);
+                            command.setInputStream(inputStream);
+                            command.setOutputStream(outputStream);
+                            command.run();
+                    	}
+            		}
+            		else {
+            			System.out.println("Connection end " + " ---- " + new Date().toString());
+            			break;
+            		}
+            	}
             } catch (Exception e) {
+            	System.out.println("Connection exception");
+            	StreamUtil.closeSocket(inputStream);
                 e.printStackTrace();
             }
         }
@@ -70,6 +96,7 @@ public class CentralServer {
         JsonObject params = null;
         switch (method.toLowerCase()) {
             case "addnode":
+                System.out.println("Adding node command");
                 serverCommand = new AddNodeCommand();
                 params = requestObject.getJsonObject("parameters");
                 ((AddNodeCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
@@ -79,6 +106,7 @@ public class CentralServer {
                 ((AddNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 break;
             case "deletenode":
+            	System.out.println("Deleting node command");
                 serverCommand = new DeleteNodeCommand();
                 params = requestObject.getJsonObject("parameters");
                 ((DeleteNodeCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
@@ -88,6 +116,7 @@ public class CentralServer {
                 break;
 
             case "getnodes":
+            	System.out.println("Getting node command");
                 serverCommand = new GetNodesCommand();
                 params = requestObject.getJsonObject("parameters");
                 ((GetNodesCommand) serverCommand).setPgid(params.getString("pgid"));

@@ -19,7 +19,6 @@ public class test {
     static String address = "localhost";
 
     public static void main(String[] args) {
-
         try {
             Socket socket = new Socket();
             SocketAddress addr = new InetSocketAddress(address, port);

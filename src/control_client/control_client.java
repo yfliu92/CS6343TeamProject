@@ -10,8 +10,11 @@
 package control_client;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
@@ -27,6 +30,11 @@ import java.util.Vector;
 import java.lang.String;
 import java.io.File;
 import java.io.FileReader;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonWriter;
 
 import dht.server.Command;
 
@@ -164,8 +172,10 @@ class DHT_Ring implements dht_table
 public class control_client {
     //Table initialization
 	
-    PrintWriter out;
+    PrintWriter output;
     BufferedReader input;
+    InputStream inputStream;
+    OutputStream outputStream;
 	SocketAddress socketAddress;
 	Socket socket;
 	
@@ -187,7 +197,6 @@ public class control_client {
         return new DHT_example();
     }
     
-    
     public boolean connectServer(String serverAddress, int port) {
 //    	control_client client = new control_client();
     	int timeout = 2000;
@@ -195,8 +204,12 @@ public class control_client {
 			socketAddress = new InetSocketAddress(serverAddress, port);
 			socket = new Socket();
 			socket.connect(socketAddress, timeout);
-	        out = new PrintWriter(socket.getOutputStream(), true);
-	        input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			inputStream = socket.getInputStream();
+			outputStream = socket.getOutputStream();
+			output = new PrintWriter(outputStream, true);
+			input = new BufferedReader(new InputStreamReader(inputStream));
+//	        out = new PrintWriter(socket.getOutputStream(), true);
+//	        input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	        
 	        System.out.println("connected to : " + serverAddress + ":" + port);
 //			socket.close();
@@ -214,19 +227,225 @@ public class control_client {
 		}
     }
     
-    public String sendCommand(String command) throws IOException {
+    public String sendCommandStr(String command) throws IOException {
     	String timeStamp = new Date().toString();
-    	System.out.println("sending command" + " ---- " + timeStamp);
-            out.println(command);
+    	System.out.println("Sending command" + " ---- " + timeStamp);
+            output.println(command);
         String response = input.readLine();
 //        JOptionPane.showMessageDialog(null, answer);
         timeStamp = new Date().toString();
-        System.out.println("response Received: " + response + " ---- " + timeStamp);
+        System.out.println("Response received: " + response + " ---- " + timeStamp);
         
         return response;
     }
     
-    public static void main (String args[]) throws IOException{
+    public static JsonObject parseRequest(BufferedReader br) throws Exception {
+        String str;
+        JsonObject jsonObject = null;
+
+        while ((str = br.readLine()) != null) {
+            JsonReader jsonReader = Json.createReader(new StringReader(str));
+            jsonObject = jsonReader.readObject();
+            return jsonObject;
+        }
+//        if (jsonObject == null) {
+//            throw new Exception("Empty Request!");
+//        }
+        return jsonObject;
+    }
+    
+    public void processCommandRush(String cmd, Vector<String> cmds) throws Exception {
+    	Command command = new Command(cmd);
+    	
+    	String timeStamp = new Date().toString();
+    	System.out.println("Sending command" + " ---- " + timeStamp);
+//    	System.out.println(command.getAction() + " " + command.getInput());
+        
+
+        
+        JsonObject params = null;
+        JsonObject jobj = null;
+		if(command.getAction().equals("addnode")) {
+			  params = Json.createObjectBuilder()
+			  .add("subClusterId", command.getCommandSeries().get(0))
+			  .add("ip", command.getCommandSeries().get(1))
+			  .add("port", command.getCommandSeries().get(2))
+			  .add("weight", command.getCommandSeries().get(3))
+			  .build();
+			
+			  jobj = Json.createObjectBuilder()
+			  .add("method", "addNode")
+			  .add("parameters", params)
+			  .build();
+		}
+		else if(command.getAction().equals("deletenode")) {
+	          params = Json.createObjectBuilder()
+	          .add("subClusterId", command.getCommandSeries().get(0))
+	          .add("ip", command.getCommandSeries().get(1))
+	          .add("port", command.getCommandSeries().get(2))
+	          .build();
+	
+	          jobj = Json.createObjectBuilder()
+	          .add("method", "deleteNode")
+	          .add("parameters", params)
+	          .build();
+		}
+		else if(command.getAction().equals("getnodes")) {
+            params = Json.createObjectBuilder()
+                    .add("pgid", command.getCommandSeries().get(0))
+                    .build();
+
+            jobj = Json.createObjectBuilder()
+                    .add("method", "getNodes")
+                    .add("parameters", params)
+                    .build();
+		}
+		else if (command.getAction().equals("help")) {
+			System.out.println(getHelpText(2));
+			return;
+		}
+		else {
+			System.out.println("command not supported");
+			return;
+		}
+    	
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        JsonWriter writer = Json.createWriter(baos);
+        writer.writeObject(jobj);
+        writer.close();
+        baos.writeTo(outputStream);
+
+        outputStream.write("\n".getBytes());
+        outputStream.flush();
+
+        JsonObject res = parseRequest(input);
+        if (res != null) {
+            System.out.println();
+        	System.out.println("Response received at " + timeStamp + " ---- " + res.toString());
+            if (res.containsKey("status") && res.containsKey("message")) {
+                System.out.println("REPONSE STATUS: " + res.getString("status") + ", " + "message: " + res.getString("message"));
+            }
+         }
+//        inputStream.close();
+
+//        String response = input.readLine();
+//        timeStamp = new Date().toString();
+//        System.out.println("response Received: " + response + " ---- " + timeStamp);
+    }
+    
+    public void processCommandRing(String cmd, Vector<String> cmds) throws IOException {
+        Command command = new Command(cmd);
+        if(command.getAction().equals("help"))
+        {
+            System.out.println("--> insert/remove/query physical/virtual [node]");
+            System.out.println("--> query/do loadbalance");
+            System.out.println("--> report datastructure");
+        }
+        else if(command.getAction().equals("exit"))
+        {
+            System.exit(0);
+        }
+        else if(command.getAction().startsWith("read"))
+        {
+            String filename = cmd.split(" ")[1];
+            System.out.println(filename);
+            File file = new File(filename);
+            BufferedReader reader = null;
+            try 
+            {
+                reader = new BufferedReader(new FileReader(file));
+                String tempString;
+                while ((tempString = reader.readLine()) != null)
+                {
+                    System.out.println(tempString);
+                    cmds.addElement(tempString);
+                }
+            }
+            catch(IOException e)
+            {
+            }
+            finally
+            {
+                if(reader != null)
+                {
+                    try 
+                    {  
+                        reader.close();  
+                    } 
+                    catch (IOException e1) 
+                    {  
+                    } 
+                }
+            }
+        }
+        else
+        {
+//            switch(command.getAction())
+//            {
+//                case "add":
+//                    DHT_server.insert_physical_node();
+//                    break;
+//                case "remove":
+//                    DHT_server.remove_physical_node(0);
+//                    break;
+//                case "find":
+//                    DHT_server.query_physical_node();
+//                    break;
+//                case "addvirt":
+//                    DHT_server.insert_virtual_node();
+//                    break;
+//                case "removevirt":
+//                    DHT_server.remove_virtual_node(0);
+//                    break;
+//                case "findvirt":
+//                    DHT_server.query_virtual_node();
+//                    break;
+//                case "info":
+//                    DHT_server.query_loadbalance();
+//                    break;
+//                case "loadbalance":
+//                    DHT_server.do_loadbalance();
+//                    break;
+//                case "report datastructure":
+//                    DHT_server.report_datastructure();
+//                    break;
+//            }
+        	
+        	sendCommandStr(cmd);
+        }
+    }
+    
+    public void processCommand(int typeDHT, String cmd, Vector<String> cmds) throws Exception {
+    	switch(typeDHT) {
+	    	case 1:
+	    		processCommandRing(cmd, cmds);
+	    		break;
+	    	case 2:
+	    		processCommandRush(cmd, cmds);
+	    		break;
+	    	case 3:
+	    		break;
+    	}
+    }
+    
+    public static String getHelpText(int dhtType) {
+    	String tip = "";
+    	switch(dhtType) {
+	    	case 1:
+	    		tip = "\nadd <IP> <Port>\nremove <hash>\nloadbalance **\ninfo/help/exit/read file\n";
+	    		break;
+	    	case 2:
+	    		tip = "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689\ngetnodes <pgid> | example: getnodes PG1\nhelp\n";
+	    		break;
+	    	case 3:
+	    		tip = "\nadd <IP> <Port>\nremove <hash>\nloadbalance **\ninfo/help/exit/read file\n";
+	    		break;
+    	}
+    	
+    	return tip;
+    }
+    
+    public static void main (String args[]) throws Exception{
     	control_client client = new control_client();
 
     	String serverAddress = "localhost";
@@ -239,29 +458,33 @@ public class control_client {
         System.out.println("DHT3: Elastic DHT: Similar to Redis\n");
         Console console = System.console();
         String dht = console.readLine("Please select from: 1 , 2 or 3:");
-        dht_table DHT_server = new DHT_example();
+        String dhtName = "";
+//        dht_table DHT_server = new DHT_example();
         if(dht.equals("1"))
         {
-            DHT_server = initialize_DHT1();
+//            DHT_server = initialize_DHT1();
             port = 9091;
+            dhtName = "Ring";
         }
         if(dht.equals("2"))
         {
-            DHT_server = initialize_DHT2();
-            port = 9092;
+//            DHT_server = initialize_DHT2();
+            port = 8100;
+            dhtName = "Rush";
         }
         if(dht.equals("3"))
         {
-            DHT_server = initialize_DHT3();
+//            DHT_server = initialize_DHT3();
             port = 9093;
+            dhtName = "Elastic DHT";
         }
         
-        System.out.println("dht type" + dht);
+        int dhtType = Integer.valueOf(dht);
         
 		boolean connected = client.connectServer(serverAddress, port);
 		
 		if (connected) {
-			System.out.println("Connected to Server " + serverAddress + ":" + port);
+			System.out.println("Connected to " + dhtName + " Server " + serverAddress + ":" + port);
 		}
 		else {
 			System.out.println("Unable to connect to server!");
@@ -273,90 +496,12 @@ public class control_client {
         {
             if(cmds.isEmpty() == true)
             {
-                String cmd = console.readLine("Input your command (help/exit/read file/add **/remove **/loadbalance **/info):");
+                String cmd = console.readLine("Input your command:");
                 cmds.addElement(cmd);
             }
             String cmd = cmds.remove(0);
-            Command command = new Command(cmd);
-            System.out.println(cmd);
-            if(command.getAction().equals("help"))
-            {
-                System.out.println("--> insert/remove/query physical/virtual [node]");
-                System.out.println("--> query/do loadbalance");
-                System.out.println("--> report datastructure");
-            }
-            else if(command.getAction().equals("exit"))
-            {
-                System.exit(0);
-            }
-            else if(command.getAction().startsWith("read"))
-            {
-                String filename = cmd.split(" ")[1];
-                System.out.println(filename);
-                File file = new File(filename);
-                BufferedReader reader = null;
-                try 
-                {
-                    reader = new BufferedReader(new FileReader(file));
-                    String tempString;
-                    while ((tempString = reader.readLine()) != null)
-                    {
-                        System.out.println(tempString);
-                        cmds.addElement(tempString);
-                    }
-                }
-                catch(IOException e)
-                {
-                }
-                finally
-                {
-                    if(reader != null)
-                    {
-                        try 
-                        {  
-                            reader.close();  
-                        } 
-                        catch (IOException e1) 
-                        {  
-                        } 
-                    }
-                }
-            }
-            else
-            {
-//                switch(command.getAction())
-//                {
-//                    case "add":
-//                        DHT_server.insert_physical_node();
-//                        break;
-//                    case "remove":
-//                        DHT_server.remove_physical_node(0);
-//                        break;
-//                    case "find":
-//                        DHT_server.query_physical_node();
-//                        break;
-//                    case "addvirt":
-//                        DHT_server.insert_virtual_node();
-//                        break;
-//                    case "removevirt":
-//                        DHT_server.remove_virtual_node(0);
-//                        break;
-//                    case "findvirt":
-//                        DHT_server.query_virtual_node();
-//                        break;
-//                    case "info":
-//                        DHT_server.query_loadbalance();
-//                        break;
-//                    case "loadbalance":
-//                        DHT_server.do_loadbalance();
-//                        break;
-//                    case "report datastructure":
-//                        DHT_server.report_datastructure();
-//                        break;
-//                }
-            	
-            	String response = client.sendCommand(cmd);
-            }
+            
+            client.processCommand(dhtType, cmd, cmds);
         }
     }
 }

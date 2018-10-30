@@ -25,7 +25,9 @@ public class ProxyServer extends PhysicalNode {
 	public static String initializeRing(){
         try {
             // Read from the configuration file "config_ring.xml"
-            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+            String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+
+//            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
             System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
@@ -88,10 +90,12 @@ public class ProxyServer extends PhysicalNode {
             for (String id : t.getPhysicalNodeMap().keySet()){
                 result += id + ", ";
             }
+            System.out.println("Initialized successfully");
             return result;
 
         }catch(DocumentException e) {
             e.printStackTrace();
+            System.out.println("Failed to initialize");
             return "Initialization unsuccessful.";
         }
     }
@@ -112,7 +116,7 @@ public class ProxyServer extends PhysicalNode {
 			return getFindInfo(command.getInput());
 		}
 		else if (command.getAction().equals("loadbalance")) {
-			return getLoadBalanceResult(command.node1, command.node2);
+			return getLoadBalanceResult("command.node1", "command.node2");
 		}
 		else if (command.getAction().equals("add")) {
 			String ip = command.getCommandSeries().get(0);
@@ -139,7 +143,7 @@ public class ProxyServer extends PhysicalNode {
 		ProxyServer proxy = new ProxyServer();
 		//Initialize the ring cluster
 		initializeRing();
-    	System.out.println("server running at 9091");
+    	System.out.println("Ring server running at 9091");
         ServerSocket listener = new ServerSocket(9091);;
 
         try {
@@ -155,14 +159,14 @@ public class ProxyServer extends PhysicalNode {
                 	while(true) {
                 		msg = in.readLine();
                     	if (msg != null) {
-                        	System.out.println("request received: " + msg + " ---- " + new Date().toString());
+                        	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
 
                             String response = proxy.getResponse(msg);
                             out.println(response);
                             System.out.println("Response sent: " + response);
                     	}
                     	else {
-                    		System.out.println("connection end " + " ---- " + new Date().toString());
+                    		System.out.println("Connection end " + " ---- " + new Date().toString());
                     		break;
                     	}
                 	}
