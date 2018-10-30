@@ -10,11 +10,13 @@ public class Cluster {
     private double weight;
     private Boolean isActive;
     private String parentId;
+    private List<Cluster> subClusters;
 
     private ClusterStructureMap cachedTreeStructure;
 
     public Cluster() {
         this.cachedTreeStructure = new ClusterStructureMap();
+        this.subClusters = new ArrayList<>();
     }
 
     public Cluster(String id, String ip, String port, String parentId, int numberOfChildren, double weight, Boolean isActive) {
@@ -26,6 +28,7 @@ public class Cluster {
         this.weight = weight;
         this.isActive = isActive;
         this.cachedTreeStructure = new ClusterStructureMap();
+        this.subClusters = new ArrayList<>();
     }
 
     public String getId() {
@@ -91,5 +94,25 @@ public class Cluster {
 
     public void setCachedTreeStructure(ClusterStructureMap cachedTreeStructure) {
         this.cachedTreeStructure = cachedTreeStructure;
+    }
+
+    public List<Cluster> getSubClusters() {
+        return subClusters;
+    }
+
+    public void setSubClusters(List<Cluster> subClusters) {
+        this.subClusters = subClusters;
+    }
+
+    @Override
+    public String toString() {
+        return "Cluster{" +
+                "id='" + id + '\'' +
+                ", ip='" + ip + '\'' +
+                ", port='" + port + '\'' +
+                ", weight=" + weight +
+                ", isActive=" + isActive +
+                ", parentId='" + parentId + '\'' +
+                '}';
     }
 }

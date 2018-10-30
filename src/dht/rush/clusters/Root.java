@@ -9,4 +9,11 @@ public class Root extends Cluster {
         this.type = ClusterType.ROOT;
     }
 
+    public ClusterType getType() {
+        return type;
+    }
+
+    public void setType(ClusterType type) {
+        this.type = type;
+    }
 }

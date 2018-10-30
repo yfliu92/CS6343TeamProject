@@ -12,4 +12,12 @@ public class SubCluster extends Cluster {
         super(id, ip, port, parentId, numberOfChildren, weight, isActive);
         this.type = ClusterType.SUB_CLUSTER;
     }
+
+    public ClusterType getType() {
+        return type;
+    }
+
+    public void setType(ClusterType type) {
+        this.type = type;
+    }
 }
