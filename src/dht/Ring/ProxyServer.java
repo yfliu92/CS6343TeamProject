@@ -22,7 +22,7 @@ public class ProxyServer extends PhysicalNode {
 		super();
 	}
 
-	public static void initializeRing(){
+	public void initializeRing(){
         try {
             // Read from the configuration file "config_ring.xml"
             String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
@@ -80,6 +80,8 @@ public class ProxyServer extends PhysicalNode {
             for (PhysicalNode node : physicalNodes.values()){
                 node.setLookupTable(t);
             }
+            
+            super.setLookupTable(t);
 
 //            String result = "After initialization, virtual nodes include: \n";
 //            for(VirtualNode node : t.getTable()) {
@@ -91,7 +93,7 @@ public class ProxyServer extends PhysicalNode {
 //                result += id + ", ";
 //            }
 //            System.out.print(result);
-			System.out.println("Initialized successfully");
+			System.out.println("Initialized successfully: " + physicalNodes.values().size() + " physical nodes, " + t.getTable().size() + " virtual nodes");
         }catch(DocumentException e) {
         	System.out.println("Failed to initialize");
             e.printStackTrace();
@@ -102,40 +104,39 @@ public class ProxyServer extends PhysicalNode {
 		return input.toUpperCase();
 	}
 	
-	public static String getLoadBalanceResult(String node1, String node2) {
-		return "load balance success";
-	}
-	
-
-	
 	public String getResponse(String commandStr) {
 		Command command = new Command(commandStr);
-		if (command.getAction().equals("find")) {
-			return getFindInfo(command.getInput());
+		try {
+			if (command.getAction().equals("find")) {
+				return getFindInfo(command.getInput());
+			}
+			else if (command.getAction().equals("loadbalance")) {
+				int delta = Integer.valueOf(command.getCommandSeries().get(0));
+				int hash = Integer.valueOf(command.getCommandSeries().get(1));
+				return super.loadBalance(delta, hash);
+			}
+			else if (command.getAction().equals("add")) {
+				String ip = command.getCommandSeries().get(0);
+				int port = Integer.valueOf(command.getCommandSeries().get(1));
+				int hash = command.getCommandSeries().size() == 3 ? Integer.valueOf(command.getCommandSeries().get(2)) : -1;
+				String result = hash == -1 ? super.addNode(ip, port) : super.addNode(ip, port, hash);
+				return result;
+			}
+			else if (command.getAction().equals("remove")) {
+				int hash = Integer.valueOf(command.getCommandSeries().get(0));
+				String result = super.deleteNode(hash);
+				return result;
+//				return "remove";
+			}
+			else if (command.getAction().equals("info")) {
+				return super.listNodes();
+			}
+			else {
+				return "Command not supported";
+			}
 		}
-		else if (command.getAction().equals("loadbalance")) {
-			int delta = Integer.valueOf(command.getCommandSeries().get(0));
-			int hash = Integer.valueOf(command.getCommandSeries().get(1));
-			return super.loadBalance(delta, hash);
-		}
-		else if (command.getAction().equals("add")) {
-			String ip = command.getCommandSeries().get(0);
-			int port = Integer.valueOf(command.getCommandSeries().get(1));
-			int hash = command.getCommandSeries().size() == 3 ? Integer.valueOf(command.getCommandSeries().get(2)) : -1;
-			String result = hash == -1 ? super.addNode(ip, port) : super.addNode(ip, port, hash);
-			return result;
-		}
-		else if (command.getAction().equals("remove")) {
-			int hash = Integer.valueOf(command.getCommandSeries().get(0));
-			String result = super.deleteNode(hash);
-			return result;
-//			return "remove";
-		}
-		else if (command.getAction().equals("info")) {
-			return super.listNodes();
-		}
-		else {
-			return "";
+		catch (Exception ee) {
+			return "Illegal command";
 		}
 	}
 	
@@ -143,7 +144,7 @@ public class ProxyServer extends PhysicalNode {
 		// TODO Auto-generated method stub
 		ProxyServer proxy = new ProxyServer();
 		//Initialize the ring cluster
-		initializeRing();
+		proxy.initializeRing();
     	System.out.println("Ring server running at 9091");
         ServerSocket listener = new ServerSocket(9091);;
 
@@ -158,18 +159,25 @@ public class ProxyServer extends PhysicalNode {
                             new PrintWriter(socket.getOutputStream(), true);
                 	String msg;
                 	while(true) {
-                		msg = in.readLine();
-                    	if (msg != null) {
-                        	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
+                		try {
+                    		msg = in.readLine();
+                        	if (msg != null) {
+                            	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
 
-                            String response = proxy.getResponse(msg);
-                            out.println(response);
-                            System.out.println("Response sent: " + response);
-                    	}
-                    	else {
-                    		System.out.println("Connection end " + " ---- " + new Date().toString());
+                                String response = proxy.getResponse(msg);
+                                out.println(response);
+                                System.out.println("Response sent: " + response);
+                        	}
+                        	else {
+                        		System.out.println("Connection end " + " ---- " + new Date().toString());
+                        		break;
+                        	}
+                		}
+                		catch (Exception ee) {
+                    		System.out.println("Connection reset " + " ---- " + new Date().toString());
                     		break;
-                    	}
+                		}
+
                 	}
 
                 } finally {

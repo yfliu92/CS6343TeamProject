@@ -58,6 +58,7 @@ public class Proxy{
     }
     
     public String listNodes() {
+    	System.out.println(lookupTable);
     	HashMap<Integer, HashMap<String, String>> map = lookupTable.getBucketsTable();
     	StringBuilder result = new StringBuilder(); 
     	result.append("Existing buckets (" + map.size() + "): ");
@@ -65,7 +66,8 @@ public class Proxy{
     	for(HashMap.Entry<Integer, HashMap<String, String>> entry: map.entrySet()) {
     		result.append("\nBucket " + entry.getKey() + ", size " + entry.getValue().size());
     		for(HashMap.Entry<String, String> subentry: entry.getValue().entrySet()) {
-    			result.append("\n    key " + subentry.getKey() + ", value " + subentry.getValue());
+//    			result.append("\n    key " + subentry.getKey() + ", value " + subentry.getValue());
+    			result.append("\n    " + subentry.getKey());
     		}
     	}
     	
@@ -94,6 +96,9 @@ public class Proxy{
         for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
             pNode.setLookupTable(lookupTable);
         }
+        
+        System.out.println("Buckets table size " + lookupTable.getBucketsTable().size());
+        System.out.println("Physical nodes size " + lookupTable.getPhysicalNodesMap().size());
 
         return "true|node " + id + " is added successfully.\n" + result;
     }
@@ -118,6 +123,9 @@ public class Proxy{
         for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
             pNode.setLookupTable(lookupTable);
         }
+        
+        System.out.println("Buckets table size " + lookupTable.getBucketsTable().size());
+        System.out.println("Physical nodes size " + lookupTable.getPhysicalNodesMap().size());
 
         return "true|node " + id + " is added successfully.\n" + result;
     }
@@ -195,7 +203,7 @@ public class Proxy{
                 result += dataTransfer(fromID, toID, i) + " ";
                 i++;
                 count--;
-                }
+            }
         }
         // Update the epoch number
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());

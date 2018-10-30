@@ -60,13 +60,12 @@ public class CentralServer {
                 
                 inputStream = clientSocket.getInputStream();
                 outputStream = clientSocket.getOutputStream();
-            	
                 
                 in = new BufferedReader(new InputStreamReader(inputStream));
                 out = new PrintWriter(outputStream, true);
                 String str;
                 JsonObject requestObject = null;
-            	while(true) {
+            	while(true && in != null) {
             		str = in.readLine();
             		if (str != null) {
                 		requestObject = StreamUtil.parseRequest(str);

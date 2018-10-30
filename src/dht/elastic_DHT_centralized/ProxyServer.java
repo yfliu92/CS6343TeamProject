@@ -100,9 +100,12 @@ public class ProxyServer extends Proxy {
 //
 //            }
 //            System.out.print("\n");
+            
+            System.out.println("Initilization success");
             return proxy;
 
         }catch(DocumentException e) {
+        	System.out.println("Initilization failed");
             e.printStackTrace();
             return null;
         }
@@ -113,41 +116,49 @@ public class ProxyServer extends Proxy {
 		return input.toUpperCase();
 	}
     
-	public String getResponse(String commandStr) {
+	public String getResponse(String commandStr, Proxy proxy) {
+		System.out.println(commandStr);
 		Command command = new Command(commandStr);
-		if (command.getAction().equals("find")) {
-			return getFindInfo(command.getInput());
+		
+		try {
+			if (command.getAction().equals("find")) {
+				return getFindInfo(command.getInput());
+			}
+			else if (command.getAction().equals("loadbalance")) {
+				String fromIP = command.getCommandSeries().get(0);
+				int fromPort = Integer.valueOf(command.getCommandSeries().get(1));
+				String toIP = command.getCommandSeries().get(2);
+				int toPort = Integer.valueOf(command.getCommandSeries().get(3));
+				int numBuckets = Integer.valueOf(command.getCommandSeries().get(4));
+				return proxy.loadBalance(fromIP, fromPort, toIP, toPort, numBuckets);
+			}
+			else if (command.getAction().equals("add")) {
+				String ip = command.getCommandSeries().get(0);
+				int port = Integer.valueOf(command.getCommandSeries().get(1));
+				int start = command.getCommandSeries().size() == 4 ? Integer.valueOf(command.getCommandSeries().get(2)) : -1;
+				int end = command.getCommandSeries().size() == 4 ? Integer.valueOf(command.getCommandSeries().get(3)) : -1;
+				
+				String result = start == -1 && end == -1 ? proxy.addNode(ip, port) : proxy.addNode(ip, port, start, end);
+				return result;
+			}
+			else if (command.getAction().equals("remove")) {
+				String IP = command.getCommandSeries().get(0);
+				int port = Integer.valueOf(command.getCommandSeries().get(1));
+				String result = proxy.deleteNode(IP, port);
+				return result;
+//				return "remove";
+			}
+			else if (command.getAction().equals("info")) {
+				return proxy.listNodes();
+			}
+			else {
+				return "Command not supported";
+			}
 		}
-		else if (command.getAction().equals("loadbalance")) {
-			String fromIP = command.getCommandSeries().get(0);
-			int fromPort = Integer.valueOf(command.getCommandSeries().get(1));
-			String toIP = command.getCommandSeries().get(2);
-			int toPort = Integer.valueOf(command.getCommandSeries().get(3));
-			int numBuckets = Integer.valueOf(command.getCommandSeries().get(4));
-			return super.loadBalance(fromIP, fromPort, toIP, toPort, numBuckets);
+		catch (Exception ee) {
+			return "Illegal command";
 		}
-		else if (command.getAction().equals("add")) {
-			String ip = command.getCommandSeries().get(0);
-			int port = Integer.valueOf(command.getCommandSeries().get(1));
-			int start = command.getCommandSeries().size() == 4 ? Integer.valueOf(command.getCommandSeries().get(2)) : -1;
-			int end = command.getCommandSeries().size() == 4 ? Integer.valueOf(command.getCommandSeries().get(3)) : -1;
-			
-			String result = start == -1 && end == -1 ? super.addNode(ip, port) : super.addNode(ip, port, start, end);
-			return result;
-		}
-		else if (command.getAction().equals("remove")) {
-			String IP = command.getCommandSeries().get(0);
-			int port = Integer.valueOf(command.getCommandSeries().get(1));
-			String result = super.deleteNode(IP, port);
-			return result;
-//			return "remove";
-		}
-		else if (command.getAction().equals("info")) {
-			return super.listNodes();
-		}
-		else {
-			return "";
-		}
+
 	}
     
     public static void main(String[] args) throws IOException {
@@ -172,18 +183,25 @@ public class ProxyServer extends Proxy {
                             new PrintWriter(socket.getOutputStream(), true);
                 	String msg;
                 	while(true) {
-                		msg = in.readLine();
-                    	if (msg != null) {
-                        	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
+                		try {
+                    		msg = in.readLine();
+                        	if (msg != null) {
+                            	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
 
-                            String response = proxyServer.getResponse(msg);
-                            out.println(response);
-                            System.out.println("Response sent: " + response);
-                    	}
-                    	else {
-                    		System.out.println("Connection end " + " ---- " + new Date().toString());
+                                String response = proxyServer.getResponse(msg, proxy);
+                                out.println(response);
+                                System.out.println("Response sent: " + response);
+                        	}
+                        	else {
+                        		System.out.println("Connection end " + " ---- " + new Date().toString());
+                        		break;
+                        	}
+                		}
+                		catch (Exception ee) {
+                    		System.out.println("Connection reset " + " ---- " + new Date().toString());
                     		break;
-                    	}
+                		}
+
                 	}
 
                 } finally {
