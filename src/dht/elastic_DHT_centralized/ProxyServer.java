@@ -5,12 +5,21 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import dht.server.Command;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.Timestamp;
 import java.util.*;
 
 public class ProxyServer extends Proxy {
+    public static int numOfReplicas = 3;
+
     public ProxyServer(){
         super();
     }
@@ -18,12 +27,17 @@ public class ProxyServer extends Proxy {
     public static Proxy initializeEDHT(){
         try {
             // Read from the configuration file "config_ring.xml"
-            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+//            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+            String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+
+            System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
             Document document = reader.read(inputFile);
 
             // Read the elements in the configuration file
+            numOfReplicas = Integer.parseInt(document.getRootElement().element("replicationLevel").getStringValue());
+            int hashRange = Integer.parseInt(document.getRootElement().element("hashRange").getStringValue());
             Element proxyNode = document.getRootElement().element("proxy");
             String proxyIP = proxyNode.element("ip").getStringValue();
             int proxyPort = Integer.parseInt(proxyNode.element("port").getStringValue());
@@ -49,7 +63,7 @@ public class ProxyServer extends Proxy {
             // The second node gets assigned (100, 199)
             // ...
             // The last node gets assigned (900, 999)
-            int loadPerNode = HashAndReplicationConfig.HASH_RANGE / physicalNodes.size();
+            int loadPerNode = hashRange / physicalNodes.size();
             // Define the start hash value for hash nodes
             int start = 0;
             // Get a list of all physical node ids
@@ -61,7 +75,7 @@ public class ProxyServer extends Proxy {
             for (int i = 0; i < numOfPhysicalNodes; i++){
                 for (int j = start; j < start + loadPerNode; j++){
                     HashMap<String, String> replicas = new HashMap<>();
-                    for (int k = 0; k < HashAndReplicationConfig.REPLICATION_LEVEL; k++) {
+                    for (int k = 0; k < numOfReplicas; k++) {
                         replicas.put(idList.get((i + k) % numOfPhysicalNodes), idList.get((i + k) % numOfPhysicalNodes));
                     }
                     table.put(j, replicas);
@@ -99,18 +113,92 @@ public class ProxyServer extends Proxy {
         }
 
     }
+    
+	public static String getFindInfo(String input) {
+		return input.toUpperCase();
+	}
+    
+	public String getResponse(String commandStr) {
+		Command command = new Command(commandStr);
+		if (command.getAction().equals("find")) {
+			return getFindInfo(command.getInput());
+		}
+		else if (command.getAction().equals("loadbalance")) {
+			String fromIP = command.getCommandSeries().get(0);
+			int fromPort = Integer.valueOf(command.getCommandSeries().get(1));
+			String toIP = command.getCommandSeries().get(2);
+			int toPort = Integer.valueOf(command.getCommandSeries().get(3));
+			int numBuckets = Integer.valueOf(command.getCommandSeries().get(4));
+			return super.loadBalance(fromIP, fromPort, toIP, toPort, numBuckets);
+		}
+		else if (command.getAction().equals("add")) {
+			String ip = command.getCommandSeries().get(0);
+			int port = Integer.valueOf(command.getCommandSeries().get(1));
+			int start = command.getCommandSeries().size() == 4 ? Integer.valueOf(command.getCommandSeries().get(2)) : -1;
+			int end = command.getCommandSeries().size() == 4 ? Integer.valueOf(command.getCommandSeries().get(3)) : -1;
+			
+			String result = start == -1 && end == -1 ? super.addNode(ip, port) : super.addNode(ip, port, start, end);
+			return result;
+		}
+		else if (command.getAction().equals("remove")) {
+			String IP = command.getCommandSeries().get(0);
+			int port = Integer.valueOf(command.getCommandSeries().get(1));
+			String result = super.deleteNode(IP, port);
+			return result;
+//			return "remove";
+		}
+		else if (command.getAction().equals("info")) {
+			return super.listNodes();
+		}
+		else {
+			return "";
+		}
+	}
+    
     public static void main(String[] args) throws IOException {
         ProxyServer proxyServer = new ProxyServer();
         //Initialize the Elastic DHT cluster
         Proxy proxy = initializeEDHT();
-        // Call addNode() in the form of proxy.addNode()
-        // Call deleteNode() in the form of proxy.addNode()
-        // Call loadBalance() in the form of proxy.loadBalance()
-        // For local test use
         System.out.println(proxy.addNode("192.168.0.211", 8100, 900, 910));
 //        System.out.println(proxy.deleteNode("192.168.0.201", 8100));
 //        System.out.println(proxy.loadBalance("192.168.0.204", 8100, "192.168.0.210", 8100, 12));
 
+    	System.out.println("Elastic DHT server running at 9093");
+        ServerSocket listener = new ServerSocket(9093);;
 
+        try {
+            while (true) {
+            	Socket socket = listener.accept();
+            	System.out.println("Connection accepted" + " ---- " + new Date().toString());
+                try {
+                	BufferedReader in = new BufferedReader(
+                            new InputStreamReader(socket.getInputStream()));
+                    PrintWriter out =
+                            new PrintWriter(socket.getOutputStream(), true);
+                	String msg;
+                	while(true) {
+                		msg = in.readLine();
+                    	if (msg != null) {
+                        	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
+
+                            String response = proxyServer.getResponse(msg);
+                            out.println(response);
+                            System.out.println("Response sent: " + response);
+                    	}
+                    	else {
+                    		System.out.println("Connection end " + " ---- " + new Date().toString());
+                    		break;
+                    	}
+                	}
+
+                } finally {
+                    socket.close();
+                }
+            }
+        }
+        finally {
+            listener.close();
+        }
+        
     }
 }

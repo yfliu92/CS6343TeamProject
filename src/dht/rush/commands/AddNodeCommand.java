@@ -47,6 +47,15 @@ public class AddNodeCommand extends ServerCommand {
         baos.writeTo(outputStream);
         outputStream.write("\n".getBytes());
         outputStream.flush();
+        
+        System.out.println();
+        if (params != null) {
+            System.out.println("Response Sent -- " + params.toString());
+            System.out.println("REPONSE STATUS: " + params.getString("status") + ", " + "message: " + params.getString("message"));
+        }
+        else {
+        	System.out.println("Response Sent");
+        }
     }
 
     public Cluster getRoot() {

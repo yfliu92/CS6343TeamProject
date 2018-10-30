@@ -15,5 +15,7 @@
 	<classpathentry kind="lib" path="lib/guava-26.0-jre.jar"/>
 	<classpathentry kind="lib" path="lib/jna-5.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jna-platform-5.0.0.jar"/>
+	<classpathentry kind="lib" path="/Users/jj/Downloads/javax.json-api-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/dom4j-2.1.1.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -25,7 +25,9 @@ public class ProxyServer extends PhysicalNode {
 	public static void initializeRing(){
         try {
             // Read from the configuration file "config_ring.xml"
-            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+            String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+
+//            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
             System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
@@ -89,7 +91,9 @@ public class ProxyServer extends PhysicalNode {
 //                result += id + ", ";
 //            }
 //            System.out.print(result);
+			System.out.println("Initialized successfully");
         }catch(DocumentException e) {
+        	System.out.println("Failed to initialize");
             e.printStackTrace();
         }
     }
@@ -110,12 +114,15 @@ public class ProxyServer extends PhysicalNode {
 			return getFindInfo(command.getInput());
 		}
 		else if (command.getAction().equals("loadbalance")) {
-			return getLoadBalanceResult(command.node1, command.node2);
+			int delta = Integer.valueOf(command.getCommandSeries().get(0));
+			int hash = Integer.valueOf(command.getCommandSeries().get(1));
+			return super.loadBalance(delta, hash);
 		}
 		else if (command.getAction().equals("add")) {
 			String ip = command.getCommandSeries().get(0);
 			int port = Integer.valueOf(command.getCommandSeries().get(1));
-			String result = super.addNode(ip, port);
+			int hash = command.getCommandSeries().size() == 3 ? Integer.valueOf(command.getCommandSeries().get(2)) : -1;
+			String result = hash == -1 ? super.addNode(ip, port) : super.addNode(ip, port, hash);
 			return result;
 		}
 		else if (command.getAction().equals("remove")) {
@@ -137,8 +144,7 @@ public class ProxyServer extends PhysicalNode {
 		ProxyServer proxy = new ProxyServer();
 		//Initialize the ring cluster
 		initializeRing();
-
-    	System.out.println("server running at 9091");
+    	System.out.println("Ring server running at 9091");
         ServerSocket listener = new ServerSocket(9091);;
 
         try {
@@ -154,14 +160,14 @@ public class ProxyServer extends PhysicalNode {
                 	while(true) {
                 		msg = in.readLine();
                     	if (msg != null) {
-                        	System.out.println("request received: " + msg + " ---- " + new Date().toString());
+                        	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
 
                             String response = proxy.getResponse(msg);
                             out.println(response);
                             System.out.println("Response sent: " + response);
                     	}
                     	else {
-                    		System.out.println("connection end " + " ---- " + new Date().toString());
+                    		System.out.println("Connection end " + " ---- " + new Date().toString());
                     		break;
                     	}
                 	}
