@@ -213,5 +213,37 @@ public class PhysicalNode {
         }
         return "true|loadBalance from " + fromID + " to " + toID + " for " + numOfBuckets + " buckets: " + result;
     }
+    public String expandTable(){
+        int oldHashRange = HashAndReplicationConfig.HASH_RANGE;
+        int newHashRange = oldHashRange * 2;
+        for (int i = oldHashRange; i < newHashRange; i++){
+            lookupTable.getBucketsTable().put(i, lookupTable.getBucketsTable().get(i - oldHashRange));
+        }
+        HashAndReplicationConfig.HASH_RANGE *= 2;
+        // Update the timestamp
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        lookupTable.setEpoch(timestamp.getTime());
+        // Update the lookupTable of all physical nodes
+        for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
+            pNode.setLookupTable(lookupTable);
+        }
+        return "true|expandTable from " + oldHashRange + " buckets to " + newHashRange + " buckets is successful.";
+    }
+    public String shrinkTable(){
+        int oldHashRange = HashAndReplicationConfig.HASH_RANGE;
+        int newHashRange = oldHashRange / 2;
+        for (int i = newHashRange; i < oldHashRange; i++){
+            lookupTable.getBucketsTable().remove(i);
+        }
+        HashAndReplicationConfig.HASH_RANGE /= 2;
+        // Update the timestamp
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        lookupTable.setEpoch(timestamp.getTime());
+        // Update the lookupTable of all physical nodes
+        for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
+            pNode.setLookupTable(lookupTable);
+        }
+        return "true|shrinkTable from " + oldHashRange + " buckets to " + newHashRange + " buckets is successful.";
+    }
 }
 

@@ -1,4 +1,4 @@
-package dht.elastic_DHT_centralized;
+package dht.elastic_DHT_distributed;
 
 public class HashAndReplicationConfig {
     public static int REPLICATION_LEVEL = 3;

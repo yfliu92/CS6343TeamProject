@@ -19,7 +19,6 @@ public class ProxyServer extends Proxy {
         try {
             // Read from the configuration file "config_ring.xml"
             String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
-            System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
             Document document = reader.read(inputFile);
