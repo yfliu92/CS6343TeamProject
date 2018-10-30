@@ -18,7 +18,7 @@ public class ProxyServer extends PhysicalNode {
     public static void initializeEDHT(){
         try {
             // Read from the configuration file "config_ring.xml"
-            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_distributed" + File.separator + "config_ElasticDHT.xml";
+            String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_distributed" + File.separator + "config_ElasticDHT.xml";
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
             Document document = reader.read(inputFile);

@@ -18,8 +18,6 @@ import java.sql.Timestamp;
 import java.util.*;
 
 public class ProxyServer extends Proxy {
-    public static int numOfReplicas = 3;
-
     public ProxyServer(){
         super();
     }
@@ -30,14 +28,11 @@ public class ProxyServer extends Proxy {
 //            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
             String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
 
-            System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
             Document document = reader.read(inputFile);
 
             // Read the elements in the configuration file
-            numOfReplicas = Integer.parseInt(document.getRootElement().element("replicationLevel").getStringValue());
-            int hashRange = Integer.parseInt(document.getRootElement().element("hashRange").getStringValue());
             Element proxyNode = document.getRootElement().element("proxy");
             String proxyIP = proxyNode.element("ip").getStringValue();
             int proxyPort = Integer.parseInt(proxyNode.element("port").getStringValue());
@@ -63,7 +58,7 @@ public class ProxyServer extends Proxy {
             // The second node gets assigned (100, 199)
             // ...
             // The last node gets assigned (900, 999)
-            int loadPerNode = hashRange / physicalNodes.size();
+            int loadPerNode = HashAndReplicationConfig.HASH_RANGE / physicalNodes.size();
             // Define the start hash value for hash nodes
             int start = 0;
             // Get a list of all physical node ids
@@ -75,7 +70,7 @@ public class ProxyServer extends Proxy {
             for (int i = 0; i < numOfPhysicalNodes; i++){
                 for (int j = start; j < start + loadPerNode; j++){
                     HashMap<String, String> replicas = new HashMap<>();
-                    for (int k = 0; k < numOfReplicas; k++) {
+                    for (int k = 0; k < HashAndReplicationConfig.REPLICATION_LEVEL; k++) {
                         replicas.put(idList.get((i + k) % numOfPhysicalNodes), idList.get((i + k) % numOfPhysicalNodes));
                     }
                     table.put(j, replicas);
