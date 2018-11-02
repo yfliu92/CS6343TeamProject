@@ -31,17 +31,17 @@ public class test {
             JsonWriter writer = Json.createWriter(baos);
             /******aadNode******/
 
-//            JsonObject params = Json.createObjectBuilder()
-//                    .add("subClusterId", "S0")
-//                    .add("ip", "testip")
-//                    .add("port", "testPort")
-//                    .add("weight", "1.0")
-//                    .build();
-//
-//            JsonObject jobj = Json.createObjectBuilder()
-//                    .add("method", "addNode")
-//                    .add("parameters", params)
-//                    .build();
+            JsonObject params = Json.createObjectBuilder()
+                    .add("subClusterId", "S0")
+                    .add("ip", "testip")
+                    .add("port", "testPort")
+                    .add("weight", "1.0")
+                    .build();
+
+            JsonObject jobj = Json.createObjectBuilder()
+                    .add("method", "addNode")
+                    .add("parameters", params)
+                    .build();
 
             /********deleteNode************/
 //            JsonObject params = Json.createObjectBuilder()
@@ -54,15 +54,15 @@ public class test {
 //                    .add("method", "deleteNode")
 //                    .add("parameters", params)
 //                    .build();
-
-            JsonObject params = Json.createObjectBuilder()
-                    .add("pgid", "PG1")
-                    .build();
-
-            JsonObject jobj = Json.createObjectBuilder()
-                    .add("method", "getNodes")
-                    .add("parameters", params)
-                    .build();
+//
+//            JsonObject params = Json.createObjectBuilder()
+//                    .add("pgid", "PG1")
+//                    .build();
+//
+//            JsonObject jobj = Json.createObjectBuilder()
+//                    .add("method", "getNodes")
+//                    .add("parameters", params)
+//                    .build();
 
 
             writer.writeObject(jobj);

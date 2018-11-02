@@ -21,24 +21,12 @@ public class GetNodesCommand extends ServerCommand {
 
     @Override
     public void run() throws IOException {
-        int r = 0;
-        int count = 0;
-        Map<Integer, Cluster> ret = new HashMap<>();
-        Map<String, Cluster> map = new HashMap<>();
-        while (count < 3) {
-            Cluster cluster = clusterStructureMap.rush(pgid, r);
-            if (cluster != null && !map.containsKey(cluster.getId())) {
-                count += 1;
-                ret.put(r, cluster);
-                map.put(cluster.getId(), cluster);
-                System.out.println("Replica: " + r + ", Node: " + cluster.toString());
-                r++;
-            }
-        }
+
+        Map<Integer, Cluster> ret = clusterStructureMap.getNodes(pgid);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JsonWriter writer = Json.createWriter(baos);
-        JsonObject params = null;
+        JsonObject params;
         JsonObjectBuilder jcb = Json.createObjectBuilder();
 
         for (Map.Entry<Integer, Cluster> entry : ret.entrySet()) {
@@ -51,13 +39,12 @@ public class GetNodesCommand extends ServerCommand {
         baos.writeTo(outputStream);
         outputStream.write("\n".getBytes());
         outputStream.flush();
-        
+
         System.out.println();
         if (params != null) {
             System.out.println("Response Sent -- " + params.toString());
-        }
-        else {
-        	System.out.println("Response Sent");
+        } else {
+            System.out.println("Response Sent");
         }
     }
 

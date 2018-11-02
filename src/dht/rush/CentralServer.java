@@ -28,8 +28,8 @@ public class CentralServer {
         String rootPath = System.getProperty("user.dir");
 //        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
 
-        String xmlPath = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
-        cs.clusterStructureMap = ConfigurationUtil.parseConfig(xmlPath, cs.root);
+        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+        cs.clusterStructureMap = ConfigurationUtil.parseConfig(xmlPath);
 
         if (cs.clusterStructureMap == null) {
             System.out.println("Central Server initialization failed");
@@ -51,39 +51,38 @@ public class CentralServer {
         OutputStream outputStream = null;
         BufferedReader in = null;
         PrintWriter out = null;
-        
+
         System.out.println("Rush server running at " + port);
         while (true) {
             try {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Connection accepted" + " ---- " + new Date().toString());
-                
+
                 inputStream = clientSocket.getInputStream();
                 outputStream = clientSocket.getOutputStream();
-                
+
                 in = new BufferedReader(new InputStreamReader(inputStream));
                 out = new PrintWriter(outputStream, true);
                 String str;
                 JsonObject requestObject = null;
-            	while(true && in != null) {
-            		str = in.readLine();
-            		if (str != null) {
-                		requestObject = StreamUtil.parseRequest(str);
-                    	if (requestObject != null) {
+                while (true && in != null) {
+                    str = in.readLine();
+                    if (str != null) {
+                        requestObject = StreamUtil.parseRequest(str);
+                        if (requestObject != null) {
                             ServerCommand command = dispatchCommand(requestObject);
                             command.setInputStream(inputStream);
                             command.setOutputStream(outputStream);
                             command.run();
-                    	}
-            		}
-            		else {
-            			System.out.println("Connection end " + " ---- " + new Date().toString());
-            			break;
-            		}
-            	}
+                        }
+                    } else {
+                        System.out.println("Connection end " + " ---- " + new Date().toString());
+                        break;
+                    }
+                }
             } catch (Exception e) {
-            	System.out.println("Connection exception");
-            	StreamUtil.closeSocket(inputStream);
+                System.out.println("Connection exception");
+                StreamUtil.closeSocket(inputStream);
                 e.printStackTrace();
             }
         }
@@ -105,7 +104,7 @@ public class CentralServer {
                 ((AddNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 break;
             case "deletenode":
-            	System.out.println("Deleting node command");
+                System.out.println("Deleting node command");
                 serverCommand = new DeleteNodeCommand();
                 params = requestObject.getJsonObject("parameters");
                 ((DeleteNodeCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
@@ -115,7 +114,7 @@ public class CentralServer {
                 break;
 
             case "getnodes":
-            	System.out.println("Getting node command");
+                System.out.println("Getting node command");
                 serverCommand = new GetNodesCommand();
                 params = requestObject.getJsonObject("parameters");
                 ((GetNodesCommand) serverCommand).setPgid(params.getString("pgid"));

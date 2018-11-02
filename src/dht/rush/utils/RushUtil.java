@@ -1,5 +1,10 @@
 package dht.rush.utils;
 
+import dht.rush.clusters.Cluster;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class RushUtil {
     public static final long MAX_VALUE = 0xFFFFFFFFL;
     public static final double MAX_NODE = 15359.0;

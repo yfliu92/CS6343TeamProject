@@ -5,6 +5,7 @@ import dht.rush.clusters.ClusterStructureMap;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,8 +20,9 @@ public class DeleteNodeCommand extends ServerCommand {
 
     @Override
     public void run() throws IOException {
-        int status = clusterStructureMap.deletePhysicalNode(subClusterId, ip, port);
+        CommandResponse commandResponse = clusterStructureMap.deletePhysicalNode(subClusterId, ip, port);
 
+        int status = commandResponse.getStatus();
         // "1": success delete
         // "2": No such a sub cluster
         // "3": No such a physical node in the specific subcluster
@@ -30,39 +32,45 @@ public class DeleteNodeCommand extends ServerCommand {
         JsonWriter writer = Json.createWriter(baos);
         JsonObject params = null;
         if (status == 1) {
-            params = Json.createObjectBuilder()
-                    .add("message", "Delete success, epoch:" + clusterStructureMap.getEpoch())
-                    .add("status", "OK")
-                    .build();
+            JsonObjectBuilder jcb = Json.createObjectBuilder();
+            jcb.add("message", "Delete success, epoch:" + clusterStructureMap.getEpoch()).add("status", "OK");
+
+            if (commandResponse.getTransferMap() != null && commandResponse.getTransferMap().size() > 0) {
+                jcb.add("transferMessage", "Need to transfer files!");
+                jcb.add("transferList", commandResponse.toString());
+            } else {
+                jcb.add("transferMessage", "No need to transfer file!");
+            }
+            params = jcb.build();
+
         } else if (status == 2) {
             params = Json.createObjectBuilder()
                     .add("message", "No such a subcluster")
-                    .add("status", "ERROR, , epoch:" + clusterStructureMap.getEpoch())
+                    .add("status", "ERROR， " + "epoch: " + clusterStructureMap.getEpoch())
                     .build();
         } else if (status == 3) {
             params = Json.createObjectBuilder()
                     .add("message", "The node isn't in the sub cluster.")
-                    .add("status", "ERROR, epoch:" + clusterStructureMap.getEpoch())
+                    .add("status", "ERROR, " + "epoch: " + clusterStructureMap.getEpoch())
                     .build();
         } else if (status == 4) {
             params = Json.createObjectBuilder()
                     .add("message", "The node is inactive.")
-                    .add("status", "ERROR, epoch:" + clusterStructureMap.getEpoch())
+                    .add("status", "ERROR, " + "epoch: " + clusterStructureMap.getEpoch())
                     .build();
         }
         writer.writeObject(params);
         writer.close();
         baos.writeTo(outputStream);
-        outputStream.write("\n" .getBytes());
+        outputStream.write("\n".getBytes());
         outputStream.flush();
-        
+
         System.out.println();
         if (params != null) {
             System.out.println("Response Sent -- " + params.toString());
             System.out.println("REPONSE STATUS: " + params.getString("status") + ", " + "message: " + params.getString("message"));
-        }
-        else {
-        	System.out.println("Response Sent");
+        } else {
+            System.out.println("Response Sent");
         }
     }
 

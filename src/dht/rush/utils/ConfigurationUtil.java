@@ -7,14 +7,12 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.*;
 
 public class ConfigurationUtil {
-    public static ClusterStructureMap parseConfig(String path, Cluster node) {
+    public static ClusterStructureMap parseConfig(String path) {
         SAXReader reader = new SAXReader();
-        Cluster root = null;
-        ClusterStructureMap ret = null;
+        Cluster root;
 
         Map<String, Cluster> clusterList = new HashMap<>();
 
@@ -26,9 +24,10 @@ public class ConfigurationUtil {
             // Generate all nodes
             String rootIp = rootElement.element("ip").getStringValue();
             String rootPort = rootElement.element("port").getStringValue();
+            int placementGroupNumber = Integer.parseInt(rootElement.element("placementGroupNumber").getStringValue());
+
             int numberOfReplicas = Integer.parseInt(rootElement.element("replicationDegree").getStringValue());
 
-//            ret = new ClusterStructureMap(0, numberOfReplicas);
 
             Element subClusters = rootElement.element("subClusters");
             List subClusterList = subClusters.elements();
@@ -72,7 +71,7 @@ public class ConfigurationUtil {
                 clusterStructureMap.setEpoch(0);
                 clusterStructureMap.setNumberOfReplicas(numberOfReplicas);
 
-                if (pid != "") {
+                if (!pid.equals("")) {
                     Cluster parent = clusterList.get(pid);
                     parent.getSubClusters().add(c);
                     ClusterStructureMap parentCachedTreeStructure = parent.getCachedTreeStructure();
@@ -81,11 +80,17 @@ public class ConfigurationUtil {
                     fakeParentOfRoot.getCachedTreeStructure().getChildrenList().put(c.getId(), c);
                 }
             }
+
+            for (int idx = 0; idx < placementGroupNumber; idx++) {
+                String id = "PG" + idx;
+                fakeParentOfRoot.getCachedTreeStructure().getNodes(id);
+            }
+
 //            root.setCachedTreeStructure(fakeParentOfRoot.getCachedTreeStructure());
             return fakeParentOfRoot.getCachedTreeStructure();
         } catch (DocumentException e) {
             e.printStackTrace();
         }
-        return ret;
+        return null;
     }
 }
