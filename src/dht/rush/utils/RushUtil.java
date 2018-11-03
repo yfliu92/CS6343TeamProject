@@ -9,6 +9,9 @@ public class RushUtil {
     public static final long MAX_VALUE = 0xFFFFFFFFL;
     public static final double MAX_NODE = 15359.0;
 
+    public static int NUMBER_OF_PLACEMENT_GROUP = 0;
+    public static int NUMBER_OF_REPLICAS = 0;
+
     public static Double rushHash(String s, int r, String id) {
         long a = s.hashCode();
         long b = r & MAX_VALUE;
@@ -63,5 +66,17 @@ public class RushUtil {
 
     private static long xor(long a, long xor) {
         return (a ^ xor) & MAX_VALUE;
+    }
+
+    public static int positiveHash(int hash) {
+        return hash & 0x7fffffff;
+    }
+
+    public static void setNumberOfPlacementGroup(int numberOfPlacementGroup) {
+        NUMBER_OF_PLACEMENT_GROUP = numberOfPlacementGroup;
+    }
+
+    public static void setNumberOfReplicas(int numberOfReplicas) {
+        NUMBER_OF_REPLICAS = numberOfReplicas;
     }
 }

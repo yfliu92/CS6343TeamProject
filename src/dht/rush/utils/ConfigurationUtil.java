@@ -24,10 +24,12 @@ public class ConfigurationUtil {
             // Generate all nodes
             String rootIp = rootElement.element("ip").getStringValue();
             String rootPort = rootElement.element("port").getStringValue();
+
             int placementGroupNumber = Integer.parseInt(rootElement.element("placementGroupNumber").getStringValue());
+            RushUtil.setNumberOfPlacementGroup(placementGroupNumber);
 
             int numberOfReplicas = Integer.parseInt(rootElement.element("replicationDegree").getStringValue());
-
+            RushUtil.setNumberOfReplicas(numberOfReplicas);
 
             Element subClusters = rootElement.element("subClusters");
             List subClusterList = subClusters.elements();

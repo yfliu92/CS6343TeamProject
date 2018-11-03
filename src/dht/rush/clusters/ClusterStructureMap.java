@@ -144,7 +144,7 @@ public class ClusterStructureMap {
 
         while (count < 3) {
             Cluster cluster = rush(pgid, r);
-            if (cluster != null && !map.containsKey(cluster.getId())) {
+            if (cluster != null && cluster.getActive() && !map.containsKey(cluster.getId())) {
                 count += 1;
                 cluster.getPlacementGroupMap().put(pgid, r);
                 ret.put(r, cluster);
@@ -260,5 +260,45 @@ public class ClusterStructureMap {
         }
 
         return commandResponse;
+    }
+
+    /**
+     * @param fileName
+     * @return
+     */
+    public Map<Integer, Cluster> write(String fileName) {
+
+        String pgid = generatePlacementGroupId(fileName);
+        Map<Integer, Cluster> nodes = getNodes(pgid);
+
+        return nodes;
+    }
+
+    /**
+     * Find a cluster by filename
+     *
+     * @param fileName
+     * @return Cluster
+     */
+    public Cluster read(String fileName) {
+        String pgid = generatePlacementGroupId(fileName);
+
+        int r = 0;
+        while (true) {
+            Cluster node = rush(pgid, r++);
+            if (node != null && node.getActive() && node instanceof PhysicalNode)
+                return node;
+        }
+    }
+
+    /**
+     * Generate pg id for the file name
+     *
+     * @param str
+     * @return
+     */
+    public String generatePlacementGroupId(String str) {
+        int pgid = RushUtil.positiveHash(str.hashCode()) % RushUtil.NUMBER_OF_PLACEMENT_GROUP;
+        return "PG" + pgid;
     }
 }

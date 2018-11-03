@@ -128,6 +128,22 @@ public class CentralServer {
                 ((LoadBalancingCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 break;
 
+            case "write":
+                System.out.println("Start to write a file into the cluster");
+                serverCommand = new WriteCommand();
+                params = requestObject.getJsonObject("parameters");
+                ((WriteCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((WriteCommand) serverCommand).setFileName(params.getString("fileName"));
+                break;
+
+            case "read":
+                System.out.println("Start to return a physical node for the file");
+                serverCommand = new ReadCommand();
+                params = requestObject.getJsonObject("parameters");
+                ((ReadCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((ReadCommand) serverCommand).setFileName(params.getString("fileName"));
+                break;
+
             default:
                 System.out.println("Unknown Request");
         }
