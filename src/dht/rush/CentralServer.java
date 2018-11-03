@@ -3,10 +3,7 @@ package dht.rush;
 import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
 import dht.rush.clusters.Root;
-import dht.rush.commands.AddNodeCommand;
-import dht.rush.commands.DeleteNodeCommand;
-import dht.rush.commands.GetNodesCommand;
-import dht.rush.commands.ServerCommand;
+import dht.rush.commands.*;
 import dht.rush.utils.ConfigurationUtil;
 import dht.rush.utils.StreamUtil;
 
@@ -16,6 +13,7 @@ import javax.json.JsonReader;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLOutput;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -103,6 +101,7 @@ public class CentralServer {
                 ((AddNodeCommand) serverCommand).setWeight(Double.parseDouble(params.getString("weight")));
                 ((AddNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 break;
+
             case "deletenode":
                 System.out.println("Deleting node command");
                 serverCommand = new DeleteNodeCommand();
@@ -120,6 +119,15 @@ public class CentralServer {
                 ((GetNodesCommand) serverCommand).setPgid(params.getString("pgid"));
                 ((GetNodesCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 break;
+
+            case "loadbalancing":
+                System.out.println("Start loading balancing in a subcluster");
+                serverCommand = new LoadBalancingCommand();
+                params = requestObject.getJsonObject("parameters");
+                ((LoadBalancingCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
+                ((LoadBalancingCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                break;
+
             default:
                 System.out.println("Unknown Request");
         }
