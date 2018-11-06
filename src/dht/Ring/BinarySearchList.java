@@ -97,6 +97,19 @@ public class BinarySearchList extends ArrayList<VirtualNode> {
      *
      *          Time Complexity O(log n)
      */
+    public VirtualNode find(int hash) {
+    	VirtualNode target = new VirtualNode(hash);
+        int index = Collections.binarySearch(this, target);
+
+        if (index < 0)
+            index = -(index + 1);
+        if (index >= size())
+            index = 0;
+
+        target = get(index);
+        return target;
+    }
+    
     public VirtualNode find(VirtualNode node) {
         int index = Collections.binarySearch(this, node);
 

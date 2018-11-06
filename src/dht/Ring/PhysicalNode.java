@@ -44,6 +44,12 @@ public class PhysicalNode {
         this.virtualNodes = nodes;
         this.lookupTable = new LookupTable();
     }
+    
+    public VirtualNode getVirtualNode(String keyword) {
+    	int rawHash = Hashing.getHashValFromKeyword(keyword);
+    	VirtualNode node = this.lookupTable.getTable().find(rawHash);
+    	return node;
+    }
 
     public String getId() {
         return id;

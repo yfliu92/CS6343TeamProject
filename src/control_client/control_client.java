@@ -227,15 +227,34 @@ public class control_client {
 		}
     }
     
-    public String sendCommandStr(String command) throws IOException {
+    public void sendCommandStr(String command) throws Exception {
+    	if (command.startsWith("read") || command.startsWith("write") || command.startsWith("data")) {
+    		sendCommandStrNew(command);
+    		return;
+    	}
+    	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
             output.println(command);
         String response = input.readLine();
         timeStamp = new Date().toString();
         System.out.println("Response received: " + response + " ---- " + timeStamp);
+    }
+    
+    public void sendCommandStrNew(String command) throws Exception {
+    	
+    	String timeStamp = new Date().toString();
+    	System.out.println("Sending command" + " ---- " + timeStamp);
+        output.println(command);
         
-        return response;
+        JsonObject res = parseRequest(input);
+        if (res != null) {
+            System.out.println();
+        	System.out.println("Response received at " + timeStamp + " ---- " + res.toString());
+//            if (res.containsKey("status") && res.containsKey("message")) {
+//                System.out.println("REPONSE STATUS: " + res.getString("status") + ", " + "message: " + res.getString("message"));
+//            }
+         }
     }
     
     public static JsonObject parseRequest(BufferedReader br) throws Exception {
@@ -321,7 +340,7 @@ public class control_client {
          }
     }
     
-    public void processCommandRing(String cmd, Vector<String> cmds, int dhtType) throws IOException {
+    public void processCommandRing(String cmd, Vector<String> cmds, int dhtType) throws Exception {
         Command command = new Command(cmd);
         if(command.getAction().equals("help"))
         {
@@ -331,50 +350,17 @@ public class control_client {
         {
             System.exit(0);
         }
-        else if(command.getAction().startsWith("read"))
-        {
-            String filename = cmd.split(" ")[1];
-            System.out.println(filename);
-            File file = new File(filename);
-            BufferedReader reader = null;
-            try 
-            {
-                reader = new BufferedReader(new FileReader(file));
-                String tempString;
-                while ((tempString = reader.readLine()) != null)
-                {
-                    System.out.println(tempString);
-                    cmds.addElement(tempString);
-                }
-            }
-            catch(IOException e)
-            {
-            }
-            finally
-            {
-                if(reader != null)
-                {
-                    try 
-                    {  
-                        reader.close();  
-                    } 
-                    catch (IOException e1) 
-                    {  
-                    } 
-                }
-            }
-        }
         else
         {
         	sendCommandStr(cmd);
         }
     }
     
-    public void processCommandRing(String cmd, Vector<String> cmds) throws IOException {
+    public void processCommandRing(String cmd, Vector<String> cmds) throws Exception {
     	processCommandRing(cmd, cmds, 1);
     }
     
-    public void processCommandElastic(String cmd, Vector<String> cmds) throws IOException {
+    public void processCommandElastic(String cmd, Vector<String> cmds) throws Exception {
     	processCommandRing(cmd, cmds, 3);
     }
     

@@ -169,8 +169,9 @@ public class ProxyServer extends Proxy {
 //        System.out.println(proxy.deleteNode("192.168.0.201", 8100));
 //        System.out.println(proxy.loadBalance("192.168.0.204", 8100, "192.168.0.210", 8100, 12));
 
-    	System.out.println("Elastic DHT server running at 9093");
-        ServerSocket listener = new ServerSocket(9093);;
+        int port = 9093;
+    	System.out.println("Elastic DHT server running at " + String.valueOf(port));
+        ServerSocket listener = new ServerSocket(port);
 
         try {
             while (true) {

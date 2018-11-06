@@ -9,14 +9,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import dht.common.Hashing;
 import dht.server.Command;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import storage_server.Datum;
 
 public class ProxyServer extends PhysicalNode {
     public static int numOfReplicas = 3;
+    public static final int WRITE_BATCH_SIZE = 1000;
 
 	public ProxyServer(){
 		super();
@@ -104,11 +107,32 @@ public class ProxyServer extends PhysicalNode {
 		return input.toUpperCase();
 	}
 	
-	public String getResponse(String commandStr) {
+	public String getResponse(String commandStr, DataStore dataStore) {
 		Command command = new Command(commandStr);
 		try {
 			if (command.getAction().equals("find")) {
 				return getFindInfo(command.getInput());
+			}
+			else if (command.getAction().equals("read")) {
+				String dataStr = command.getCommandSeries().get(0);
+				return dataStore.readRes(dataStr);
+			}
+			else if (command.getAction().equals("write")) {
+				String dataStr = command.getCommandSeries().get(0);
+				int rawhash = Hashing.getHashValFromKeyword(dataStr);
+				int virtualnode = command.getCommandSeries().size() > 1 ? Integer.parseInt(command.getCommandSeries().get(1)) : super.getVirtualNode(dataStr).getHash();
+				return dataStore.writeRes(dataStr, rawhash, new int[]{virtualnode});
+			}
+			else if (command.getAction().equals("writebatch")) {
+				int batchsize = command.getCommandSeries().size() > 0 ? Integer.valueOf(command.getCommandSeries().get(0)) : WRITE_BATCH_SIZE;
+				return dataStore.writeRandomRes(batchsize, this);
+			}
+			else if (command.getAction().equals("updatebatch")) {
+				int updateNo = command.getCommandSeries().size() > 0 ? Integer.valueOf(command.getCommandSeries().get(0)) : 100;
+				return dataStore.updateRandomRes(updateNo, this);
+			}
+			else if (command.getAction().equals("data")) {
+				return dataStore.listDataRes();
 			}
 			else if (command.getAction().equals("loadbalance")) {
 				int delta = Integer.valueOf(command.getCommandSeries().get(0));
@@ -136,7 +160,7 @@ public class ProxyServer extends PhysicalNode {
 			}
 		}
 		catch (Exception ee) {
-			return "Illegal command";
+			return "Illegal command " + ee.toString();
 		}
 	}
 	
@@ -145,9 +169,13 @@ public class ProxyServer extends PhysicalNode {
 		ProxyServer proxy = new ProxyServer();
 		//Initialize the ring cluster
 		proxy.initializeRing();
-    	System.out.println("Ring server running at 9091");
-        ServerSocket listener = new ServerSocket(9091);;
-
+		
+		DataStore dataStore = new DataStore();
+		
+		int port = 9091;
+    	System.out.println("Ring server running at " + String.valueOf(port));
+        ServerSocket listener = new ServerSocket(port);
+        
         try {
             while (true) {
             	Socket socket = listener.accept();
@@ -163,18 +191,22 @@ public class ProxyServer extends PhysicalNode {
                     		msg = in.readLine();
                         	if (msg != null) {
                             	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
+                            	System.out.println();
 
-                                String response = proxy.getResponse(msg);
+                                String response = proxy.getResponse(msg, dataStore);
                                 out.println(response);
                                 System.out.println("Response sent: " + response);
+                                System.out.println();
                         	}
                         	else {
                         		System.out.println("Connection end " + " ---- " + new Date().toString());
+                        		System.out.println();
                         		break;
                         	}
                 		}
                 		catch (Exception ee) {
                     		System.out.println("Connection reset " + " ---- " + new Date().toString());
+                    		System.out.println();
                     		break;
                 		}
 

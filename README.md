@@ -25,7 +25,7 @@ javac -cp /Users/jj/Downloads/dom4j-2.1.1.jar dht/Ring/*.java dht/server/Command
 
 javac -cp ../lib/javax.json-api-1.1.2.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
 javac -cp ../lib/dom4j-2.1.1.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
-javac -classpath ../lib/\* dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
+javac -classpath ../lib/\* dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java dht/common/response/*.java storage_server/Datum.java
 
 ## run Ring server
 -- java dht/Ring/ProxyServer
