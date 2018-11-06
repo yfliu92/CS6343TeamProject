@@ -7,14 +7,12 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.*;
 
 public class ConfigurationUtil {
-    public static ClusterStructureMap parseConfig(String path, Cluster node) {
+    public static ClusterStructureMap parseConfig(String path) {
         SAXReader reader = new SAXReader();
-        Cluster root = null;
-        ClusterStructureMap ret = null;
+        Cluster root;
 
         Map<String, Cluster> clusterList = new HashMap<>();
 
@@ -26,9 +24,12 @@ public class ConfigurationUtil {
             // Generate all nodes
             String rootIp = rootElement.element("ip").getStringValue();
             String rootPort = rootElement.element("port").getStringValue();
-            int numberOfReplicas = Integer.parseInt(rootElement.element("replicationDegree").getStringValue());
 
-//            ret = new ClusterStructureMap(0, numberOfReplicas);
+            int placementGroupNumber = Integer.parseInt(rootElement.element("placementGroupNumber").getStringValue());
+            RushUtil.setNumberOfPlacementGroup(placementGroupNumber);
+
+            int numberOfReplicas = Integer.parseInt(rootElement.element("replicationDegree").getStringValue());
+            RushUtil.setNumberOfReplicas(numberOfReplicas);
 
             Element subClusters = rootElement.element("subClusters");
             List subClusterList = subClusters.elements();
@@ -40,7 +41,7 @@ public class ConfigurationUtil {
 
             for (int i = 0; i < numberOfRootChildren; i++) {
                 List<Element> nodesList = ((Element) subClusterList.get(i)).elements();
-                int subCluserChildrenNumber = nodesList.size();
+                int subClusterChildrenNumber = nodesList.size();
                 String subClusterId = "S" + i;
                 double subClusterWeight = 0;
                 for (Element e : nodesList) {
@@ -54,7 +55,7 @@ public class ConfigurationUtil {
                     j++;
                 }
                 rootWeight += subClusterWeight;
-                Cluster subCluster = new SubCluster(subClusterId, "", "", rootId, subCluserChildrenNumber, subClusterWeight, true);
+                Cluster subCluster = new SubCluster(subClusterId, "", "", rootId, subClusterChildrenNumber, subClusterWeight, true);
                 clusterList.put(subClusterId, subCluster);
             }
 
@@ -67,24 +68,31 @@ public class ConfigurationUtil {
 
             for (Map.Entry<String, Cluster> en : entrySets) {
                 Cluster c = en.getValue();
-                String id = c.getParentId();
+                String pid = c.getParentId();
                 ClusterStructureMap clusterStructureMap = c.getCachedTreeStructure();
                 clusterStructureMap.setEpoch(0);
                 clusterStructureMap.setNumberOfReplicas(numberOfReplicas);
 
-                if (id != "") {
-                    Cluster parent = clusterList.get(id);
+                if (!pid.equals("")) {
+                    Cluster parent = clusterList.get(pid);
+                    parent.getSubClusters().add(c);
                     ClusterStructureMap parentCachedTreeStructure = parent.getCachedTreeStructure();
                     parentCachedTreeStructure.getChildrenList().put(c.getId(), c);
                 } else {
                     fakeParentOfRoot.getCachedTreeStructure().getChildrenList().put(c.getId(), c);
                 }
             }
+
+            for (int idx = 0; idx < placementGroupNumber; idx++) {
+                String id = "PG" + idx;
+                fakeParentOfRoot.getCachedTreeStructure().getNodes(id);
+            }
+
 //            root.setCachedTreeStructure(fakeParentOfRoot.getCachedTreeStructure());
             return fakeParentOfRoot.getCachedTreeStructure();
         } catch (DocumentException e) {
             e.printStackTrace();
         }
-        return ret;
+        return null;
     }
 }

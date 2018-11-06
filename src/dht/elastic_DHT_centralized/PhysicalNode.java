@@ -16,10 +16,11 @@ public class PhysicalNode {
     }
 
     public PhysicalNode (String ip, int port, String status){
-        this.id = ip + Integer.toString(port);
+        this.id = ip + "-" + Integer.toString(port);
         this.ip = ip;
         this.port = port;
         this.status = status;
+        this.lookupTable = new LookupTable();
     }
 
     public String getId() {

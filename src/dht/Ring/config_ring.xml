@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Ring>
+    // Number of replicas
+    <replicationLevel>3</replicationLevel>
+    <hashRange>10000</hashRange>
+    <!-- The number of virtual nodes mapped to each physical node -->
+    <virtualNodesMapping>10</virtualNodesMapping>
+    <nodes>
+        <node>
+            <ip>192.168.0.201</ip>
+            <port>8100</port>
+        </node>
+        <node>
+            <ip>192.168.0.202</ip>
+            <port>8100</port>
+        </node>
+        <node>
+            <ip>192.168.0.203</ip>
+            <port>8100</port>
+        </node>
+        <node>
+            <ip>192.168.0.204</ip>
+            <port>8100</port>
+        </node>
+        <node>
+            <ip>192.168.0.205</ip>
+            <port>8100</port>
+        </node>
+        <node>
+            <ip>192.168.0.206</ip>
+            <port>8100</port>
+        </node>
+        <node>
+            <ip>192.168.0.207</ip>
+            <port>8100</port>
+        </node>
+        <node>
+            <ip>192.168.0.208</ip>
+            <port>8100</port>
+        </node>
+        <node>
+            <ip>192.168.0.209</ip>
+            <port>8100</port>
+        </node>
+        <node>
+            <ip>192.168.0.210</ip>
+            <port>8100</port>
+        </node>
+    </nodes>
+
+</Ring>

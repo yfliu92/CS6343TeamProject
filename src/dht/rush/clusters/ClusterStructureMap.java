@@ -1,9 +1,10 @@
 package dht.rush.clusters;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import dht.rush.commands.CommandResponse;
+import dht.rush.utils.RushUtil;
+import dht.server.Command;
+
+import java.util.*;
 
 public class ClusterStructureMap {
     private int epoch;
@@ -48,9 +49,10 @@ public class ClusterStructureMap {
         this.numberOfReplicas = numberOfReplicas;
     }
 
-    public int addPhysicalNode(String subCLusterId, String ip, String port, double weight) {
+    public CommandResponse addPhysicalNode(String subCLusterId, String ip, String port, double weight) {
         Cluster root = this.getChildrenList().get("R");
-        int status = 0;
+
+        CommandResponse commandResponse = new CommandResponse();
         // "1": success
         // "2": No such a subcluster
         // "3": physical node already exits
@@ -64,7 +66,7 @@ public class ClusterStructureMap {
                 String cip = c.getIp();
                 String cport = c.getPort();
                 if (cip.equals(ip) && cport.equals(port)) {
-                    status = 3;
+                    commandResponse.setStatus(3);
                     isExist = true;
                     break;
                 }
@@ -78,19 +80,23 @@ public class ClusterStructureMap {
                 String newClusterId = "N" + newId;
                 Cluster c = new PhysicalNode(newClusterId, ip, port, subCLusterId, 0, weight, true, 100);
                 sub.getCachedTreeStructure().getChildrenList().put(newClusterId, c);
+                sub.getSubClusters().add(c);
+                sub.setNumberOfChildren(sub.getNumberOfChildren() + 1);
                 this.addEpoch();
-                status = 1;
+                commandResponse.setStatus(1);
+                commandResponse.setTransferMap(transferedFileInSubCluster(sub));
             }
         } else {
             System.out.println("No such subcluster");
-            status = 2;
+            commandResponse.setStatus(2);
         }
-        return status;
+        return commandResponse;
     }
 
-    public int deletePhysicalNode(String subCLusterId, String ip, String port) {
+    public CommandResponse deletePhysicalNode(String subCLusterId, String ip, String port) {
         Cluster root = this.getChildrenList().get("R");
-        int status = 0;
+        CommandResponse ret = new CommandResponse();
+        ret.setStatus(0);
 
         // "1": success delete
         // "2": No such a sub cluster
@@ -108,23 +114,191 @@ public class ClusterStructureMap {
                 String cport = c.getPort();
                 if (cip.equals(ip) && cport.equals(port)) {
                     isExist = true;
-                    if(c.getActive()) {
+                    if (c.getActive()) {
                         c.setActive(false);
-                        status = 1;
+
+                        ret.setTransferMap(transferedMap(c));
+                        ret.setStatus(1);
                         this.addEpoch();
                     } else {
-                        status = 4;
+                        ret.setStatus(4);
                     }
                     break;
                 }
             }
             if (!isExist) {
-                status = 3;
+                ret.setStatus(3);
             }
         } else {
             System.out.println("No such subcluster");
-            status = 2;
+            ret.setStatus(2);
         }
-        return status;
+        return ret;
+    }
+
+    public Map<Integer, Cluster> getNodes(String pgid) {
+        int r = 0;
+        int count = 0;
+        Map<Integer, Cluster> ret = new HashMap<>();
+        Map<String, Cluster> map = new HashMap<>();
+
+        while (count < 3) {
+            Cluster cluster = rush(pgid, r);
+            if (cluster != null && cluster.getActive() && !map.containsKey(cluster.getId())) {
+                count += 1;
+                cluster.getPlacementGroupMap().put(pgid, r);
+                ret.put(r, cluster);
+                map.put(cluster.getId(), cluster);
+                System.out.println("Replica: " + r + ", Node: " + cluster.toString());
+            }
+            r++;
+        }
+
+        return ret;
+    }
+
+    /**
+     * Based on the placementGroupID and r, get the cluster(physical node)
+     *
+     * @param placementGroupID
+     * @param r
+     * @return Cluster
+     */
+    public Cluster rush(String placementGroupID, int r) {
+        Cluster root = this.getChildrenList().get("R");
+        Queue<Cluster> queue = new LinkedList<>();
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            Cluster node = queue.poll();
+
+            List<Cluster> list = node.getSubClusters();
+            for (int i = 0; i < list.size(); i++) {
+                Cluster child = list.get(i);
+                if (child == null || !child.getActive()) {
+                    continue;
+                }
+                double rushHash = RushUtil.rushHash(placementGroupID, r, child.getId());
+                double ratio = weightRatio(i, list);
+
+                if (rushHash < ratio) {
+                    if (child instanceof PhysicalNode) {
+                        return child;
+                    } else {
+                        queue.add(child);
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        return null;
+    }
+
+    private double weightRatio(int i, List<Cluster> children) {
+        double sum = 0;
+
+        for (int index = i; index < children.size(); index++) {
+            Cluster cluster = children.get(index);
+            if (cluster.getActive()) {
+                sum += cluster.getWeight();
+            }
+        }
+
+        return sum == 0 ? 1 : children.get(i).getWeight() / sum;
+    }
+
+    /**
+     * @param c
+     * @return String, Cluster -- String: pg id, Cluster: destination cluster
+     */
+    public Map<String, Cluster[]> transferedMap(Cluster c) {
+        Map<String, Cluster[]> ret = null;
+
+        if (c.getPlacementGroupMap().size() > 0) {
+            ret = new HashMap<>();
+            for (Map.Entry<String, Integer> entry : c.getPlacementGroupMap().entrySet()) {
+                String id = entry.getKey();
+                Integer replica = entry.getValue();
+
+                Cluster destination = rush(id, replica);
+
+                if (!destination.getPlacementGroupMap().containsKey(id)) {
+                    destination.getPlacementGroupMap().put(id, replica);
+                    ret.put(id, new Cluster[]{c, destination});
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    public Map<String, Cluster[]> transferedFileInSubCluster(Cluster sub) {
+        Map<String, Cluster[]> ret = new HashMap<>();
+
+        for (Cluster c : sub.getSubClusters()) {
+            ret.putAll(transferedMap(c));
+        }
+
+        return ret;
+    }
+
+    public CommandResponse loadBalancing(String subClusterId) {
+        Cluster root = this.getChildrenList().get("R");
+        CommandResponse commandResponse = new CommandResponse();
+
+        // "1": success
+        // "2": No such a subcluster
+
+        if (root.getCachedTreeStructure().getChildrenList().containsKey(subClusterId)) {
+            Cluster sub = root.getCachedTreeStructure().getChildrenList().get(subClusterId);
+            commandResponse.setStatus(1);
+            commandResponse.setTransferMap(transferedFileInSubCluster(sub));
+        } else {
+            commandResponse.setStatus(2);
+        }
+
+        return commandResponse;
+    }
+
+    /**
+     * @param fileName
+     * @return
+     */
+    public Map<Integer, Cluster> write(String fileName) {
+
+        String pgid = generatePlacementGroupId(fileName);
+        Map<Integer, Cluster> nodes = getNodes(pgid);
+
+        return nodes;
+    }
+
+    /**
+     * Find a cluster by filename
+     *
+     * @param fileName
+     * @return Cluster
+     */
+    public Cluster read(String fileName) {
+        String pgid = generatePlacementGroupId(fileName);
+
+        int r = 0;
+        while (true) {
+            Cluster node = rush(pgid, r++);
+            if (node != null && node.getActive() && node instanceof PhysicalNode)
+                return node;
+        }
+    }
+
+    /**
+     * Generate pg id for the file name
+     *
+     * @param str
+     * @return
+     */
+    public String generatePlacementGroupId(String str) {
+        int pgid = RushUtil.positiveHash(str.hashCode()) % RushUtil.NUMBER_OF_PLACEMENT_GROUP;
+        return "PG" + pgid;
     }
 }

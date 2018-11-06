@@ -22,4 +22,12 @@ public class PhysicalNode extends Cluster {
         this.type = ClusterType.PHYSICAL_NODE;
         this.dataStore = new HashMap<>();
     }
+
+    public ClusterType getType() {
+        return type;
+    }
+
+    public void setType(ClusterType type) {
+        this.type = type;
+    }
 }

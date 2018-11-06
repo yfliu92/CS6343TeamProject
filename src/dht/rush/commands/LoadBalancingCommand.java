@@ -10,30 +10,30 @@ import javax.json.JsonWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class DeleteNodeCommand extends ServerCommand {
+public class LoadBalancingCommand extends ServerCommand {
     private Cluster root;
-    private String ip;
-    private String port;
-    private Double weight;
     private String subClusterId;
     private ClusterStructureMap clusterStructureMap;
 
     @Override
     public void run() throws IOException {
-        CommandResponse commandResponse = clusterStructureMap.deletePhysicalNode(subClusterId, ip, port);
-
+        CommandResponse commandResponse = clusterStructureMap.loadBalancing(subClusterId);
         int status = commandResponse.getStatus();
-        // "1": success delete
-        // "2": No such a sub cluster
-        // "3": No such a physical node in the specific subcluster
-        // "4": Found the node, but already inactive
+        // "1": success
+        // "2": No such a subcluster
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JsonWriter writer = Json.createWriter(baos);
         JsonObject params = null;
-        if (status == 1) {
+        if (status == 2) {
+            params = Json.createObjectBuilder()
+                    .add("message", "No such a sub cluster")
+                    .add("status", "ERROR")
+                    .build();
+        } else if (status == 1) {
+
             JsonObjectBuilder jcb = Json.createObjectBuilder();
-            jcb.add("message", "Delete success, epoch:" + clusterStructureMap.getEpoch()).add("status", "OK");
+            jcb.add("message", "Load Balancing successfully executed, epoch:" + clusterStructureMap.getEpoch()).add("status", "OK");
 
             if (commandResponse.getTransferMap() != null && commandResponse.getTransferMap().size() > 0) {
                 jcb.add("transferMessage", "Need to transfer files!");
@@ -42,22 +42,6 @@ public class DeleteNodeCommand extends ServerCommand {
                 jcb.add("transferMessage", "No need to transfer file!");
             }
             params = jcb.build();
-
-        } else if (status == 2) {
-            params = Json.createObjectBuilder()
-                    .add("message", "No such a subcluster")
-                    .add("status", "ERROR， " + "epoch: " + clusterStructureMap.getEpoch())
-                    .build();
-        } else if (status == 3) {
-            params = Json.createObjectBuilder()
-                    .add("message", "The node isn't in the sub cluster.")
-                    .add("status", "ERROR, " + "epoch: " + clusterStructureMap.getEpoch())
-                    .build();
-        } else if (status == 4) {
-            params = Json.createObjectBuilder()
-                    .add("message", "The node is inactive.")
-                    .add("status", "ERROR, " + "epoch: " + clusterStructureMap.getEpoch())
-                    .build();
         }
         writer.writeObject(params);
         writer.close();
@@ -80,30 +64,6 @@ public class DeleteNodeCommand extends ServerCommand {
 
     public void setRoot(Cluster root) {
         this.root = root;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public String getPort() {
-        return port;
-    }
-
-    public void setPort(String port) {
-        this.port = port;
-    }
-
-    public Double getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Double weight) {
-        this.weight = weight;
     }
 
     public String getSubClusterId() {

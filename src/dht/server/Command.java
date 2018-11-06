@@ -5,9 +5,9 @@ public class Command {
 
 	String action;
 	String input;
-	public String node1;
-	public String node2;
-	public List<String> series;
+	String node1;
+	String node2;
+	List<String> series;
 	
 	public Command(String commandStr){
 		String[] series = commandStr.split(" ");

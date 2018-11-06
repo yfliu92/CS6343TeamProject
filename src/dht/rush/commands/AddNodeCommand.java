@@ -19,7 +19,8 @@ public class AddNodeCommand extends ServerCommand {
 
     @Override
     public void run() throws IOException {
-        int status = clusterStructureMap.addPhysicalNode(subClusterId, ip, port, weight);
+        CommandResponse commandResponse = clusterStructureMap.addPhysicalNode(subClusterId, ip, port, weight);
+        int status = commandResponse.getStatus();
         // "1": success
         // "2": No such a subcluster
         // "3": physical node already exits
@@ -30,6 +31,7 @@ public class AddNodeCommand extends ServerCommand {
             params = Json.createObjectBuilder()
                     .add("message", "Add Node Success, new epoch is :" + clusterStructureMap.getEpoch())
                     .add("status", "OK")
+                    .add("transferList", commandResponse.toString())
                     .build();
         } else if (status == 2) {
             params = Json.createObjectBuilder()
@@ -47,6 +49,14 @@ public class AddNodeCommand extends ServerCommand {
         baos.writeTo(outputStream);
         outputStream.write("\n".getBytes());
         outputStream.flush();
+
+        System.out.println();
+        if (params != null) {
+            System.out.println("Response Sent -- " + params.toString());
+            System.out.println("REPONSE STATUS: " + params.getString("status") + ", " + "message: " + params.getString("message"));
+        } else {
+            System.out.println("Response Sent");
+        }
     }
 
     public Cluster getRoot() {

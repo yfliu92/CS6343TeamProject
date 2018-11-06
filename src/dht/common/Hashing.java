@@ -1,4 +1,5 @@
 package dht.common;
+import java.util.*;
 
 public class Hashing {
 	
@@ -27,6 +28,19 @@ public class Hashing {
 	
 	public static int getVMIdFromKeyword(String keyword, int numVMs) {
 		return getVMIdFromHashVal(getHashValFromKeyword(keyword), numVMs);
+	}
+	
+	public static String getRanStr(int maxlength) {
+		Random ran = new Random();
+		if (maxlength == 0) {
+			maxlength = ran.nextInt(10) + 1;
+		}
+		
+		StringBuilder result = new StringBuilder();
+		for(int i = 0; i < maxlength; i++) {
+			result.append((char)(ran.nextInt(26)+97));
+		}
+		return result.toString();
 	}
 	
 	public static void main(String[] args) {
