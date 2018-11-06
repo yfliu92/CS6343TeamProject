@@ -247,4 +247,10 @@ public class Proxy{
         return "true|shrinkTable from " + oldHashRange + " buckets to " + newHashRange + " buckets is successful.";
     }
 
+    // Return a set of nodeIDs for replicas for each hash value
+    public Set<String> getReplicas(int hash){
+        Set<String> replicas = lookupTable.getBucketsTable().get(hash).keySet();
+        return replicas;
+    }
+
 }
