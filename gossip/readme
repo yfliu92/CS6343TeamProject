@@ -1,0 +1,12 @@
+cd java-gossip/src
+javac com/google/code/gossip/examples/GossipExample2.java
+javac com/google/code/gossip/examples/GossipExample3.java
+
+java com.google.code.gossip.examples.GossipExample2
+java com.google.code.gossip.examples.GossipExample3
+
+in either terminal:
+-->status
+wait several seconds , see result
+-->send haha
+all alive client will receive message
