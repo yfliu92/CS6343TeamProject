@@ -3,7 +3,7 @@ package dht.common.response;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 
-public class ReadResponse extends Response {
+public class ReadResponse extends Response2 {
 	public int key;
 	public String filename;
 	public int version;
