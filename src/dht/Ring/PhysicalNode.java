@@ -145,6 +145,15 @@ public class PhysicalNode {
         return result.toString();
     }
 
+    // Add a physical node that maps to more than 1 virtual node
+    public String addNode(String ip, int port, int[] hashes){
+        String result = "";
+        for (int hash : hashes){
+            result += addNode(ip, port, hash);
+        }
+        return result;
+    }
+    //Add a physical node that maps to just 1 virtual node
     public String addNode(String ip, int port, int hash){
         String result = "";
         // Create an id for the new physical node
@@ -155,10 +164,10 @@ public class PhysicalNode {
         // Put the virtual node on the ring
         try {
             if (lookupTable.getTable().add(vNode) == false){
-                result = "false|hash " + hash +" is not a virtual node";
+                result = "false|Virtual node " + hash +" already exists";
             }
             else {
-                result = "true|Node added successfully, hash " + hash;
+                result = "true|Virtual Node added successfully at " + hash;
                 // Get the index of the inserted virtual node in the BinarySearchList
                 int index = vNode.getIndex();
                 // Get its successors and predecessors
