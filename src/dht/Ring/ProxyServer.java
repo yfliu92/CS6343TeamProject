@@ -15,7 +15,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import storage_server.Datum;
+import dht.common.response.Response;
 
 public class ProxyServer extends PhysicalNode {
     public static int numOfReplicas = 3;
@@ -86,7 +86,7 @@ public class ProxyServer extends PhysicalNode {
             
             super.setLookupTable(t);
 
-//            String result = "After initialization, virtual nodes include: \n";
+//            String result = "After initialization, virtual nodes include: \r\n";
 //            for(VirtualNode node : t.getTable()) {
 //                result += node.getHash() + " ";
 //            }
@@ -96,24 +96,18 @@ public class ProxyServer extends PhysicalNode {
 //                result += id + ", ";
 //            }
 //            System.out.print(result);
+            
 			System.out.println("Initialized successfully: " + physicalNodes.values().size() + " physical nodes, " + t.getTable().size() + " virtual nodes");
         }catch(DocumentException e) {
         	System.out.println("Failed to initialize");
             e.printStackTrace();
         }
     }
-
-	public static String getFindInfo(String input) {
-		return input.toUpperCase();
-	}
 	
 	public String getResponse(String commandStr, DataStore dataStore) {
 		Command command = new Command(commandStr);
 		try {
-			if (command.getAction().equals("find")) {
-				return getFindInfo(command.getInput());
-			}
-			else if (command.getAction().equals("read")) {
+			if (command.getAction().equals("read")) {
 				String dataStr = command.getCommandSeries().get(0);
 				return dataStore.readRes(dataStr);
 			}
@@ -121,7 +115,20 @@ public class ProxyServer extends PhysicalNode {
 				String dataStr = command.getCommandSeries().get(0);
 				int rawhash = Hashing.getHashValFromKeyword(dataStr);
 				int virtualnode = command.getCommandSeries().size() > 1 ? Integer.parseInt(command.getCommandSeries().get(1)) : super.getVirtualNode(dataStr).getHash();
-				return dataStore.writeRes(dataStr, rawhash, new int[]{virtualnode});
+				int[] virtualnodeids;
+				if (command.getCommandSeries().size() == 1) {
+					List<VirtualNode> virtualnodes = super.getSuccessors(dataStr);
+					virtualnodeids = new int[1 + virtualnodes.size()];
+					virtualnodeids[0] = virtualnode;
+					for(int i = 0; i < virtualnodes.size(); i++) {
+						virtualnodeids[i + 1] = virtualnodes.get(i).getHash();
+					}
+				}
+				else {
+					virtualnodeids = new int[]{virtualnode};
+				}
+				
+				return dataStore.writeRes(dataStr, rawhash, virtualnodeids);
 			}
 			else if (command.getAction().equals("writebatch")) {
 				int batchsize = command.getCommandSeries().size() > 0 ? Integer.valueOf(command.getCommandSeries().get(0)) : WRITE_BATCH_SIZE;
@@ -150,10 +157,26 @@ public class ProxyServer extends PhysicalNode {
 				int hash = Integer.valueOf(command.getCommandSeries().get(0));
 				String result = super.deleteNode(hash);
 				return result;
-//				return "remove";
 			}
 			else if (command.getAction().equals("info")) {
-				return super.listNodes();
+				return new Response(true, super.listNodes()).serialize();
+			}
+			else if (command.getAction().equals("dht")) {
+				String operation = command.getCommandSeries().get(0);
+				if (operation.equals("epoch")) {
+					return String.valueOf(super.getLookupTable().getEpoch());
+				}
+				else if (operation.equals("list")) {
+					super.getLookupTable().print();
+					return "";
+				}
+				else if (operation.equals("pull")) {
+					return super.getLookupTable().serialize();
+				}
+				else {
+					return "";
+				}
+			
 			}
 			else {
 				return "Command not supported";
@@ -164,63 +187,172 @@ public class ProxyServer extends PhysicalNode {
 		}
 	}
 	
-	public static void main(String[] args) throws IOException {
-		// TODO Auto-generated method stub
+	public class ClientHandler extends Thread  
+	{
+	    final BufferedReader input;
+	    final PrintWriter output;
+	    final Socket s; 
+	    final ProxyServer proxy;
+	    final DataStore dataStore;
+	  
+	    public ClientHandler(Socket s, BufferedReader input, PrintWriter output, ProxyServer proxy, DataStore dataStore) {
+	    	this.s = s; 
+	    	this.input = input;
+	        this.output = output;
+	        this.proxy = proxy;
+	        this.dataStore = dataStore;
+	    }
+	  
+	    @Override
+	    public void run()  
+	    { 
+	        String msg; 
+	        while (true)  
+	        { 
+	            try {
+	            	msg = input.readLine(); 
+	                if (msg == null) {
+                		System.out.println("Connection end " + " ---- " + new Date().toString());
+                		break;
+	                }
+	                  
+	                if (msg.equals("Exit")) 
+	                {  
+	                    System.out.println("Client " + this.s + " sends exit..."); 
+	                    System.out.println("Closing this connection."); 
+	                    this.s.close(); 
+	                    System.out.println("Connection closed by " + s.getPort()); 
+	                    break; 
+	                }
+	                else { // msg != null
+                    	System.out.println("Request received from " + s.getPort() + ": " + msg + " ---- " + new Date().toString());
+                    	System.out.println();
+                    	
+                    	String response = proxy.getResponse(msg, dataStore);
+
+                    	output.println(response);
+                    	output.flush();
+                    	
+                        System.out.println("Response sent to " + s.getPort() + ": " + response + " ---- " + new Date().toString());
+                        System.out.println();
+                	}
+              
+	            } catch (IOException e) { 
+	            	System.out.println("Connection reset at " + s.getPort() + " ---- " + new Date().toString());
+	                e.printStackTrace(); 
+            		break;
+	            } 
+	        } 
+	          
+	        try
+	        { 
+	        	this.output.close();
+	        	this.input.close();
+	              
+	        }catch(IOException e){ 
+	            e.printStackTrace(); 
+	        } 
+	    } 
+	}
+	
+    public static void main(String[] args) throws IOException { 
 		ProxyServer proxy = new ProxyServer();
 		//Initialize the ring cluster
 		proxy.initializeRing();
 		
 		DataStore dataStore = new DataStore();
-		
 		int port = 9091;
-    	System.out.println("Ring server running at " + String.valueOf(port));
-        ServerSocket listener = new ServerSocket(port);
-        
-        try {
-            while (true) {
-            	Socket socket = listener.accept();
-            	System.out.println("Connection accepted" + " ---- " + new Date().toString());
-                try {
-                	BufferedReader in = new BufferedReader(
-                            new InputStreamReader(socket.getInputStream()));
-                    PrintWriter out =
-                            new PrintWriter(socket.getOutputStream(), true);
-                	String msg;
-                	while(true) {
-                		try {
-                    		msg = in.readLine();
-                        	if (msg != null) {
-                            	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
-                            	System.out.println();
+        ServerSocket ss = new ServerSocket(port); 
+        System.out.println("Ring server running at " + String.valueOf(port));
+          
+        while (true)  
+        { 
+            Socket s = null; 
+              
+            try 
+            {
+                s = ss.accept(); 
+                  
+                System.out.println("A new client is connected : " + s); 
+                  
+            	BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
+		        PrintWriter output = new PrintWriter(s.getOutputStream(), true);
+		        
+            	output.println(s.getPort());
+            	output.flush();
+  
+                Thread t = proxy.new ClientHandler(s, input, output, proxy, dataStore); 
 
-                                String response = proxy.getResponse(msg, dataStore);
-                                out.println(response);
-                                System.out.println("Response sent: " + response);
-                                System.out.println();
-                        	}
-                        	else {
-                        		System.out.println("Connection end " + " ---- " + new Date().toString());
-                        		System.out.println();
-                        		break;
-                        	}
-                		}
-                		catch (Exception ee) {
-                    		System.out.println("Connection reset " + " ---- " + new Date().toString());
-                    		System.out.println();
-                    		break;
-                		}
-
-                	}
-
-                } finally {
-                    socket.close();
-                }
-            }
-        }
-        finally {
-            listener.close();
-        }
-		
-	}
+                t.start(); 
+                  
+            } 
+            catch (Exception e){ 
+                s.close(); 
+                e.printStackTrace(); 
+            } 
+        } 
+    } 
+    
+//	public static void main(String[] args) throws IOException {
+//	// TODO Auto-generated method stub
+//	ProxyServer proxy = new ProxyServer();
+//	//Initialize the ring cluster
+//	proxy.initializeRing();
+//	
+//	DataStore dataStore = new DataStore();
+////	System.out.println(dataStore.writeRandomRes(WRITE_BATCH_SIZE, proxy));
+////	System.out.println(dataStore.updateRandomRes(WRITE_BATCH_SIZE * 3, proxy));
+//	
+//	int port = 9091;
+//	System.out.println("Ring server running at " + String.valueOf(port));
+//    ServerSocket listener = new ServerSocket(port);
+//    
+//    try {
+//        while (true) {
+//        	Socket socket = listener.accept();
+//        	System.out.println("Connection accepted" + " ---- " + new Date().toString());
+//            try {
+//            	BufferedReader input = new BufferedReader(
+//                        new InputStreamReader(socket.getInputStream()));
+//                PrintWriter output =
+//                        new PrintWriter(socket.getOutputStream(), true);
+//            	String msg;
+//            	while(true) {
+//            		try {
+//                		msg = input.readLine();
+//                    	if (msg != null) {
+//                        	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
+//                        	System.out.println();
+//
+//                            String response = proxy.getResponse(msg, dataStore);
+//                            
+//                            output.println(response);
+//                            System.out.println("Response sent: " + response + " ---- " + new Date().toString());
+//                            System.out.println();
+//                    	}
+//                    	else {
+//                    		System.out.println("Connection end " + " ---- " + new Date().toString());
+//                    		System.out.println();
+//                    		break;
+//                    	}
+//            		}
+//            		catch (Exception ee) {
+//                		System.out.println("Connection reset " + " ---- " + new Date().toString());
+//                		System.out.println();
+//                		break;
+//            		}
+//
+//            	}
+//
+//            } finally {
+//                socket.close();
+//            }
+//        }
+//    }
+//    finally {
+//        listener.close();
+//    }
+//	
+//}
 
 }

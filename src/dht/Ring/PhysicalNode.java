@@ -1,14 +1,26 @@
 package dht.Ring;
 
 import dht.common.Hashing;
+import control_client.control_client;
 
+import java.io.BufferedReader;
+import java.io.Console;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
 import java.util.*;
 
-//import javax.json.Json;
-//import javax.json.JsonObject;
-//import javax.json.JsonObjectBuilder;
-//import javax.json.JsonReader;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 public class PhysicalNode {
 
@@ -49,6 +61,18 @@ public class PhysicalNode {
     	int rawHash = Hashing.getHashValFromKeyword(keyword);
     	VirtualNode node = this.lookupTable.getTable().find(rawHash);
     	return node;
+    }
+    
+    public List<VirtualNode> getSuccessors(String keyword) {
+    	VirtualNode vNode = getVirtualNode(keyword);
+    	int index = vNode.getIndex();
+        List<VirtualNode> successors = new ArrayList<>();
+        for (int i = 0; i < ProxyServer.numOfReplicas; i++){
+            VirtualNode next = lookupTable.getTable().next(index + i);
+            successors.add(next);
+        }
+        
+        return successors;
     }
 
     public String getId() {
@@ -100,28 +124,27 @@ public class PhysicalNode {
     }
     
     public String listNodes() {
-    	BinarySearchList list = lookupTable.getTable();
-    	StringBuilder result = new StringBuilder(); 
-    	result.append("Existing nodes (" + list.size() + "): ");
+//    	BinarySearchList list = lookupTable.getTable();
+//    	StringBuilder result = new StringBuilder(); 
+//    	result.append("Existing nodes (" + list.size() + "): ");
+//    	
+//    	for(int i = 0; i < list.size(); i++) {
+//    		result.append("   Virtual Node" + list.get(i).getHash() + ", Physical Node: " + list.get(i).getPhysicalNodeId());
+//    	}
+//    	
+//    	return result.toString();
     	
-    	for(int i = 0; i < list.size(); i++) {
-    		result.append("\nVirtual Node" + list.get(i).getHash() + ", Physical Node: " + list.get(i).getPhysicalNodeId());
-    	}
-    	
-    	return result.toString();
+    	return lookupTable.serialize();
     }
     
     public String addNode(String ip, int port) {
     	int hash = lookupTable.getTable().getRanHash();
-//    	JsonObjectBuilder result = Json.createObjectBuilder();
 
     	String result = "";
     	if (hash >= 0) {
 
     		try {
         		addNode(ip, port, hash);
-//            	result.add("success", true);
-//            	result.add("message", "Node added successfully, hash " + hash);
         		result = "true|Node added successfully, hash " + hash;
     		}
     		catch(Exception ee) {
@@ -130,12 +153,9 @@ public class PhysicalNode {
 
     	}
     	else {
-//        	result.add("success", false);
-//        	result.add("message", "Virtual node exhausted");
     		result = "false|Virtual node exhausted";
     	}
 
-//    	return result.build().toString();
     	return result;
     }
 
@@ -145,11 +165,15 @@ public class PhysicalNode {
         String address1 = " (" + fromNode.getPhysicalNodeId() + ")";
         String address2 = " (" + toNode.getPhysicalNodeId() + ")";
         // v means virtual node
-        result.append("\nfrom v" + fromNode.getHash() + address1 +  " to v" + toNode.getHash() + address2 + ":\n\t"
+//        result.append("\r\nfrom v" + fromNode.getHash() + address1 +  " to v" + toNode.getHash() + address2 + ":\r\n"
+//                + "Transferring data for hash range of (" + start + ", " + end + ")");
+        result.append(" from v" + fromNode.getHash() + address1 +  " to v" + toNode.getHash() + address2 + ": "
                 + "Transferring data for hash range of (" + start + ", " + end + ")");
         
         return result.toString();
     }
+    
+
 
     // Add a physical node that maps to more than 1 virtual node
     public String addNode(String ip, int port, int[] hashes){
@@ -372,4 +396,5 @@ public class PhysicalNode {
 //        System.out.println("Reading completed");
 //
 //    }
+
 }
