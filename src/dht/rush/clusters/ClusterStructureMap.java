@@ -4,6 +4,9 @@ import dht.rush.commands.CommandResponse;
 import dht.rush.utils.RushUtil;
 import dht.server.Command;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.util.*;
 
 public class ClusterStructureMap {
@@ -300,5 +303,36 @@ public class ClusterStructureMap {
     public String generatePlacementGroupId(String str) {
         int pgid = RushUtil.positiveHash(str.hashCode()) % RushUtil.NUMBER_OF_PLACEMENT_GROUP;
         return "PG" + pgid;
+    }
+
+    /**
+     *
+     * @return
+     * The most recent cluster structure map
+     */
+
+    public JsonObject getClusterMap() {
+        JsonObjectBuilder jcb = Json.createObjectBuilder();
+
+        Cluster root = this.getChildrenList().get("R");
+        Queue<Cluster> queue = new LinkedList<>();
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            Cluster node = queue.poll();
+
+
+
+            List<Cluster> list = node.getSubClusters();
+            for (int i = 0; i < list.size(); i++) {
+                Cluster child = list.get(i);
+
+            }
+
+        }
+
+
+        JsonObject jsonObject = jcb.build();
+        return jsonObject;
     }
 }

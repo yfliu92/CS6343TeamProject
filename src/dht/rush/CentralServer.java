@@ -144,6 +144,12 @@ public class CentralServer {
                 ((ReadCommand) serverCommand).setFileName(params.getString("fileName"));
                 break;
 
+            case "getmap":
+                System.out.println("Start to get the most recent tree map");
+                serverCommand = new GetMapCommand();
+                ((GetMapCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                break;
+
             default:
                 System.out.println("Unknown Request");
         }
