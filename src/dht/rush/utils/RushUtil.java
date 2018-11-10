@@ -6,11 +6,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RushUtil {
-    public static final long MAX_VALUE = 0xFFFFFFFFL;
-    public static final double MAX_NODE = 15359.0;
+    private static final long MAX_VALUE = 0xFFFFFFFFL;
+    private static final double MAX_NODE = 15359.0;
 
     public static int NUMBER_OF_PLACEMENT_GROUP = 0;
     public static int NUMBER_OF_REPLICAS = 0;
+
 
     public static Double rushHash(String s, int r, String id) {
         long a = s.hashCode();

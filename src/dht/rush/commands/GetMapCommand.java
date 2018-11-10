@@ -14,7 +14,21 @@ public class GetMapCommand extends ServerCommand {
 
     @Override
     public void run() throws IOException {
+        JsonObject ret = clusterStructureMap.getClusterMap();
 
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        JsonWriter writer = Json.createWriter(baos);
+        JsonObject params =  Json.createObjectBuilder()
+                .add("epoch", ret.get("epoch"))
+                .add("nodes", ret.getJsonObject("nodes"))
+                .add("status", "OK")
+                .build();
+
+        writer.writeObject(params);
+        writer.close();
+        baos.writeTo(outputStream);
+        outputStream.write("\n".getBytes());
+        outputStream.flush();
 
     }
 

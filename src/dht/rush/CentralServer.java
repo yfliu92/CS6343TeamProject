@@ -2,20 +2,15 @@ package dht.rush;
 
 import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
-import dht.rush.clusters.Root;
 import dht.rush.commands.*;
 import dht.rush.utils.ConfigurationUtil;
 import dht.rush.utils.StreamUtil;
 
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.SQLOutput;
 import java.util.Date;
-import java.util.HashMap;
 
 public class CentralServer {
     private Cluster root;
@@ -148,6 +143,17 @@ public class CentralServer {
                 System.out.println("Start to get the most recent tree map");
                 serverCommand = new GetMapCommand();
                 ((GetMapCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                break;
+
+            case "changeweight":
+                System.out.println("Change node weight command");
+                serverCommand = new ChangeWeightCommand();
+                params = requestObject.getJsonObject("parameters");
+                ((ChangeWeightCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
+                ((ChangeWeightCommand) serverCommand).setIp(params.getString("ip"));
+                ((ChangeWeightCommand) serverCommand).setPort(params.getString("port"));
+                ((ChangeWeightCommand) serverCommand).setWeight(Double.parseDouble(params.getString("weight")));
+                ((ChangeWeightCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 break;
 
             default:
