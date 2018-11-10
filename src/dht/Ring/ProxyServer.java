@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +74,9 @@ public class ProxyServer extends PhysicalNode {
                 physicalNodes.get(id).setVirtualNodes(virtualNodes);
                 start += hashRange / (physicalNodes.size() * virtualNodesMapping);
             }
+            
+            table.updateIndex();
+            
             // Create a lookupTable and set it to every physical node
             LookupTable t = new LookupTable();
             t.setTable(table);
@@ -109,7 +113,19 @@ public class ProxyServer extends PhysicalNode {
 		try {
 			if (command.getAction().equals("read")) {
 				String dataStr = command.getCommandSeries().get(0);
-				return dataStore.readRes(dataStr);
+//				return dataStore.readRes(dataStr);
+				
+    			int rawhash = Hashing.getHashValFromKeyword(dataStr);
+    			try {
+    				rawhash = Integer.valueOf(dataStr);
+    			}
+    			catch (Exception e) {
+    				
+    			}
+
+    			int[] virtualnodeids = super.getLookupTable().getTable().getVirtualNodeIds(rawhash);
+    			return new Response(true, Arrays.toString(virtualnodeids), "Virtual Node IDs from server").serialize();
+				
 			}
 			else if (command.getAction().equals("write")) {
 				String dataStr = command.getCommandSeries().get(0);
@@ -146,8 +162,13 @@ public class ProxyServer extends PhysicalNode {
 				String result = super.deleteNode(hash);
 				return result;
 			}
+			else if (command.getAction().equals("find")) {
+				int hash = Integer.valueOf(command.getCommandSeries().get(0));
+				return new Response(true, super.getLookupTable().getTable().find(hash).toJSON(), "Virtual Node Info at Server").serialize();
+			}
 			else if (command.getAction().equals("info")) {
-				return new Response(true, super.listNodes()).serialize();
+//				return new Response(true, super.listNodes()).serialize();
+				return new Response(true, super.getLookupTable().toJSON(), "DHT Table from Server").serialize();
 			}
 			else if (command.getAction().equals("dht")) {
 				String operation = command.getCommandSeries().size() > 0 ? command.getCommandSeries().get(0) : "head";
@@ -157,6 +178,10 @@ public class ProxyServer extends PhysicalNode {
 				else if (operation.equals("pull")) {
 //					return super.getLookupTable().serialize();
 					return new Response(true, super.getLookupTable().toJSON(), "Ring DHT table").serialize();
+				}
+				else if (operation.equals("print")) {
+					super.getLookupTable().print();
+					return new Response(true, "DHT printed on server").serialize();
 				}
 				else {
 					return new Response(false, "Command not supported").serialize();

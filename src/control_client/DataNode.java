@@ -154,7 +154,7 @@ class DataNodeClient {
     		return;
     	}
     	
-    	String[] jsonCommands = {"read", "write", "data", "dht", "info", "writebatch", "updatebatch"};
+    	String[] jsonCommands = {"read", "write", "data", "dht", "find", "info", "writebatch", "updatebatch"};
     	for(String jsonCommand: jsonCommands) {
     		if (command.getAction().equals(jsonCommand)) {
     			sendCommandStr_JsonRes(command, input, output);
@@ -178,7 +178,7 @@ class DataNodeClient {
         if (res != null) {
             System.out.println();
             System.out.println("Response received at " + timeStamp);
-            parseResponse(res, command);
+            parseResponse(res, command, input, output);
         	
         	System.out.println();
          }
@@ -201,7 +201,7 @@ class DataNodeClient {
     	return false;
     }
     
-    public void parseResponse(JsonObject res, Command command) {
+    public void parseResponse(JsonObject res, Command command, BufferedReader input, PrintWriter output) throws Exception {
     	if (command.getAction().equals("dht")) {
     		String action2 = command.getCommandSeries().size() > 0 ? command.getCommandSeries().get(0) : "head";
     		if (action2.equals("pull")) {
@@ -235,11 +235,43 @@ class DataNodeClient {
     			catch (Exception e) {
     				
     			}
-    					
+    			
     			int[] virtualnodeids = this.dataNode.getLookupTable().getTable().getVirtualNodeIds(rawhash);
+    			String virtualnodeids_remote = res.getString("result");
     			System.out.println("Raw hash of " + dataStr + ": " + rawhash);
     			System.out.println("Virtual Node Ids from Local DHT: " + Arrays.toString(virtualnodeids));
+    			if (!Arrays.toString(virtualnodeids).equals(virtualnodeids_remote)) {
+    				System.out.println("Local DHT is outdated");
+    				System.out.println("Virtual Node Ids from Remote DHT: " + virtualnodeids_remote);
+    				System.out.println("Starting to update DHT...");
+    				sendCommandStr(new Command("dht pull"), input, output);
+    			}
+    			return;
     		}
+    	}
+    	else if (command.getAction().equals("find")) {
+    		int hash = command.getCommandSeries().size() > 0 ? Integer.valueOf(command.getCommandSeries().get(0)) : -1;
+    		String localVirtualNode = hash >= 0 ? String.valueOf(this.dataNode.getLookupTable().getTable().find(hash).getHash()) : "";
+    		String virtualNode = res.getJsonObject("jsonResult").get("hash").toString();
+    		String physicalNode = res.getJsonObject("jsonResult").getString("physicalNodeId");
+    		System.out.println("Node Info: " + physicalNode + " (hash: " + virtualNode + ")");
+    		if (!virtualNode.equals(localVirtualNode)) {
+    			System.out.println("Local DHT is outdated.");
+    		}
+    		else {
+    			System.out.println("Local DHT is update to date.");
+    		}
+    		return;
+    	}
+    	else if (command.getAction().equals("info")) {
+    		String epoch = res.getJsonObject("jsonResult").get("epoch").toString();
+    		System.out.println("DHT table info");
+    		System.out.println("Epoch number: " + epoch);
+    		JsonArray tableResult = res.getJsonObject("jsonResult").get("table").asJsonArray();
+    		for(int i = 0; i < tableResult.size(); i++) {
+    			System.out.println(tableResult.get(i));
+    		}
+    		return;
     	}
     	
     	if (res.containsKey("status")) {
@@ -386,11 +418,10 @@ class DataNodeClient {
     	switch(dhtType) {
 	    	case 1:
 	    		tip = "\nhelp";
-	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <hash>\nremove <hash>";
-	    		tip += "\nloadbalance <delta> <hash>";
+	    		tip += "\nfind <hash>    //find the virtual node on the server corresponding to the hash value";
 	    		tip += "\ndht head|pull  //fetch server dht table info";
 	    		tip += "\ndht info|list  //show local dht table info";
-	    		tip += "\ninfo";
+	    		tip += "\ninfo           //show server dht table info";
 	    		tip += "\nexit\n";
 	    		break;
 	    	case 2:

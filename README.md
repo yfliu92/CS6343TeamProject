@@ -46,7 +46,7 @@ java -classpath .:../lib/\* control_client/DataNode
 
 ## compile and run control client
 javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar control_client/control_client.java dht/server/Command.java
-javac -classpath ../lib/\* control_client/control_client.java dht/server/Command.java
+javac -classpath ../lib/\* control_client/control_client.java dht/server/Command.java dht/common/Hashing.java
 
 java control_client/control_client
 java -classpath .:../lib/\* control_client/control_client

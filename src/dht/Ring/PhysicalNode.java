@@ -209,6 +209,8 @@ public class PhysicalNode {
                     else
                         result += dataTransfer(successors.get(i), vNode, predecessors.get(successors.size() - 1 - i).getHash() + 1, hash);
                 }
+                
+                lookupTable.getTable().updateIndex();
 
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 lookupTable.setEpoch(timestamp.getTime());

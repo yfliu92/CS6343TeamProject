@@ -69,6 +69,21 @@ public class LookupTable {
 		return jsonBuilder.build();
 	}
 	
+	public boolean buildTable(JsonObject data) {
+		this.table.clear();
+		if (data.containsKey("epoch")) {
+			this.setEpoch(Long.valueOf(data.get("epoch").toString()));
+		}
+		if (data.containsKey("table")) {
+			JsonArray jsonArray = data.get("table").asJsonArray();
+			for(int i = 0; i < jsonArray.size(); i++) {
+				this.table.add(new VirtualNode(jsonArray.getJsonObject(i)));
+			}
+		}
+		
+		return true;
+	}
+	
 	public void print() {
 		if (this.table == null || this.table.size() == 0) {
 			System.out.println("No data found in the table");
