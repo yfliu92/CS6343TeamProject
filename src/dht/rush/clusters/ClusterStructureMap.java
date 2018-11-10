@@ -375,7 +375,7 @@ public class ClusterStructureMap {
                     if (c.getActive()) {
                         c.setWeight(weight);
 
-                        ret.setTransferMap(transferedMap(c));
+                        ret.setTransferMap(transferedFileInSubCluster(sub));
                         ret.setStatus(1);
                         this.addEpoch();
                     }
