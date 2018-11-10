@@ -114,19 +114,7 @@ public class ProxyServer extends PhysicalNode {
 			else if (command.getAction().equals("write")) {
 				String dataStr = command.getCommandSeries().get(0);
 				int rawhash = Hashing.getHashValFromKeyword(dataStr);
-				int virtualnode = command.getCommandSeries().size() > 1 ? Integer.parseInt(command.getCommandSeries().get(1)) : super.getVirtualNode(dataStr).getHash();
-				int[] virtualnodeids;
-				if (command.getCommandSeries().size() == 1) {
-					List<VirtualNode> virtualnodes = super.getSuccessors(dataStr);
-					virtualnodeids = new int[1 + virtualnodes.size()];
-					virtualnodeids[0] = virtualnode;
-					for(int i = 0; i < virtualnodes.size(); i++) {
-						virtualnodeids[i + 1] = virtualnodes.get(i).getHash();
-					}
-				}
-				else {
-					virtualnodeids = new int[]{virtualnode};
-				}
+				int[] virtualnodeids = super.getLookupTable().getTable().getVirtualNodeIds(rawhash);
 				
 				return dataStore.writeRes(dataStr, rawhash, virtualnodeids);
 			}
@@ -162,19 +150,16 @@ public class ProxyServer extends PhysicalNode {
 				return new Response(true, super.listNodes()).serialize();
 			}
 			else if (command.getAction().equals("dht")) {
-				String operation = command.getCommandSeries().get(0);
-				if (operation.equals("epoch")) {
-					return String.valueOf(super.getLookupTable().getEpoch());
-				}
-				else if (operation.equals("list")) {
-					super.getLookupTable().print();
-					return "";
+				String operation = command.getCommandSeries().size() > 0 ? command.getCommandSeries().get(0) : "head";
+				if (operation.equals("head")) {
+					return new Response(true, String.valueOf(super.getLookupTable().getEpoch()), "Current epoch number:").serialize();
 				}
 				else if (operation.equals("pull")) {
-					return super.getLookupTable().serialize();
+//					return super.getLookupTable().serialize();
+					return new Response(true, super.getLookupTable().toJSON(), "Ring DHT table").serialize();
 				}
 				else {
-					return "";
+					return new Response(false, "Command not supported").serialize();
 				}
 			
 			}
@@ -277,9 +262,9 @@ public class ProxyServer extends PhysicalNode {
                   
             	BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		        PrintWriter output = new PrintWriter(s.getOutputStream(), true);
-		        
-            	output.println(s.getPort());
-            	output.flush();
+//		        
+//            	output.println(s.getPort());
+//            	output.flush();
   
                 Thread t = proxy.new ClientHandler(s, input, output, proxy, dataStore); 
 

@@ -40,6 +40,7 @@ java -classpath .:../lib/\* dht/Ring/ProxyServer
 
 ## compile and run Ring Data Node
 javac -classpath ../lib/\* control_client/*.java dht/server/Command.java
+javac -classpath ../lib/\* control_client/*.java dht/server/Command.java dht/Ring/*.java dht/common/Hashing.java dht/common/response/*.java storage_server/Datum.java
 java -classpath .:../lib/\* control_client/DataNode
 
 

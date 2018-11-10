@@ -210,9 +210,9 @@ public class control_client {
 			input = new BufferedReader(new InputStreamReader(inputStream));
 //	        out = new PrintWriter(socket.getOutputStream(), true);
 //	        input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String serverport = input.readLine();
+//			String serverport = input.readLine();
 	        
-	        System.out.println("Connected to server " + serverAddress + ":" + port + ", allocated server port " + serverport);
+	        System.out.println("Connected to server " + serverAddress + ":" + port + ", with local port " + socket.getLocalPort());
 //			socket.close();
 			return true;
  
@@ -228,26 +228,11 @@ public class control_client {
 		}
     }
     
-    public void sendCommandStr2(String command, BufferedReader input, PrintWriter output) throws Exception {
-    	if (command.startsWith("read") || command.startsWith("write") || command.startsWith("data") || command.startsWith("dht pull")) {
-    		sendCommandStrNew(command, input, output);
-    		return;
-    	}
-
-    	System.out.println("Sending command" + " ---- " + new Date().toString());
-            output.println(command);
-        System.out.println("Response received " + " ---- " + new Date().toString());
-        String temp = null;
-        while((temp = input.readLine()) != null) {
-        	System.out.println(temp);
-        }
-    }
-    
     public void sendCommandStr(String command, BufferedReader input, PrintWriter output) throws Exception {
     	String[] jsonCommands = {"read", "write", "data", "dht", "info", "writebatch", "updatebatch"};
     	for(String jsonCommand: jsonCommands) {
     		if (command.startsWith(jsonCommand)) {
-    			sendCommandStrNew(command, input, output);
+    			sendCommandStr_JsonRes(command, input, output);
     			return;
     		}
     	}
@@ -259,7 +244,7 @@ public class control_client {
         System.out.println("Response received: " + response + " ---- " + new Date().toString());
     }
     
-    public void sendCommandStrNew(String command, BufferedReader input, PrintWriter output) throws Exception {
+    public void sendCommandStr_JsonRes(String command, BufferedReader input, PrintWriter output) throws Exception {
     	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + command + " ---- " + timeStamp);

@@ -1,10 +1,9 @@
 package dht.Ring;
 
 import java.util.*;
+import java.util.Map.Entry;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import javax.json.*;
 
 public class LookupTable {
 
@@ -14,12 +13,10 @@ public class LookupTable {
 
     private HashMap<String, PhysicalNode> physicalNodeMap;
 
-
     public LookupTable() {
     	this.table = new BinarySearchList();
     	this.physicalNodeMap = new HashMap<>();
     }
-
 
     public long getEpoch() {
         return epoch;
@@ -51,16 +48,38 @@ public class LookupTable {
 
 	public JsonObject toJSON() {
 		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+//		for(VirtualNode node: this.table) {
+//			jsonBuilder.add(String.valueOf(node.getIndex()), node.toJSON());
+//		}
+		
+//		JsonObject[] virtualNodes = new JsonObject[this.table.size()]; 
+		
+		jsonBuilder.add("epoch", this.epoch);
+		
+		JsonArrayBuilder tableBuilder = Json.createArrayBuilder();
+//		int i = 0;
 		for(VirtualNode node: this.table) {
-			jsonBuilder.add(String.valueOf(node.getIndex()), node.toJSON());
+//			jsonBuilder.add(String.valueOf(node.getIndex()), node.toJSON());
+			tableBuilder.add(node.toJSON());
+//			virtualNodes[i] = node.toJSON();
+//			i++;
 		}
+		jsonBuilder.add("table", tableBuilder.build());
+		
 		return jsonBuilder.build();
 	}
 	
 	public void print() {
-		for(VirtualNode node: this.table) {
-			System.out.println(node.serialize());
+		if (this.table == null || this.table.size() == 0) {
+			System.out.println("No data found in the table");
 		}
+		else {
+			System.out.println("epoch number: " + this.epoch);
+			for(VirtualNode node: this.table) {
+				System.out.println(node.serialize());
+			}
+		}
+
 	}
 
 }

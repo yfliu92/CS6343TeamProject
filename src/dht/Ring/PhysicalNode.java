@@ -56,24 +56,6 @@ public class PhysicalNode {
         this.virtualNodes = nodes;
         this.lookupTable = new LookupTable();
     }
-    
-    public VirtualNode getVirtualNode(String keyword) {
-    	int rawHash = Hashing.getHashValFromKeyword(keyword);
-    	VirtualNode node = this.lookupTable.getTable().find(rawHash);
-    	return node;
-    }
-    
-    public List<VirtualNode> getSuccessors(String keyword) {
-    	VirtualNode vNode = getVirtualNode(keyword);
-    	int index = vNode.getIndex();
-        List<VirtualNode> successors = new ArrayList<>();
-        for (int i = 0; i < ProxyServer.numOfReplicas; i++){
-            VirtualNode next = lookupTable.getTable().next(index + i);
-            successors.add(next);
-        }
-        
-        return successors;
-    }
 
     public String getId() {
         return id;
