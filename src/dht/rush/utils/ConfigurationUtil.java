@@ -69,9 +69,9 @@ public class ConfigurationUtil {
             for (Map.Entry<String, Cluster> en : entrySets) {
                 Cluster c = en.getValue();
                 String pid = c.getParentId();
-                ClusterStructureMap clusterStructureMap = c.getCachedTreeStructure();
-                clusterStructureMap.setEpoch(0);
-                clusterStructureMap.setNumberOfReplicas(numberOfReplicas);
+//                ClusterStructureMap clusterStructureMap = c.getCachedTreeStructure();
+//                clusterStructureMap.setEpoch(0);
+//                clusterStructureMap.setNumberOfReplicas(numberOfReplicas);
 
                 if (!pid.equals("")) {
                     Cluster parent = clusterList.get(pid);
@@ -88,6 +88,7 @@ public class ConfigurationUtil {
                 fakeParentOfRoot.getCachedTreeStructure().getNodes(id);
             }
 
+            fakeParentOfRoot.getCachedTreeStructure().setEpoch(0);
 //            root.setCachedTreeStructure(fakeParentOfRoot.getCachedTreeStructure());
             return fakeParentOfRoot.getCachedTreeStructure();
         } catch (DocumentException e) {

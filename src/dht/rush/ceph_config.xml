@@ -14,7 +14,7 @@
     <!-- Number of Replicas -->
     <replicationDegree>3</replicationDegree>
 
-    <placementGroupNumber>8</placementGroupNumber>
+    <placementGroupNumber>1024</placementGroupNumber>
 
     <subClusters>
         <subCluster>
