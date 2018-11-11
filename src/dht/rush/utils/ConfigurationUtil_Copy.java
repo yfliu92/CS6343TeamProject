@@ -7,9 +7,12 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class ConfigurationUtil {
+public class ConfigurationUtil_Copy {
     public static ClusterStructureMap parseConfig(String path) {
         SAXReader reader = new SAXReader();
         Cluster root;
@@ -31,9 +34,6 @@ public class ConfigurationUtil {
             int numberOfReplicas = Integer.parseInt(rootElement.element("replicationDegree").getStringValue());
             RushUtil.setNumberOfReplicas(numberOfReplicas);
 
-            int numberOfCommands = Integer.parseInt(rootElement.element("commandNumber").getStringValue());
-            RushUtil.setNumberOfCommands(numberOfCommands);
-
             Element subClusters = rootElement.element("subClusters");
             List subClusterList = subClusters.elements();
 
@@ -43,27 +43,22 @@ public class ConfigurationUtil {
             int j = 0; // physical node index
 
             for (int i = 0; i < numberOfRootChildren; i++) {
-                Element subClusterElement = ((Element) subClusterList.get(i));
                 List<Element> nodesList = ((Element) subClusterList.get(i)).elements();
-                int subClusterChildrenNumber = Integer.parseInt(subClusterElement.element("offset").getStringValue());
+                int subClusterChildrenNumber = nodesList.size();
                 String subClusterId = "S" + i;
-
-                double unitWeight = Double.parseDouble(subClusterElement.element("weight").getStringValue());
-
-                double subClusterWeight = subClusterChildrenNumber * unitWeight;
-
-                String subClusterIp = subClusterElement.element("ip").getStringValue();
-                int subClusterPort = Integer.parseInt(subClusterElement.element("port").getStringValue());
-
-                for (int index = 0; index < subClusterChildrenNumber; index++) {
+                double subClusterWeight = 0;
+                for (Element e : nodesList) {
                     String nodeId = "N" + j;
-                    String nodePort = String.valueOf(subClusterPort + index);
-                    Cluster physicalNode = new PhysicalNode(nodeId, subClusterIp, nodePort, subClusterId, 0, unitWeight, true, 100);
+                    String nodeIp = e.element("ip").getStringValue();
+                    String nodePort = e.element("port").getStringValue();
+                    double nodeWeight = Double.parseDouble(e.element("weight").getStringValue());
+                    subClusterWeight += nodeWeight;
+                    Cluster physicalNode = new PhysicalNode(nodeId, nodeIp, nodePort, subClusterId, 0, nodeWeight, true, 100);
                     clusterList.put(nodeId, physicalNode);
                     j++;
                 }
                 rootWeight += subClusterWeight;
-                Cluster subCluster = new SubCluster(subClusterId, subClusterIp, "", rootId, subClusterChildrenNumber, subClusterWeight, true);
+                Cluster subCluster = new SubCluster(subClusterId, "", "", rootId, subClusterChildrenNumber, subClusterWeight, true);
                 clusterList.put(subClusterId, subCluster);
             }
 
@@ -77,6 +72,9 @@ public class ConfigurationUtil {
             for (Map.Entry<String, Cluster> en : entrySets) {
                 Cluster c = en.getValue();
                 String pid = c.getParentId();
+//                ClusterStructureMap clusterStructureMap = c.getCachedTreeStructure();
+//                clusterStructureMap.setEpoch(0);
+//                clusterStructureMap.setNumberOfReplicas(numberOfReplicas);
 
                 if (!pid.equals("")) {
                     Cluster parent = clusterList.get(pid);

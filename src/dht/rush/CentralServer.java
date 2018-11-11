@@ -4,6 +4,7 @@ import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
 import dht.rush.commands.*;
 import dht.rush.utils.ConfigurationUtil;
+import dht.rush.utils.GenerateControlClientCommandUtil;
 import dht.rush.utils.StreamUtil;
 
 import javax.json.JsonObject;
@@ -28,6 +29,13 @@ public class CentralServer {
             System.out.println("Central Server initialization failed");
             System.exit(-1);
         }
+
+        /**
+         * Will generate the control client commands, will be executed only one time, after generating the commands, comment the following code
+         */
+        GenerateControlClientCommandUtil.setMap(cs.clusterStructureMap);
+        GenerateControlClientCommandUtil.run();
+
         cs.root = cs.clusterStructureMap.getChildrenList().get("R");
         try {
             cs.startup();

@@ -241,7 +241,8 @@ public class ClusterStructureMap {
         Map<String, Cluster[]> ret = new HashMap<>();
 
         for (Cluster c : sub.getSubClusters()) {
-            ret.putAll(transferedMap(c));
+            Map<String, Cluster[]> stringMap = transferedMap(c);
+            ret.putAll(stringMap == null ? new HashMap<>() : stringMap);
         }
 
         return ret;
@@ -351,7 +352,7 @@ public class ClusterStructureMap {
         return jsonObject;
     }
 
-    public CommandResponse ChangeNodeWeight(String subCLusterId, String ip, String port, double weight) {
+    public CommandResponse changeNodeWeight(String subCLusterId, String ip, String port, double weight) {
         Cluster root = this.getChildrenList().get("R");
         CommandResponse ret = new CommandResponse();
         ret.setStatus(0);

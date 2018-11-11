@@ -6,6 +6,8 @@
 -->
 
 <config>
+    <!-- Number of Commands needed to be generated -->
+    <commandNumber>100</commandNumber>
     <!-- Central server ip and the root url for HTTP request  -->
     <ip>localhost</ip>
     <!-- All nodes will use this port as default port number -->
@@ -13,53 +15,57 @@
 
     <!-- Number of Replicas -->
     <replicationDegree>3</replicationDegree>
-
+    <!-- Number of placement groups -->
     <placementGroupNumber>1024</placementGroupNumber>
 
     <subClusters>
         <subCluster>
-            <node>
-                <ip>192.168.0.201</ip>
-                <port>8100</port>
-                <weight>1</weight>
-            </node>
-            <node>
-                <ip>192.168.0.202</ip>
-                <port>8100</port>
-                <weight>1</weight>
-            </node>
-            <node>
-                <ip>192.168.0.203</ip>
-                <port>8100</port>
-                <weight>1</weight>
-            </node>
-            <node>
-                <ip>192.168.0.204</ip>
-                <port>8100</port>
-                <weight>1</weight>
-            </node>
+            <ip>192.168.0.201</ip>
+            <port>81000</port>
+            <offset>1000</offset>
+            <weight>1.0</weight>
         </subCluster>
         <subCluster>
-            <node>
-                <ip>192.168.0.205</ip>
-                <port>8100</port>
-                <weight>1</weight>
-            </node>
-            <node>
-                <ip>192.168.0.206</ip>
-                <port>8100</port>
-                <weight>1</weight>
-            </node>
-            <node>
-                <ip>192.168.0.207</ip>
-                <port>8100</port>
-                <weight>1</weight>
-            </node>
-            <node>
-                <ip>192.168.0.208</ip>
-                <port>8100</port>
-                <weight>1</weight>
-            </node>
+            <ip>192.168.0.202</ip>
+            <port>81000</port>
+            <offset>1000</offset>
+            <weight>1.0</weight>
+        </subCluster>
+        <subCluster>
+            <ip>192.168.0.203</ip>
+            <port>81000</port>
+            <offset>1000</offset>
+            <weight>1.0</weight>
+        </subCluster>
+        <subCluster>
+            <ip>192.168.0.204</ip>
+            <port>81000</port>
+            <offset>1000</offset>
+            <weight>1.0</weight>
+        </subCluster>
+        <subCluster>
+            <ip>192.168.0.205</ip>
+            <port>81000</port>
+            <offset>1000</offset>
+            <weight>1.0</weight>
+        </subCluster>
+        <subCluster>
+            <ip>192.168.0.206</ip>
+            <port>81000</port>
+            <offset>1000</offset>
+            <weight>1.0</weight>
+        </subCluster>
+        <subCluster>
+            <ip>192.168.0.207</ip>
+            <port>81000</port>
+            <offset>1000</offset>
+            <weight>1.0</weight>
+        </subCluster>
+        <subCluster>
+            <ip>192.168.0.208</ip>
+            <port>81000</port>
+            <offset>1000</offset>
+            <weight>1.0</weight>
         </subCluster>
     </subClusters>
 </config>

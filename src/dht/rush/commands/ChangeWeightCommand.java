@@ -21,7 +21,7 @@ public class ChangeWeightCommand extends ServerCommand {
 
     @Override
     public void run() throws IOException {
-        CommandResponse commandResponse = clusterStructureMap.ChangeNodeWeight(subClusterId, ip, port, weight);
+        CommandResponse commandResponse = clusterStructureMap.changeNodeWeight(subClusterId, ip, port, weight);
 
         int status = commandResponse.getStatus();
         // "1": success change

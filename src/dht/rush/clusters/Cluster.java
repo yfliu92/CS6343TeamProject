@@ -35,7 +35,6 @@ public class Cluster {
         this.subClusters = new ArrayList<>();
         this.placementGroupMap = new HashMap<>();
         this.type = ClusterType.NONE_TYPE;
-
     }
 
     public String getId() {

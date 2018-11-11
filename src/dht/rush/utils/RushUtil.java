@@ -11,6 +11,7 @@ public class RushUtil {
 
     public static int NUMBER_OF_PLACEMENT_GROUP = 0;
     public static int NUMBER_OF_REPLICAS = 0;
+    public static int NUMBER_OF_COMMANDS = 0;
 
 
     public static Double rushHash(String s, int r, String id) {
@@ -79,5 +80,13 @@ public class RushUtil {
 
     public static void setNumberOfReplicas(int numberOfReplicas) {
         NUMBER_OF_REPLICAS = numberOfReplicas;
+    }
+
+    public static int getNumberOfCommands() {
+        return NUMBER_OF_COMMANDS;
+    }
+
+    public static void setNumberOfCommands(int numberOfCommands) {
+        NUMBER_OF_COMMANDS = numberOfCommands;
     }
 }
