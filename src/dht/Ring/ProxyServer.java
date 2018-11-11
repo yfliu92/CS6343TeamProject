@@ -29,9 +29,9 @@ public class ProxyServer extends PhysicalNode {
 	public void initializeRing(){
         try {
             // Read from the configuration file "config_ring.xml"
-            String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+//            String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
 
-//            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
             System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
@@ -146,6 +146,9 @@ public class ProxyServer extends PhysicalNode {
 				// add1 means to add a virtual node for an existing physical node
 				// Use addNode(String ip, int port, int hash) for this command
 				if (command.equals("add1")){
+					if (currentPNodes.size() == 0){
+						continue;
+					}
 					String ip_port = currentPNodes.get(ran.nextInt(currentPNodes.size())).getId();
 					String[] lst = ip_port.split("-");
 					int ran_hash;
@@ -159,6 +162,9 @@ public class ProxyServer extends PhysicalNode {
 				// add2 means to add a new physical node and map it to more than 1 virtual node
 				// Use addNode(String ip, int port, int[] hashes) for this command
 				else if (command.equals("add2")){
+					if (availablePNodes.size() == 0){
+						continue;
+					}
 					String ip_port = availablePNodes.get(ran.nextInt(availablePNodes.size()));
 					String[] lst = ip_port.split(" ");
 					String ip = lst[0];
@@ -190,6 +196,9 @@ public class ProxyServer extends PhysicalNode {
 				// remove1 means to remove a virtual node
 				// use deleteNode(int hash) for this command
 				else if (command.equals("remove1")){
+					if (currentVNodes.size() == 0){
+						continue;
+					}
 					int ran_hash = currentVNodes.get(ran.nextInt(currentVNodes.size())) ;
 					currentVNodes.remove(Integer.valueOf(ran_hash));
 					writer.write("remove " + ran_hash + "\n");
@@ -198,6 +207,9 @@ public class ProxyServer extends PhysicalNode {
 				// remove2 means to remove a physical node and all its corresponding virutal nodes
 				// use failNode(String ip, int port) for this command
 				else if (command.equals("remove2")){
+					if (currentPNodes.size() == 0){
+						continue;
+					}
 					PhysicalNode node_to_delete = currentPNodes.get(ran.nextInt(currentPNodes.size()));
 					String[] lst = node_to_delete.getId().split("-");
 					String id = lst[0] + " " + lst[1];
@@ -211,6 +223,9 @@ public class ProxyServer extends PhysicalNode {
 				}
 				// use loadBalance(int delta, int hash) for this command
 				else if (command.equals("loadbalance")) {
+					if (currentVNodes.size() == 0){
+						continue;
+					}
 					int ran_hash = currentVNodes.get(ran.nextInt(currentVNodes.size())) ;
 					int ran_delta;
 					do {

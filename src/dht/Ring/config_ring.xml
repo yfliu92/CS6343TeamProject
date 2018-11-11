@@ -6,7 +6,7 @@
     <hashRange>1000</hashRange>
     <!-- The number of virtual nodes mapped to each physical node -->
     <vm_to_pm_ratio>10</vm_to_pm_ratio>
-    <total_CCcommands>1000</total_CCcommands>
+    <total_CCcommands>500</total_CCcommands>
     <nodes>
         <node>
             <ip>192.168.0.201</ip>
