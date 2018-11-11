@@ -65,15 +65,39 @@ public class test {
 //                    .build();
 
 
+            // load balancing
+//            JsonObject params = Json.createObjectBuilder()
+//                    .add("subClusterId", "S0")
+//                    .build();
+//
+//            JsonObject jobj = Json.createObjectBuilder()
+//                    .add("method", "loadbalancing")
+//                    .add("parameters", params)
+//                    .build();
+
+            /************** get structure map  *****************/
             JsonObject params = Json.createObjectBuilder()
-                    .add("subClusterId", "S0")
+                    .add("test", "test")
                     .build();
 
             JsonObject jobj = Json.createObjectBuilder()
-                    .add("method", "loadbalancing")
+                    .add("method", "getmap")
                     .add("parameters", params)
                     .build();
 
+
+            /******Change node weight*******/
+//            JsonObject params = Json.createObjectBuilder()
+//                    .add("subClusterId", "S0")
+//                    .add("ip", "192.168.0.202")
+//                    .add("port", "8100")
+//                    .add("weight", String.valueOf(2.0))
+//                    .build();
+//
+//            JsonObject jobj = Json.createObjectBuilder()
+//                    .add("method", "changeweight")
+//                    .add("parameters", params)
+//                    .build();
 
             writer.writeObject(jobj);
             writer.close();

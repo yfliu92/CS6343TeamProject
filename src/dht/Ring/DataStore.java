@@ -7,7 +7,7 @@ import javax.json.JsonObjectBuilder;
 
 import storage_server.Datum;
 import dht.common.Hashing;
-import dht.common.response.*;;
+import dht.common.response.*;
 
 public class DataStore {
 	
@@ -61,7 +61,15 @@ public class DataStore {
 		while(num < batchsize) {
 			String datumStr = Hashing.getRanStr(0);
 			int rawhash = Hashing.getHashValFromKeyword(datumStr);
-			int virtualnode = physicalNode.getVirtualNode(datumStr).getHash();
+			int virtualnode = physicalNode.getLookupTable().getTable().getVirtualNode(datumStr).getHash();
+			
+			List<VirtualNode> virtualnodes = physicalNode.getLookupTable().getTable().getSuccessors(datumStr);
+			int[] virtualnodeids = new int[1 + virtualnodes.size()];
+			virtualnodeids[0] = virtualnode;
+			for(int i = 0; i < virtualnodes.size(); i++) {
+				virtualnodeids[i + 1] = virtualnodes.get(i).getHash();
+			}
+			
 			write(datumStr, rawhash, new int[] {virtualnode});
 			num++;
 		}
@@ -79,7 +87,7 @@ public class DataStore {
 			
 			String datumStr = String.valueOf(keys[ran.nextInt(size)]);
 			int rawhash = Hashing.getHashValFromKeyword(datumStr);
-			int virtualnode = physicalNode.getVirtualNode(datumStr).getHash();
+			int virtualnode = physicalNode.getLookupTable().getTable().getVirtualNode(datumStr).getHash();
 			write(datumStr, rawhash, new int[] {virtualnode});
 			num++;
 		}

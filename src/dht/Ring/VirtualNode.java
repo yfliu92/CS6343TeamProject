@@ -1,5 +1,9 @@
 package dht.Ring;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 public class VirtualNode implements Comparable<VirtualNode> {
 
     private int hash;
@@ -20,6 +24,18 @@ public class VirtualNode implements Comparable<VirtualNode> {
     public VirtualNode(int hash, String physicalNodeId) {
         this(hash);
         this.physicalNodeId = physicalNodeId;
+    }
+    
+    public VirtualNode(JsonObject jsonObject) {
+    	if (jsonObject.containsKey("hash")) {
+    		this.hash = jsonObject.getInt("hash");
+    	}
+    	if (jsonObject.containsKey("index")) {
+    		this.index = jsonObject.getInt("index");
+    	}
+    	if (jsonObject.containsKey("physicalNodeId")) {
+    		this.physicalNodeId = jsonObject.getString("physicalNodeId");
+    	}
     }
 
     public int getHash() {
@@ -49,4 +65,17 @@ public class VirtualNode implements Comparable<VirtualNode> {
     public int compareTo(VirtualNode o) {
         return Integer.compare(this.hash, o.getHash());
     }
+    
+	public String serialize() {
+		return this.toJSON().toString();
+	}
+
+	public JsonObject toJSON() {
+		JsonObject jsonObj = Json.createObjectBuilder()
+				.add("hash",this.hash)
+				.add("index",this.index)
+				.add("physicalNodeId",this.physicalNodeId)
+				.build();
+		return jsonObj;
+	}
 }

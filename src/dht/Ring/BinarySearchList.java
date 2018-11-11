@@ -1,8 +1,5 @@
 package dht.Ring;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
 import java.util.*;
 
 import dht.common.Hashing;
@@ -181,5 +178,81 @@ public class BinarySearchList extends ArrayList<VirtualNode> {
             return get(size() - 1);
         else
             return get(index - 1);
+    }
+    
+    public VirtualNode getVirtualNode(String keyword) {
+    	int rawHash = Hashing.getHashValFromKeyword(keyword);
+    	VirtualNode node = find(rawHash);
+    	return node;
+    }
+    
+    public List<VirtualNode> getSuccessors(int rawHash) {
+    	VirtualNode vNode = find(rawHash);
+    	int index = vNode.getIndex();
+        List<VirtualNode> successors = new ArrayList<>();
+        for (int i = 0; i < ProxyServer.numOfReplicas; i++){
+            VirtualNode next = next(index + i);
+            successors.add(next);
+        }
+        
+        return successors;
+    }
+    
+    public List<VirtualNode> getSuccessors(String keyword) {
+    	VirtualNode vNode = getVirtualNode(keyword);
+    	int index = vNode.getIndex();
+        List<VirtualNode> successors = new ArrayList<>();
+        for (int i = 0; i < ProxyServer.numOfReplicas; i++){
+            VirtualNode next = next(index + i);
+            successors.add(next);
+        }
+        
+        return successors;
+    }
+    
+    public List<VirtualNode> getVirtualNodes(String keyword) {
+    	VirtualNode vNode = getVirtualNode(keyword);
+        List<VirtualNode> successors = getSuccessors(keyword);
+        successors.add(0, vNode);
+        
+        return successors;
+    }
+    
+    public List<VirtualNode> getVirtualNodes(int rawHash) {
+    	VirtualNode vNode = find(rawHash);
+        List<VirtualNode> successors = getSuccessors(rawHash);
+        successors.add(0, vNode);
+        
+        return successors;
+    }
+    
+    public int[] getVirtualNodeIds(String keyword) {
+        List<VirtualNode> virtualNodes = getVirtualNodes(keyword);
+        
+        int[] virtualNodeIds = new int[virtualNodes.size() + 1];
+        for (int i = 0; i < virtualNodes.size(); i++){
+        	virtualNodeIds[i] = virtualNodes.get(i).getHash();
+        }
+        
+        return virtualNodeIds;
+    }
+    
+    public int[] getVirtualNodeIds(int rawHash) {
+        List<VirtualNode> virtualNodes = getVirtualNodes(rawHash);
+        
+        int[] virtualNodeIds = new int[virtualNodes.size()];
+        for (int i = 0; i < virtualNodes.size(); i++){
+        	virtualNodeIds[i] = virtualNodes.get(i).getHash();
+        }
+        
+        return virtualNodeIds;
+    }
+    
+    public void updateIndex() {
+    	if (this.size() > 0) {
+    		for(int i = 0; i < this.size(); i++) {
+    			this.get(i).setIndex(i);
+    		}
+    	}
     }
 }

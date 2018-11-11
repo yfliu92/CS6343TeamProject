@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import dht.common.request.Request;
 import dht.common.response.Response;
+import dht.common.response.Response2;
 import dht.server.method.Method;
 
 public class RequestMap {
@@ -18,7 +19,7 @@ public class RequestMap {
 		this.map.put(method_key, method);
 	}
 	
-	public Response Execute(Request req) throws NoSuchMethodException
+	public Response2 Execute(Request req) throws NoSuchMethodException
 	{
 		if (req.method == "bad")
 			throw new NoSuchMethodException("Response Execute: Check if RequestReader.readRequest needs new case statement for new request type");

@@ -3,6 +3,7 @@ import java.util.*;
 
 public class Command {
 
+	String rawCommand;
 	String action;
 	String input;
 	String node1;
@@ -10,6 +11,7 @@ public class Command {
 	List<String> series;
 	
 	public Command(String commandStr){
+		this.rawCommand = commandStr;
 		String[] series = commandStr.split(" ");
 		if (series.length > 0) {
 			this.action = series[0];
@@ -22,22 +24,6 @@ public class Command {
 			}
 			this.series = getCommandSeries(series);
 		}
-	}
-	
-	public Command(String action, String input){
-		this.action = action;
-		this.input = input;
-		this.series = new ArrayList<>();
-		this.series.add(input);
-	}
-	
-	public Command(String action, String node1, String node2){
-		this.action = action;
-		this.node1 = node1;
-		this.node2 = node2;
-		this.series = new ArrayList<>();
-		this.series.add(node1);
-		this.series.add(node2);
 	}
 	
 	public static List<String> getCommandSeries(String[] series) {
@@ -88,5 +74,9 @@ public class Command {
 	
 	public List<String> getContent() {
 		return this.series;
+	}
+	
+	public String getRawCommand() {
+		return this.rawCommand;
 	}
 }

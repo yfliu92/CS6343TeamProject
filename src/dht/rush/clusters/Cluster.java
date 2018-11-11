@@ -14,11 +14,13 @@ public class Cluster {
     private Map<String, Integer> placementGroupMap;
 
     private ClusterStructureMap cachedTreeStructure;
+    private ClusterType type;
 
     public Cluster() {
         this.cachedTreeStructure = new ClusterStructureMap();
         this.subClusters = new ArrayList<>();
         this.placementGroupMap = new HashMap<>();
+        this.type = ClusterType.NONE_TYPE;
     }
 
     public Cluster(String id, String ip, String port, String parentId, int numberOfChildren, double weight, Boolean isActive) {
@@ -32,6 +34,7 @@ public class Cluster {
         this.cachedTreeStructure = new ClusterStructureMap();
         this.subClusters = new ArrayList<>();
         this.placementGroupMap = new HashMap<>();
+        this.type = ClusterType.NONE_TYPE;
     }
 
     public String getId() {
@@ -125,5 +128,43 @@ public class Cluster {
 
     public void setPlacementGroupMap(Map<String, Integer> placementGroupMap) {
         this.placementGroupMap = placementGroupMap;
+    }
+
+    public ClusterType getType() {
+        return type;
+    }
+
+    public String getPlacementGroupString() {
+        StringBuilder sb = new StringBuilder();
+        if (this.getPlacementGroupMap().size() > 0) {
+            for (Map.Entry<String, Integer> entry : this.getPlacementGroupMap().entrySet()) {
+                String pgid = entry.getKey();
+                int r = entry.getValue();
+                sb.append(pgid + ":" + r + ",");
+            }
+
+            if (sb.lastIndexOf(",") > -1) {
+                sb.deleteCharAt(sb.lastIndexOf(","));
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * The order of sub clusters in the list matters
+     *
+     * @return
+     */
+    public String getSubClusterListString() {
+        StringBuilder sb = new StringBuilder();
+        if (this.getSubClusters().size() > 0) {
+            for (Cluster c : this.getSubClusters()) {
+                sb.append(c.getId() + ",");
+            }
+            if (sb.lastIndexOf(",") > -1) {
+                sb.deleteCharAt(sb.lastIndexOf(","));
+            }
+        }
+        return sb.toString();
     }
 }

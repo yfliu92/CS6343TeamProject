@@ -6,11 +6,12 @@ import dht.rush.utils.RushUtil;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class AddNodeCommand extends ServerCommand {
+public class ChangeWeightCommand extends ServerCommand {
     private Cluster root;
     private String ip;
     private String port;
@@ -20,29 +21,38 @@ public class AddNodeCommand extends ServerCommand {
 
     @Override
     public void run() throws IOException {
-        CommandResponse commandResponse = clusterStructureMap.addPhysicalNode(subClusterId, ip, port, weight);
+        CommandResponse commandResponse = clusterStructureMap.changeNodeWeight(subClusterId, ip, port, weight);
+
         int status = commandResponse.getStatus();
-        // "1": success
-        // "2": No such a subcluster
-        // "3": physical node already exits
+        // "1": success change
+        // "2": No such a sub cluster
+        // "3": No such a physical node in the specific subcluster
+
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JsonWriter writer = Json.createWriter(baos);
         JsonObject params = null;
         if (status == 1) {
-            params = Json.createObjectBuilder()
-                    .add("message", "Add Node Success, new epoch is :" + clusterStructureMap.getEpoch())
-                    .add("status", "OK")
-                    .add("transferList", commandResponse.toString())
-                    .build();
+            JsonObjectBuilder jcb = Json.createObjectBuilder();
+            jcb.add("message", "Change weight success, epoch:" + clusterStructureMap.getEpoch()).add("status", "OK");
+
+            if (commandResponse.getTransferMap() != null && commandResponse.getTransferMap().size() > 0) {
+                jcb.add("transferMessage", "Need to transfer files!");
+                jcb.add("transferList", commandResponse.toString());
+            } else {
+                jcb.add("transferMessage", "No need to transfer file!");
+            }
+            params = jcb.build();
+
         } else if (status == 2) {
             params = Json.createObjectBuilder()
                     .add("message", "No such a subcluster")
-                    .add("status", "ERROR")
+                    .add("status", "ERROR， " + "epoch: " + clusterStructureMap.getEpoch())
                     .build();
         } else if (status == 3) {
             params = Json.createObjectBuilder()
-                    .add("message", "The sub cluster already has the node.")
-                    .add("status", "ERROR")
+                    .add("message", "The node isn't in the sub cluster.")
+                    .add("status", "ERROR, " + "epoch: " + clusterStructureMap.getEpoch())
                     .build();
         }
         writer.writeObject(params);
@@ -106,5 +116,9 @@ public class AddNodeCommand extends ServerCommand {
 
     public void setClusterStructureMap(ClusterStructureMap clusterStructureMap) {
         this.clusterStructureMap = clusterStructureMap;
+    }
+
+    public void setWeight(double weight) {
+        this.weight = weight;
     }
 }

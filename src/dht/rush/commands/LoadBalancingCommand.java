@@ -2,6 +2,7 @@ package dht.rush.commands;
 
 import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
+import dht.rush.utils.RushUtil;
 
 import javax.json.Json;
 import javax.json.JsonObject;

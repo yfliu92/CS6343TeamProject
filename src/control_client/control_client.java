@@ -22,6 +22,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.io.Console;
@@ -32,10 +33,12 @@ import java.io.File;
 import java.io.FileReader;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonWriter;
 
+import dht.common.Hashing;
 import dht.server.Command;
 
 interface dht_table
@@ -210,8 +213,9 @@ public class control_client {
 			input = new BufferedReader(new InputStreamReader(inputStream));
 //	        out = new PrintWriter(socket.getOutputStream(), true);
 //	        input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//			String serverport = input.readLine();
 	        
-	        System.out.println("connected to : " + serverAddress + ":" + port);
+	        System.out.println("Connected to server " + serverAddress + ":" + port + ", with local port " + socket.getLocalPort());
 //			socket.close();
 			return true;
  
@@ -227,33 +231,35 @@ public class control_client {
 		}
     }
     
-    public void sendCommandStr(String command) throws Exception {
-    	if (command.startsWith("read") || command.startsWith("write") || command.startsWith("data")) {
-    		sendCommandStrNew(command);
-    		return;
+    public void sendCommandStr(Command command, BufferedReader input, PrintWriter output) throws Exception {
+    	String[] jsonCommands = {"read", "write", "data", "dht", "info", "writebatch", "updatebatch"};
+    	for(String jsonCommand: jsonCommands) {
+    		if (command.getAction().startsWith(jsonCommand)) {
+    			sendCommandStr_JsonRes(command, input, output);
+    			return;
+    		}
     	}
-    	
-    	String timeStamp = new Date().toString();
-    	System.out.println("Sending command" + " ---- " + timeStamp);
-            output.println(command);
+
+    	System.out.println("Sending command" + " ---- " + command.getRawCommand() + " ---- " + new Date().toString());
+            output.println(command.getRawCommand());
+            output.flush();
         String response = input.readLine();
-        timeStamp = new Date().toString();
-        System.out.println("Response received: " + response + " ---- " + timeStamp);
+        System.out.println("Response received: " + response + " ---- " + new Date().toString());
     }
     
-    public void sendCommandStrNew(String command) throws Exception {
+    public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
     	
     	String timeStamp = new Date().toString();
-    	System.out.println("Sending command" + " ---- " + timeStamp);
-        output.println(command);
+    	System.out.println("Sending command" + " ---- " + command.getRawCommand() + " ---- " + timeStamp);
+        output.println(command.getRawCommand());
+        output.flush();
         
         JsonObject res = parseRequest(input);
         if (res != null) {
             System.out.println();
         	System.out.println("Response received at " + timeStamp + " ---- " + res.toString());
-//            if (res.containsKey("status") && res.containsKey("message")) {
-//                System.out.println("REPONSE STATUS: " + res.getString("status") + ", " + "message: " + res.getString("message"));
-//            }
+        	parseResponse(res, command);
+        	System.out.println();
          }
     }
     
@@ -269,11 +275,40 @@ public class control_client {
         return jsonObject;
     }
     
-    public void processCommandRush(String cmd, Vector<String> cmds) throws Exception {
+    public void parseResponse(JsonObject res, Command command) {
+    	if (command.getAction().equals("info")) {
+    		String epoch = res.getJsonObject("jsonResult").get("epoch").toString();
+    		System.out.println("DHT table info");
+    		System.out.println("Epoch number: " + epoch);
+    		JsonArray tableResult = res.getJsonObject("jsonResult").get("table").asJsonArray();
+    		for(int i = 0; i < tableResult.size(); i++) {
+    			System.out.println(tableResult.get(i));
+    		}
+    		return;
+    	}
+    	
+    	if (res.containsKey("status")) {
+    		if (res.containsKey("message")) {
+    			System.out.println(res.getString("message"));
+    		}
+    		if (res.containsKey("result")) {
+    			System.out.println(res.getString("result"));
+    		}
+    		if (res.containsKey("jsonResult")) {
+    			System.out.println(res.getJsonObject("jsonResult").toString());
+    		}
+    	}
+    	else {
+    		System.out.println(res.toString());
+    	}
+    }
+    
+    public void processCommandRush(String cmd) throws Exception {
     	Command command = new Command(cmd);
     	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
+    	System.out.println();
         
         JsonObject params = null;
         JsonObject jobj = null;
@@ -337,10 +372,11 @@ public class control_client {
             if (res.containsKey("status") && res.containsKey("message")) {
                 System.out.println("REPONSE STATUS: " + res.getString("status") + ", " + "message: " + res.getString("message"));
             }
+            System.out.println();
          }
     }
     
-    public void processCommandRing(String cmd, Vector<String> cmds, int dhtType) throws Exception {
+    public void processCommandRing(String cmd, int dhtType) throws Exception {
         Command command = new Command(cmd);
         if(command.getAction().equals("help"))
         {
@@ -352,28 +388,31 @@ public class control_client {
         }
         else
         {
-        	sendCommandStr(cmd);
+        	sendCommandStr(command, input, output);
         }
     }
     
-    public void processCommandRing(String cmd, Vector<String> cmds) throws Exception {
-    	processCommandRing(cmd, cmds, 1);
+    public void processCommandRing(String cmd) throws Exception {
+    	processCommandRing(cmd, 1);
     }
     
-    public void processCommandElastic(String cmd, Vector<String> cmds) throws Exception {
-    	processCommandRing(cmd, cmds, 3);
+    public void processCommandElastic(String cmd) throws Exception {
+    	processCommandRing(cmd, 3);
     }
     
-    public void processCommand(int typeDHT, String cmd, Vector<String> cmds) throws Exception {
+    public void processCommand(int typeDHT, String cmd) throws Exception {
     	switch(typeDHT) {
 	    	case 1:
-	    		processCommandRing(cmd, cmds);
+	    		processCommandRing(cmd);
 	    		break;
 	    	case 2:
-	    		processCommandRush(cmd, cmds);
+	    		processCommandRush(cmd);
 	    		break;
 	    	case 3:
-	    		processCommandElastic(cmd, cmds);
+	    		processCommandElastic(cmd);
+	    		break;
+	    	default:
+	    		System.out.println("no DHT type matched for the command");
 	    		break;
     	}
     }
@@ -382,13 +421,20 @@ public class control_client {
     	String tip = "";
     	switch(dhtType) {
 	    	case 1:
-	    		tip = "\nadd <IP> <Port>\nadd <IP> <Port> <hash>\nremove <hash>\nloadbalance <delta> <hash>\ninfo/help/exit/read file\n";
+	    		tip = "\nhelp";
+	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <hash>\nremove <hash>\nloadbalance <delta> <hash>";
+	    		tip += "\ninfo";
+	    		tip += "\nexit\n";
 	    		break;
 	    	case 2:
-	    		tip = "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689\ngetnodes <pgid> | example: getnodes PG1\nhelp\n";
+	    		tip = "\nhelp";
+	    		tip += "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689\ngetnodes <pgid> | example: getnodes PG1\nhelp\n";
+	    		tip += "\nexit\n";
 	    		break;
 	    	case 3:
-	    		tip = "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>\ninfo/help/exit/read file\n";
+	    		tip = "\nhelp";
+	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>\ninfo/help/exit/read file\n";
+	    		tip += "\nexit\n";
 	    		break;
     	}
     	
@@ -430,24 +476,25 @@ public class control_client {
 		boolean connected = client.connectServer(serverAddress, port);
 		
 		if (connected) {
-			System.out.println("Connected to " + dhtName + " Server " + serverAddress + ":" + port);
+			System.out.println("Connected to " + dhtName + " Server ");
 		}
 		else {
 			System.out.println("Unable to connect to server!");
 			return;
 		}
         
-        Vector<String> cmds = new Vector<String>();
+//        Vector<String> cmds = new Vector<String>();
         while(true)
         {
-            if(cmds.isEmpty() == true)
-            {
-                String cmd = console.readLine("Input your command:");
-                cmds.addElement(cmd);
-            }
-            String cmd = cmds.remove(0);
+//            if(cmds.isEmpty() == true)
+//            {
+//                String cmd = console.readLine("Input your command:");
+//                cmds.addElement(cmd);
+//            }
+//            String cmd = cmds.remove(0);
+        	String cmd = console.readLine("Input your command:");
             
-            client.processCommand(dhtType, cmd, cmds);
+            client.processCommand(dhtType, cmd);
         }
     }
 }

@@ -25,20 +25,7 @@ public class server {
 	}
 	
 	public static Command getCommand(String commandStr) {
-		
-		String[] series = commandStr.split(" ");
-		if (series[0].equals("find")) {
-			return new Command("find", series[1]);
-		}
-		else if (series[0].equals("loadbalance")) {
-			return new Command("loadbalance", series[1], series[2]);
-		}
-		else if (series[0].equals("add")) {
-			return new Command("add", series[1]);
-		}
-		else {
-			return null;
-		}
+		return new Command(commandStr);
 	}
 	
 	public static String getResponse(String commandStr) {

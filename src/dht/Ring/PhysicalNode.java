@@ -1,14 +1,26 @@
 package dht.Ring;
 
 import dht.common.Hashing;
+import control_client.control_client;
 
+import java.io.BufferedReader;
+import java.io.Console;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
 import java.util.*;
 
-//import javax.json.Json;
-//import javax.json.JsonObject;
-//import javax.json.JsonObjectBuilder;
-//import javax.json.JsonReader;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 public class PhysicalNode {
 
@@ -32,6 +44,7 @@ public class PhysicalNode {
     	this.lookupTable = new LookupTable();
     	this.virtualNodes = new ArrayList<>();
     }
+
     public PhysicalNode(String ID, String ip, int port, String status){
         this.id = ID;
         this.address = ip;
@@ -43,12 +56,6 @@ public class PhysicalNode {
         this(ID, ip, port, status);
         this.virtualNodes = nodes;
         this.lookupTable = new LookupTable();
-    }
-    
-    public VirtualNode getVirtualNode(String keyword) {
-    	int rawHash = Hashing.getHashValFromKeyword(keyword);
-    	VirtualNode node = this.lookupTable.getTable().find(rawHash);
-    	return node;
     }
 
     public String getId() {
@@ -100,28 +107,27 @@ public class PhysicalNode {
     }
     
     public String listNodes() {
-    	BinarySearchList list = lookupTable.getTable();
-    	StringBuilder result = new StringBuilder(); 
-    	result.append("Existing nodes (" + list.size() + "): ");
+//    	BinarySearchList list = lookupTable.getTable();
+//    	StringBuilder result = new StringBuilder(); 
+//    	result.append("Existing nodes (" + list.size() + "): ");
+//    	
+//    	for(int i = 0; i < list.size(); i++) {
+//    		result.append("   Virtual Node" + list.get(i).getHash() + ", Physical Node: " + list.get(i).getPhysicalNodeId());
+//    	}
+//    	
+//    	return result.toString();
     	
-    	for(int i = 0; i < list.size(); i++) {
-    		result.append("\nVirtual Node" + list.get(i).getHash() + ", Physical Node: " + list.get(i).getPhysicalNodeId());
-    	}
-    	
-    	return result.toString();
+    	return lookupTable.serialize();
     }
     
     public String addNode(String ip, int port) {
     	int hash = lookupTable.getTable().getRanHash();
-//    	JsonObjectBuilder result = Json.createObjectBuilder();
 
     	String result = "";
     	if (hash >= 0) {
 
     		try {
         		addNode(ip, port, hash);
-//            	result.add("success", true);
-//            	result.add("message", "Node added successfully, hash " + hash);
         		result = "true|Node added successfully, hash " + hash;
     		}
     		catch(Exception ee) {
@@ -130,12 +136,9 @@ public class PhysicalNode {
 
     	}
     	else {
-//        	result.add("success", false);
-//        	result.add("message", "Virtual node exhausted");
     		result = "false|Virtual node exhausted";
     	}
 
-//    	return result.build().toString();
     	return result;
     }
 
@@ -145,13 +148,17 @@ public class PhysicalNode {
         String address1 = " (" + fromNode.getPhysicalNodeId() + ")";
         String address2 = " (" + toNode.getPhysicalNodeId() + ")";
         // v means virtual node
-        result.append("\nfrom v" + fromNode.getHash() + address1 +  " to v" + toNode.getHash() + address2 + ":\n\t"
+//        result.append("\r\nfrom v" + fromNode.getHash() + address1 +  " to v" + toNode.getHash() + address2 + ":\r\n"
+//                + "Transferring data for hash range of (" + start + ", " + end + ")");
+        result.append("\nfrom v" + fromNode.getHash() + address1 +  " to v" + toNode.getHash() + address2 + ": "
                 + "Transferring data for hash range of (" + start + ", " + end + ")");
         
         return result.toString();
     }
 
-    // Add a physical node that maps to more than 1 virtual node
+
+
+    // Add a physical node that maps to 10 virtual node (configurable in the configuration file)
     public String addNode(String ip, int port, int[] hashes){
         String result = "";
         for (int hash : hashes){
@@ -170,10 +177,10 @@ public class PhysicalNode {
         // Put the virtual node on the ring
         try {
             if (lookupTable.getTable().add(vNode) == false){
-                result = "false|Virtual node " + hash +" already exists";
+                result = "\nfalse|virtual node " + hash +" already exists";
             }
             else {
-                result = "true|Virtual Node added successfully at " + hash;
+                result = "\ntrue|Virtual Node added successfully at " + hash;
                 // Get the index of the inserted virtual node in the BinarySearchList
                 int index = vNode.getIndex();
                 // Get its successors and predecessors
@@ -203,6 +210,8 @@ public class PhysicalNode {
                     else
                         result += dataTransfer(successors.get(i), vNode, predecessors.get(successors.size() - 1 - i).getHash() + 1, hash);
                 }
+                
+                lookupTable.getTable().updateIndex();
 
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 lookupTable.setEpoch(timestamp.getTime());
@@ -221,7 +230,7 @@ public class PhysicalNode {
         VirtualNode vNode = new VirtualNode(hash);
         int index = Collections.binarySearch(lookupTable.getTable(), vNode);
         if (index < 0){
-           return "false|" + "hash " + hash + " is not a virtual node.";
+           return "\nfalse|" + "hash " + hash + " is not a virtual node.";
         }
         // Get its successors and predecessors
         List<VirtualNode> successors = new ArrayList<>();
@@ -236,7 +245,7 @@ public class PhysicalNode {
         // Delete the virtual node from the ring of virtual nodes
         VirtualNode virtualNodeToDelete = lookupTable.getTable().remove(index);
 
-        String result = "true|virtual node " + hash + " removed successfully";
+        String result = "\ntrue|virtual node " + hash + " removed successfully";
         for (int i = 0; i < successors.size(); i++){
             if (i != successors.size() - 1)
                 result += dataTransfer(predecessors.get(predecessors.size() - 2 - i), successors.get(i), predecessors.get(predecessors.size() - 1 - i).getHash() + 1, predecessors.get(successors.size() - 2 - i).getHash());
@@ -260,7 +269,7 @@ public class PhysicalNode {
     public String deleteNode(VirtualNode node){
         int index = Collections.binarySearch(lookupTable.getTable(), node);
         if (index < 0){
-            return "false|" + "hash " + node.getHash() + " is not a virtual node.";
+            return "\nfalse|" + "hash " + node.getHash() + " is not a virtual node.";
         }
 
         // Get its successors and predecessors
@@ -275,7 +284,7 @@ public class PhysicalNode {
 
         // Delete the virtual node from the ring of virtual nodes
         VirtualNode virtualNodeToDelete = lookupTable.getTable().remove(index);
-        String result = "true|virtual node " + node.getHash() + " removed successfully";
+        String result = "\ntrue|virtual node " + node.getHash() + " removed successfully";
         for (int i = 0; i < successors.size(); i++){
             if (i != successors.size() - 1)
                 result += dataTransfer(predecessors.get(predecessors.size() - 2 - i), successors.get(i), predecessors.get(predecessors.size() - 1 - i).getHash() + 1, predecessors.get(successors.size() - 2 - i).getHash());
@@ -289,37 +298,98 @@ public class PhysicalNode {
         return result;
     }
 
-    public void failNode(String ip, int port){
-        String physicalNodeID =  "D" + ip.substring(ip.length() - 3)+ "-" + Integer.toString(port);
-        lookupTable.getPhysicalNodeMap().get(physicalNodeID).setStatus(STATUS_INACTIVE);
+    public String failNode(String ip, int port){
+        String physicalNodeID = ip + "-" + Integer.toString(port);
+        lookupTable.getPhysicalNodeMap().get(physicalNodeID).setStatus("inactive");
         List<VirtualNode> virtualNodes = lookupTable.getPhysicalNodeMap().get(physicalNodeID).getVirtualNodes();
         if (virtualNodes.size() == 0){
-            return;
+            return "This physical node has no virtual nodes";
         }
+        String result = "\ntrue|Node " + physicalNodeID + " removed successfully: ";
         for (VirtualNode node : virtualNodes ){
-            deleteNode(node);
+            result += deleteNode(node);
         }
         // Set the virtual node list of the failed node to be empty
         lookupTable.getPhysicalNodeMap().get(physicalNodeID).setVirtualNodes(new ArrayList<VirtualNode>());
+        return result;
     }
 
     // Change the position of a virtual node on the ring to balance load
-    public String loadBalance(int delta, int hash){ // move the node clockwise if delta > 0, counterclockwise if delta < 0
+    public String loadBalance(int delta, int hash) { // move the node clockwise if delta > 0, counterclockwise if delta < 0
+        String result = "";
         VirtualNode node = new VirtualNode(hash);
         int index = Collections.binarySearch(lookupTable.getTable(), node);
-        if (index < 0){
-            return "false|" + "hash " + hash + " is not a virtual node.";
+        node = lookupTable.getTable().get(index);
+        String physicalNodeID = node.getPhysicalNodeId();
+        if (index < 0) {
+            return "\nfalse|" + "hash " + hash + " is not a virtual node.";
         }
         int newHash = hash + delta;
-        // for replicaLevel of n, Get the nth successor of the virtual node
-        VirtualNode nthSuccessor = lookupTable.getTable().next(index + ProxyServer.numOfReplicas - 1);
-        String result = "";
-        // dataTransfer() will return a String of format: from xxx (ip-port) to xxx (ip-port) for hash range(xxx, xxx)
-        if (delta > 0) {
-            result = dataTransfer(nthSuccessor, node, hash + 1, newHash);
+        VirtualNode newNode = new VirtualNode(newHash,physicalNodeID);
+        if (lookupTable.getTable().add(newNode) == false) {
+            result = "\nfalse|virtual node " + newHash + " already exists";
         }
-        else if (delta < 0){
-            result = dataTransfer(node, nthSuccessor, newHash + 1, hash);
+        else {
+            result = "\ntrue|virtual node moved from " + hash + " to " + newHash + ": ";
+
+            // Recheck the position of the old virtual node, since index may have changed after adding at the new hash position
+            index = Collections.binarySearch(lookupTable.getTable(), node);
+            // Get the successors and predecessors of the virtual node at the old hash
+            List<VirtualNode> oldSuccessors = new ArrayList<>();
+            List<VirtualNode> oldPredecessors = new ArrayList<>();
+            for (int i = 0; i < ProxyServer.numOfReplicas; i++) {
+                VirtualNode next = lookupTable.getTable().next(index + i);
+                oldSuccessors.add(next);
+                VirtualNode pre = lookupTable.getTable().pre(index - i);
+                oldPredecessors.add(pre);
+            }
+
+            // get the successors and predecessors of the virtual node at the new hash
+            List<VirtualNode> newSuccessors = new ArrayList<>();
+            List<VirtualNode> newPredecessors = new ArrayList<>();
+            // Get the index of the new virtual node in the BinarySearchList
+            int newIndex = Collections.binarySearch(lookupTable.getTable(), newNode);
+            for (int j = 0; j < ProxyServer.numOfReplicas; j++) {
+                VirtualNode next = lookupTable.getTable().next(newIndex + j);
+                newSuccessors.add(next);
+                VirtualNode pre = lookupTable.getTable().pre(newIndex - j);
+                newPredecessors.add(pre);
+            }
+
+
+            for (int i = 0; i < ProxyServer.numOfReplicas; i++) {
+                VirtualNode oldSuccessor = oldSuccessors.get(i);
+                if ((!newSuccessors.contains(oldSuccessor)) && (oldSuccessor.getHash() != newHash)) {
+                    if (i != (ProxyServer.numOfReplicas - 1)) {
+                        result += dataTransfer(node, oldSuccessor,
+                                oldPredecessors.get(ProxyServer.numOfReplicas - 1 - i).getHash() + 1,
+                                oldPredecessors.get(ProxyServer.numOfReplicas - 2 - i).getHash());
+                    }
+                    else{
+                        result += dataTransfer(node, oldSuccessor,
+                                oldPredecessors.get(ProxyServer.numOfReplicas - 1 - i).getHash() + 1,
+                                hash);
+                    }
+                }
+            }
+            for (int i = 0; i < ProxyServer.numOfReplicas; i++) {
+                VirtualNode newSuccessor = newSuccessors.get(i);
+                if ((!oldSuccessors.contains(newSuccessor)) && (newSuccessor.getHash() != hash)) {
+                    if (i != (ProxyServer.numOfReplicas - 1)) {
+                        result += dataTransfer(newSuccessor, newNode,
+                                newPredecessors.get(ProxyServer.numOfReplicas - 1 - i).getHash() + 1,
+                                newPredecessors.get(ProxyServer.numOfReplicas - 2 - i).getHash());
+                    }
+                    else {
+                        result += dataTransfer(newSuccessor, newNode,
+                                newPredecessors.get(ProxyServer.numOfReplicas - 1 - i).getHash() + 1,
+                                newHash);
+                    }
+                }
+            }
+
+            // Delete the virtual node at the old hash
+            lookupTable.getTable().remove(index);
         }
         //Update the timestamp in lookupTable
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -372,4 +442,5 @@ public class PhysicalNode {
 //        System.out.println("Reading completed");
 //
 //    }
+
 }

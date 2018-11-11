@@ -19,8 +19,8 @@ public class PhysicalNode extends Cluster {
         super(id, ip, port, parentId, numberOfChildren, weight, isActive);
         this.totalSize = totalSize;
         this.availableSize = totalSize;
-        this.type = ClusterType.PHYSICAL_NODE;
         this.dataStore = new HashMap<>();
+        this.type = ClusterType.PHYSICAL_NODE;
     }
 
     public ClusterType getType() {

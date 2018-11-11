@@ -4,22 +4,25 @@ import dht.rush.commands.CommandResponse;
 import dht.rush.utils.RushUtil;
 import dht.server.Command;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.util.*;
 
 public class ClusterStructureMap {
     private int epoch;
-    private int numberOfReplicas;
+    //    private int numberOfReplicas;
     private Map<String, Cluster> childrenList;
 
     public ClusterStructureMap() {
         this.childrenList = new HashMap<>();
     }
 
-    public ClusterStructureMap(int epoch, int numberOfReplicas) {
-        this.epoch = epoch;
-        this.numberOfReplicas = numberOfReplicas;
-        this.childrenList = new HashMap<>();
-    }
+//    public ClusterStructureMap(int epoch, int numberOfReplicas) {
+//        this.epoch = epoch;
+//        this.numberOfReplicas = numberOfReplicas;
+//        this.childrenList = new HashMap<>();
+//    }
 
     public int getEpoch() {
         return epoch;
@@ -41,13 +44,13 @@ public class ClusterStructureMap {
         this.childrenList = childrenList;
     }
 
-    public int getNumberOfReplicas() {
-        return numberOfReplicas;
-    }
-
-    public void setNumberOfReplicas(int numberOfReplicas) {
-        this.numberOfReplicas = numberOfReplicas;
-    }
+//    public int getNumberOfReplicas() {
+//        return numberOfReplicas;
+//    }
+//
+//    public void setNumberOfReplicas(int numberOfReplicas) {
+//        this.numberOfReplicas = numberOfReplicas;
+//    }
 
     public CommandResponse addPhysicalNode(String subCLusterId, String ip, String port, double weight) {
         Cluster root = this.getChildrenList().get("R");
@@ -149,7 +152,7 @@ public class ClusterStructureMap {
                 cluster.getPlacementGroupMap().put(pgid, r);
                 ret.put(r, cluster);
                 map.put(cluster.getId(), cluster);
-                System.out.println("Replica: " + r + ", Node: " + cluster.toString());
+                System.out.println("PGID: " + pgid + ", Replica: " + r + ", Node: " + cluster.toString());
             }
             r++;
         }
@@ -238,7 +241,8 @@ public class ClusterStructureMap {
         Map<String, Cluster[]> ret = new HashMap<>();
 
         for (Cluster c : sub.getSubClusters()) {
-            ret.putAll(transferedMap(c));
+            Map<String, Cluster[]> stringMap = transferedMap(c);
+            ret.putAll(stringMap == null ? new HashMap<>() : stringMap);
         }
 
         return ret;
@@ -300,5 +304,92 @@ public class ClusterStructureMap {
     public String generatePlacementGroupId(String str) {
         int pgid = RushUtil.positiveHash(str.hashCode()) % RushUtil.NUMBER_OF_PLACEMENT_GROUP;
         return "PG" + pgid;
+    }
+
+    /**
+     * @return The most recent cluster structure map
+     */
+
+    public JsonObject getClusterMap() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+
+        Cluster root = this.getChildrenList().get("R");
+
+        job.add("epoch", this.getEpoch());
+
+        Queue<Cluster> queue = new LinkedList<>();
+        queue.add(root);
+
+        JsonObjectBuilder nodesBuilder = Json.createObjectBuilder();
+
+        while (!queue.isEmpty()) {
+            Cluster node = queue.poll();
+            JsonObjectBuilder tempJob = Json.createObjectBuilder();
+
+            tempJob.add("id", node.getId());
+            tempJob.add("ip", node.getIp());
+            tempJob.add("port", node.getPort());
+            tempJob.add("numberOfChildren", node.getNumberOfChildren());
+            tempJob.add("weight", node.getWeight());
+            tempJob.add("isActive", node.getActive());
+            tempJob.add("parentId", node.getParentId());
+            tempJob.add("placementGroupMap", node.getPlacementGroupString());
+            tempJob.add("type", node.getType().ordinal());
+            tempJob.add("subClustersId", node.getSubClusterListString());
+
+            nodesBuilder.add(node.getId(), tempJob);
+
+            List<Cluster> list = node.getSubClusters();
+            for (int i = 0; i < list.size(); i++) {
+                Cluster child = list.get(i);
+                queue.add(child);
+            }
+
+        }
+        job.add("nodes", nodesBuilder);
+
+        JsonObject jsonObject = job.build();
+        return jsonObject;
+    }
+
+    public CommandResponse changeNodeWeight(String subCLusterId, String ip, String port, double weight) {
+        Cluster root = this.getChildrenList().get("R");
+        CommandResponse ret = new CommandResponse();
+        ret.setStatus(0);
+
+        // "1": success change
+        // "2": No such a sub cluster
+        // "3": No such a physical node in the specific subcluster
+
+        if (root.getCachedTreeStructure().getChildrenList().containsKey(subCLusterId)) {
+            Cluster sub = root.getCachedTreeStructure().getChildrenList().get(subCLusterId);
+            Set<Map.Entry<String, Cluster>> set = sub.getCachedTreeStructure().getChildrenList().entrySet();
+
+            boolean isExist = false;
+
+            for (Map.Entry<String, Cluster> entry : set) {
+                Cluster c = entry.getValue();
+                String cip = c.getIp();
+                String cport = c.getPort();
+                if (cip.equals(ip) && cport.equals(port)) {
+                    isExist = true;
+                    if (c.getActive()) {
+                        c.setWeight(weight);
+
+                        ret.setTransferMap(transferedFileInSubCluster(sub));
+                        ret.setStatus(1);
+                        this.addEpoch();
+                    }
+                    break;
+                }
+            }
+            if (!isExist) {
+                ret.setStatus(3);
+            }
+        } else {
+            System.out.println("No such subcluster");
+            ret.setStatus(2);
+        }
+        return ret;
     }
 }
