@@ -54,11 +54,11 @@ public class ProxyServer extends PhysicalNode {
                 PhysicalNode node = new PhysicalNode(nodeID, ip, port, "active");
                 physicalNodes.put(nodeID, node);
             }
-            // If hashRange is 10000 and there are 10 physical nodes in total, then stepSize is 1000
-            // The first physical node will start from 0 and map to virtual nodes of hash 0, 1000, 2000,...,9000
-            // The second physical node will start from 100 and map to virtual nodes of hash 100, 1100, 2100,...,9100
+            // If hashRange is 1000 and there are 10 physical nodes in total, then stepSize is 100
+            // The first physical node will start from 0 and map to virtual nodes of hash 0, 100, 200,...,900
+            // The second physical node will start from 10 and map to virtual nodes of hash 10, 110, 210,...,910
             // ...
-            // The last physical node will start from 900 and map to virtual nodes of hash 900, 1900, 2900,...,9900
+            // The last physical node will start from 90 and map to virtual nodes of hash 90, 190, 290,...,990
             int stepSize = hashRange / physicalNodes.size();
             // Define the start hash value for hash nodes
             int start = 0;
@@ -106,7 +106,7 @@ public class ProxyServer extends PhysicalNode {
 	public static String getFindInfo(String input) {
 		return input.toUpperCase();
 	}
-	
+
 	public String getResponse(String commandStr, DataStore dataStore) {
 		Command command = new Command(commandStr);
 		try {
@@ -175,7 +175,7 @@ public class ProxyServer extends PhysicalNode {
 		int port = 9091;
     	System.out.println("Ring server running at " + String.valueOf(port));
         ServerSocket listener = new ServerSocket(port);
-        
+
         try {
             while (true) {
             	Socket socket = listener.accept();
@@ -220,7 +220,7 @@ public class ProxyServer extends PhysicalNode {
         finally {
             listener.close();
         }
-		
+
 	}
 
 }

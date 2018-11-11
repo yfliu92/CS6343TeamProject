@@ -3,7 +3,7 @@
 <Ring>
     // Number of replicas
     <replicationLevel>3</replicationLevel>
-    <hashRange>10000</hashRange>
+    <hashRange>1000</hashRange>
     <!-- The number of virtual nodes mapped to each physical node -->
     <virtualNodesMapping>10</virtualNodesMapping>
     <nodes>
