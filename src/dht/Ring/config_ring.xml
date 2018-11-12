@@ -7,46 +7,40 @@
     <!-- The number of virtual nodes mapped to each physical node -->
     <vm_to_pm_ratio>10</vm_to_pm_ratio>
     <total_CCcommands>500</total_CCcommands>
+    <port>
+    <startPort>8100</startPort>
+    <portRange>1</portRange>
+    </port>
     <nodes>
         <node>
             <ip>192.168.0.201</ip>
-            <port>8100</port>
         </node>
         <node>
             <ip>192.168.0.202</ip>
-            <port>8100</port>
         </node>
         <node>
             <ip>192.168.0.203</ip>
-            <port>8100</port>
         </node>
         <node>
             <ip>192.168.0.204</ip>
-            <port>8100</port>
         </node>
         <node>
             <ip>192.168.0.205</ip>
-            <port>8100</port>
         </node>
         <node>
             <ip>192.168.0.206</ip>
-            <port>8100</port>
         </node>
         <node>
             <ip>192.168.0.207</ip>
-            <port>8100</port>
         </node>
         <node>
             <ip>192.168.0.208</ip>
-            <port>8100</port>
         </node>
         <node>
             <ip>192.168.0.209</ip>
-            <port>8100</port>
         </node>
         <node>
             <ip>192.168.0.210</ip>
-            <port>8100</port>
         </node>
     </nodes>
 
