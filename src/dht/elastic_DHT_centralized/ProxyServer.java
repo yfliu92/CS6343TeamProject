@@ -7,11 +7,7 @@ import org.dom4j.io.SAXReader;
 
 import dht.server.Command;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Timestamp;
@@ -39,6 +35,12 @@ public class ProxyServer extends Proxy {
             // Create the proxy node
             Proxy proxy = new Proxy(proxyIP, proxyPort);
 
+            // Get the port
+            Element port = document.getRootElement().element("port");
+            int startPort = Integer.parseInt(port.element("startPort").getStringValue());
+            int portRange = Integer.parseInt(port.element("portRange").getStringValue());
+
+            // Get the IPs
             Element nodes = document.getRootElement().element("nodes");
             List<Element> listOfNodes = nodes.elements();
             int numOfNodes = listOfNodes.size();
@@ -47,10 +49,11 @@ public class ProxyServer extends Proxy {
 
             for (int i = 0; i < numOfNodes; i++){
                 String ip = listOfNodes.get(i).element("ip").getStringValue();
-                int port = Integer.parseInt(listOfNodes.get(i).element("port").getStringValue());
-                String nodeID = ip + "-" + Integer.toString(port);
-                PhysicalNode node = new PhysicalNode(ip, port, "active");
-                physicalNodes.put(nodeID, node);
+                for (int j = 0; j < portRange; j++){
+                    String nodeID = ip + "-" + (startPort + j) ;
+                    PhysicalNode node = new PhysicalNode(ip, startPort + j, "active");
+                    physicalNodes.put(nodeID, node);
+                }
             }
             // During initialization, hashRange is evenly distributed among the physical nodes
             // If hashRange is 1000 and there are 10 physical nodes in total
@@ -58,7 +61,7 @@ public class ProxyServer extends Proxy {
             // The second node gets assigned (100, 199)
             // ...
             // The last node gets assigned (900, 999)
-            int loadPerNode = HashAndReplicationConfig.HASH_RANGE / physicalNodes.size();
+            int loadPerNode = HashAndReplicationConfig.CURRENT_HASH_RANGE / physicalNodes.size();
             // Define the start hash value for hash nodes
             int start = 0;
             // Get a list of all physical node ids
@@ -100,19 +103,105 @@ public class ProxyServer extends Proxy {
 //
 //            }
 //            System.out.print("\n");
-            
+
             System.out.println("Initilization success");
             return proxy;
 
         }catch(DocumentException e) {
-        	System.out.println("Initilization failed");
+            System.out.println("Initilization failed");
             e.printStackTrace();
             return null;
         }
 
     }
-    
-	public static String getFindInfo(String input) {
+    public void CCcommands(Proxy proxy) {
+        BufferedWriter writer = null;
+
+        try {
+            writer = new BufferedWriter(new FileWriter("elastic_CCcommands.txt"), 32768);
+            String[] availableCommands = {"add", "remove", "loadbalance"};
+            String[] expand_shrink_commands = {"expand", "shrink"};
+            String[] availableIPs = {"192.168.0.211","192.168.0.212","192.168.0.213","192.168.0.214",
+                    "192.168.0.215","192.168.0.216","192.168.0.217","192.168.0.218","192.168.0.219","192.168.0.220",
+                    "192.168.0.221", "192.168.0.222","192.168.0.223","192.168.0.224","192.168.0.225",
+                    "192.168.0.226", "192.168.0.227","192.168.0.228","192.168.0.229","192.168.0.230"};
+            String[] availablePorts = {"8001", "8002", "8003", "8004", "8005"};
+            ArrayList<String> availablePNodes = new ArrayList<>();
+            for (String ip : availableIPs) {
+                for (String port : availablePorts) {
+                    availablePNodes.add(ip + " " + port);
+                }
+            }
+            // Get the current physicalIDs after initialization
+            Set<String> pNodes = proxy.getLookupTable().getPhysicalNodesMap().keySet();
+            List<String> currentPNodes = new ArrayList<>();
+            for (String node : pNodes){
+                String[] lst = node.split("-");
+                currentPNodes.add(lst[0] + " " + lst[1]);
+            }
+            // Write control client commands into the "elastic_CCcommands.txt" file (in the root folder by default)
+            int total_commands = HashAndReplicationConfig.TOTAL_CCCOMMANDS;
+            for (int i = 0; i < total_commands; i++){
+                Random ran = new Random();
+                // Randomly pick a command between "expand" and "shrink" when i is 99, 199, 299....
+                if (i % 100 == 99){
+                    String command = expand_shrink_commands[ran.nextInt(expand_shrink_commands.length)];
+                    writer.write(command + "\n");
+                    continue;
+                }
+                // Randomly pick a command from available commands
+                String command = availableCommands[ran.nextInt(availableCommands.length)];
+
+                // add means to add a physical node and specify for what range of buckets it will serve as a replica
+                // Use addNode(String ip, int port, int start, int end)
+                if (command.equals("add")){
+                    if (availablePNodes.size() == 0){
+                        continue;
+                    }
+                    String ip_port = availablePNodes.get(ran.nextInt(availablePNodes.size()));
+                    availablePNodes.remove(ip_port);
+                    currentPNodes.add(ip_port);
+                    int ran_start = ran.nextInt(HashAndReplicationConfig.INITIAL_HASH_RANGE);
+                    //int loadPerNode = (HashAndReplicationConfig.CURRENT_HASH_RANGE / currentPNodes.size()) * HashAndReplicationConfig.REPLICATION_LEVEL;
+                    int ran_end = (ran_start + HashAndReplicationConfig.loadPerNode) % HashAndReplicationConfig.INITIAL_HASH_RANGE;
+                    writer.write("add " + ip_port + " " + ran_start + " " + ran_end + "\n");
+                }
+                // remove means to remove a physical node
+                // use deleteNode(String ip, int port) for this command
+                else if (command.equals("remove")){
+                    if (currentPNodes.size() == 0){
+                        continue;
+                    }
+                    String ip_port = currentPNodes.get(ran.nextInt(currentPNodes.size()));
+                    currentPNodes.remove(ip_port);
+                    availablePNodes.add(ip_port);
+                    writer.write("remove " + ip_port + "\n");
+                }
+                // use loadBalance(String fromID, String toID, int numOfBuckets) for this command
+                else if (command.equals("loadbalance")) {
+                    if (currentPNodes.size() <= 1){
+                        continue;
+                    }
+                    String fromID = currentPNodes.get(ran.nextInt(currentPNodes.size()));
+                    String toID;
+                    do {
+                        toID = currentPNodes.get(ran.nextInt(currentPNodes.size()));
+                    } while (toID == fromID);
+
+                    int numOfBuckets = ran.nextInt(50) + 50;
+                    writer.write("loadbalance " + fromID + " " + toID + " " + numOfBuckets + "\n");
+                }
+            }
+        } catch (IOException ex) {
+            // Report
+        } finally {
+            try {writer.close();}
+            catch (Exception ex) {/*ignore*/}
+        }
+
+    }
+
+    public static String getFindInfo(String input) {
 		return input.toUpperCase();
 	}
     
@@ -165,7 +254,8 @@ public class ProxyServer extends Proxy {
         ProxyServer proxyServer = new ProxyServer();
         //Initialize the Elastic DHT cluster
         Proxy proxy = initializeEDHT();
-        System.out.println(proxy.addNode("192.168.0.211", 8100, 900, 910));
+        proxyServer.CCcommands(proxy);
+//        System.out.println(proxy.addNode("192.168.0.217", 8004, 473, 773));
 //        System.out.println(proxy.deleteNode("192.168.0.201", 8100));
 //        System.out.println(proxy.loadBalance("192.168.0.204", 8100, "192.168.0.210", 8100, 12));
 

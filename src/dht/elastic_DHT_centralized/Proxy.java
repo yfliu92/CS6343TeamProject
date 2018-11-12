@@ -56,22 +56,22 @@ public class Proxy{
     public String dataTransfer(String fromID, String toID, int hash){
         return "\nFrom " + fromID + " to " + toID + ": transferring data for bucket " + Integer.toString(hash);
     }
-    
+
     public String listNodes() {
-    	System.out.println(lookupTable);
-    	HashMap<Integer, HashMap<String, String>> map = lookupTable.getBucketsTable();
-    	StringBuilder result = new StringBuilder(); 
-    	result.append("Existing buckets (" + map.size() + "): ");
-    	
-    	for(HashMap.Entry<Integer, HashMap<String, String>> entry: map.entrySet()) {
-    		result.append("\nBucket " + entry.getKey() + ", size " + entry.getValue().size());
-    		for(HashMap.Entry<String, String> subentry: entry.getValue().entrySet()) {
+        System.out.println(lookupTable);
+        HashMap<Integer, HashMap<String, String>> map = lookupTable.getBucketsTable();
+        StringBuilder result = new StringBuilder();
+        result.append("Existing buckets (" + map.size() + "): ");
+
+        for(HashMap.Entry<Integer, HashMap<String, String>> entry: map.entrySet()) {
+            result.append("\nBucket " + entry.getKey() + ", size " + entry.getValue().size());
+            for(HashMap.Entry<String, String> subentry: entry.getValue().entrySet()) {
 //    			result.append("\n    key " + subentry.getKey() + ", value " + subentry.getValue());
-    			result.append("\n    " + subentry.getKey());
-    		}
-    	}
-    	
-    	return result.toString();
+                result.append("\n    " + subentry.getKey());
+            }
+        }
+
+        return result.toString();
     }
 
     // Add a physical node without specifying for what range of buckets
@@ -96,11 +96,11 @@ public class Proxy{
         for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
             pNode.setLookupTable(lookupTable);
         }
-        
+
         System.out.println("Buckets table size " + lookupTable.getBucketsTable().size());
         System.out.println("Physical nodes size " + lookupTable.getPhysicalNodesMap().size());
 
-        return "true|node " + id + " is added successfully.\n" + result;
+        return "\ntrue|node " + id + " is added successfully: " + result;
     }
 
     // Add a physical node, clearly specify for what range of buckets it will serve as a replica
@@ -123,11 +123,11 @@ public class Proxy{
         for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
             pNode.setLookupTable(lookupTable);
         }
-        
+
         System.out.println("Buckets table size " + lookupTable.getBucketsTable().size());
         System.out.println("Physical nodes size " + lookupTable.getPhysicalNodesMap().size());
 
-        return "true|node " + id + " is added successfully.\n" + result;
+        return "\ntrue|node " + id + " is added successfully: " + result;
     }
     public String deleteNode(String ip, int port) {
         String nodeID = ip + "-" + Integer.toString(port);
@@ -136,7 +136,7 @@ public class Proxy{
         // The node doesn't exit if .remove() returns null
         PhysicalNode node = lookupTable.getPhysicalNodesMap().remove(nodeID);
         if (node == null){
-            return "false|This node doesn't exist!";
+            return "\nfalse|This node doesn't exist!";
         }
         node.setStatus("inactive");
         // Get the bucketsTable
@@ -173,8 +173,9 @@ public class Proxy{
         for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
             pNode.setLookupTable(lookupTable);
         }
-        return "true|the node of " + nodeID + " has been successfully removed\n" + result;
+        return "\ntrue|the node of " + nodeID + " has been successfully removed: " + result;
     }
+
     public String loadBalance(String fromIP, int fromPort, String toIP, int toPort, int numOfBuckets){
         String fromID = fromIP + "-" + Integer.toString(fromPort);
         String toID = toIP + "-" + Integer.toString(toPort);
@@ -212,15 +213,15 @@ public class Proxy{
         for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
             pNode.setLookupTable(lookupTable);
         }
-        return "true|loadBalance from " + fromID + " to " + toID + " for " + numOfBuckets + " buckets: " + result;
+        return "\ntrue|loadBalance from " + fromID + " to " + toID + " for " + numOfBuckets + " buckets: " + result;
     }
     public String expandTable(){
-        int oldHashRange = HashAndReplicationConfig.HASH_RANGE;
+        int oldHashRange = HashAndReplicationConfig.CURRENT_HASH_RANGE;
         int newHashRange = oldHashRange * 2;
         for (int i = oldHashRange; i < newHashRange; i++){
             lookupTable.getBucketsTable().put(i, lookupTable.getBucketsTable().get(i - oldHashRange));
         }
-        HashAndReplicationConfig.HASH_RANGE *= 2;
+        HashAndReplicationConfig.CURRENT_HASH_RANGE *= 2;
         // Update the timestamp
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         lookupTable.setEpoch(timestamp.getTime());
@@ -228,15 +229,18 @@ public class Proxy{
         for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
             pNode.setLookupTable(lookupTable);
         }
-        return "true|expandTable from " + oldHashRange + " buckets to " + newHashRange + " buckets is successful.";
+        return "\ntrue|expandTable from " + oldHashRange + " buckets to " + newHashRange + " buckets is successful.";
     }
     public String shrinkTable(){
-        int oldHashRange = HashAndReplicationConfig.HASH_RANGE;
+        int oldHashRange = HashAndReplicationConfig.CURRENT_HASH_RANGE;
+        if (oldHashRange <= HashAndReplicationConfig.INITIAL_HASH_RANGE){
+            return "\nfalse|Shrunk cannot be done beyond the original table.";
+        }
         int newHashRange = oldHashRange / 2;
         for (int i = newHashRange; i < oldHashRange; i++){
             lookupTable.getBucketsTable().remove(i);
         }
-        HashAndReplicationConfig.HASH_RANGE /= 2;
+        HashAndReplicationConfig.CURRENT_HASH_RANGE /= 2;
         // Update the timestamp
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         lookupTable.setEpoch(timestamp.getTime());
@@ -244,7 +248,7 @@ public class Proxy{
         for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
             pNode.setLookupTable(lookupTable);
         }
-        return "true|shrinkTable from " + oldHashRange + " buckets to " + newHashRange + " buckets is successful.";
+        return "\ntrue|shrinkTable from " + oldHashRange + " buckets to " + newHashRange + " buckets is successful.";
     }
 
     // Return a set of nodeIDs for replicas for each hash value
@@ -254,3 +258,4 @@ public class Proxy{
     }
 
 }
+
