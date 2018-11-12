@@ -29,9 +29,9 @@ public class ProxyServer extends PhysicalNode {
 	public void initializeRing(){
         try {
             // Read from the configuration file "config_ring.xml"
-//            String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+			String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
 
-            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+//            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
             System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
