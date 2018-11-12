@@ -211,7 +211,7 @@ public class PhysicalNode {
                         result += dataTransfer(successors.get(i), vNode, predecessors.get(successors.size() - 1 - i).getHash() + 1, hash);
                 }
                 
-                lookupTable.getTable().updateIndex();
+                lookupTable.getTable().updateIndex(index);
 
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 lookupTable.setEpoch(timestamp.getTime());
@@ -258,6 +258,9 @@ public class PhysicalNode {
         int idx = Collections.binarySearch(list, virtualNodeToDelete);
         lookupTable.getPhysicalNodeMap().get(virtualNodeToDelete.getPhysicalNodeId()).getVirtualNodes().remove(idx);
 
+        // Update the index of the nodes that follows the removed node on the ring
+        lookupTable.getTable().updateIndex(index);
+
         // Update the local timestamp
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         lookupTable.setEpoch(timestamp.getTime());
@@ -291,6 +294,9 @@ public class PhysicalNode {
             else
                 result += dataTransfer(successors.get(0), successors.get(i), predecessors.get(predecessors.size() - 1 - i).getHash() + 1, node.getHash());
         }
+
+        // Update the index of the nodes that follows the removed node on the ring
+        lookupTable.getTable().updateIndex(index);
 
         // Update the local timestamp
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -327,7 +333,7 @@ public class PhysicalNode {
         int newHash = hash + delta;
         VirtualNode newNode = new VirtualNode(newHash,physicalNodeID);
         if (lookupTable.getTable().add(newNode) == false) {
-            result = "\nfalse|virtual node " + newHash + " already exists";
+            return "\nfalse|virtual node " + newHash + " already exists";
         }
         else {
             result = "\ntrue|virtual node moved from " + hash + " to " + newHash + ": ";
@@ -390,6 +396,15 @@ public class PhysicalNode {
 
             // Delete the virtual node at the old hash
             lookupTable.getTable().remove(index);
+
+            // Update the index of the nodes that follows the removed node on the ring
+            if (index > newIndex){
+                lookupTable.getTable().updateIndex(newIndex, index);
+            }
+            else {
+                lookupTable.getTable().updateIndex(index, newIndex);
+            }
+
         }
         //Update the timestamp in lookupTable
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
