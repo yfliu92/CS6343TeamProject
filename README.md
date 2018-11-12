@@ -18,30 +18,9 @@ java dht/client/controlclient
 
 
 ## compile and run Ring server
--- javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar dht/Ring/ProxyServer.java
--- javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar;/Users/jj/Downloads/dom4j-2.1.1.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
-
-javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
-javac -cp /Users/jj/Downloads/dom4j-2.1.1.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
-
-javac -cp ../lib/javax.json-api-1.1.2.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
-javac -cp ../lib/dom4j-2.1.1.jar dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java
-javac -classpath ../lib/\* dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java dht/common/response/*.java storage_server/Datum.java
 javac -classpath ../lib/\* dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java dht/common/response/*.java storage_server/Datum.java control_client/control_client.java
 
--- java dht/Ring/ProxyServer
--- java -classpath .:./javax.json-1.0.jar dht/Ring/ProxyServer
--- java -classpath .:/Users/jj/Downloads/javax.json-1.0.jar dht/Ring/ProxyServer
-
-java -classpath .:/Users/jj/Downloads/javax.json-1.0.jar dht/Ring/ProxyServer
-java -classpath .:/Users/jj/Downloads/dom4j-2.1.1.jar dht/Ring/ProxyServer
 java -classpath .:../lib/\* dht/Ring/ProxyServer
-
-
-## compile and run Ring Data Node
-javac -classpath ../lib/\* control_client/*.java dht/server/Command.java
-javac -classpath ../lib/\* control_client/*.java dht/server/Command.java dht/Ring/*.java dht/common/Hashing.java dht/common/response/*.java storage_server/Datum.java
-java -classpath .:../lib/\* control_client/DataNode
 
 
 ## compile and run control client
@@ -60,7 +39,15 @@ java -classpath .:../lib/\* dht/rush/test
 
 
 ## compile and run Elastic DHT server
-javac -classpath ../lib/\* dht/elastic_DHT_centralized/*.java dht/server/Command.java
+javac -classpath ../lib/\* dht/elastic_DHT_centralized/*.java dht/server/Command.java dht/common/Hashing.java dht/common/response/Response.java
 java -classpath .:../lib/\* dht/elastic_DHT_centralized/ProxyServer
+
+## compile and run Data Node
+## Data node should already be compiled with each proxy server
+--javac -classpath ../lib/\* control_client/*.java dht/server/Command.java dht/Ring/*.java dht/common/Hashing.java dht/common/response/*.java storage_server/Datum.java
+--java -classpath .:../lib/\* control_client/DataNode
+
+java -classpath .:../lib/\* dht/Ring/DataNode
+java -classpath .:../lib/\* dht/elastic_DHT_centralized/DataNode
 
 

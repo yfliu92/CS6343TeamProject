@@ -422,9 +422,6 @@ public class ProxyServer extends PhysicalNode {
                   
             	BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		        PrintWriter output = new PrintWriter(s.getOutputStream(), true);
-//		        
-//            	output.println(s.getPort());
-//            	output.flush();
   
                 Thread t = proxy.new ClientHandler(s, input, output, proxy, dataStore); 
 

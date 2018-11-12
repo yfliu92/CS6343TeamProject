@@ -1,4 +1,4 @@
-package control_client;
+package dht.elastic_DHT_centralized;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -15,11 +15,14 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import javax.json.*;
 
-import dht.Ring.LookupTable;
-import dht.Ring.VirtualNode;
+import dht.elastic_DHT_centralized.LookupTable;
+//import dht.Ring.VirtualNode;
+
 import dht.common.Hashing;
 import dht.server.Command;
 
@@ -36,23 +39,14 @@ public class DataNode {
 	
 	public boolean buildTable(JsonObject data) {
 		lookupTable = new LookupTable();
-		if (data.containsKey("epoch")) {
-			this.lookupTable.setEpoch(Long.valueOf(data.get("epoch").toString()));
-		}
-		if (data.containsKey("table")) {
-			JsonArray jsonArray = data.get("table").asJsonArray();
-			for(int i = 0; i < jsonArray.size(); i++) {
-				lookupTable.getTable().add(new VirtualNode(jsonArray.getJsonObject(i)));
-			}
-		}
-		
-		return true;
+		return lookupTable.buildTable(data);
 	}
 	
 	public void printTableInfo() {
-		int items = lookupTable != null ? lookupTable.getTable().size() : 0;
+		int items = lookupTable != null ? lookupTable.getBucketsTable().size() : 0;
+		int physicalNodes = lookupTable != null ? lookupTable.getPhysicalNodesMap().size() : 0;
 		String epoch = items != 0 ? String.valueOf(lookupTable.getEpoch()): "";
-		System.out.println("A total of " + items + " records found in the table, epoch " + epoch);
+		System.out.println("A total of " + items + " hash buckets and " + physicalNodes + " physical nodes found in the table, epoch " + epoch);
 	}
 	
 	public boolean isTableLatest(String epoch) {
@@ -78,9 +72,9 @@ public class DataNode {
         System.out.println("==== Welcome to Data Node !!! =====");
         
     	String serverAddress = "localhost";
-    	int port = 9091; 
-    	String dhtName = "Ring";
-    	int dhtType = 1;
+    	int port = 9093; 
+    	String dhtName = "Elastic DHT";
+    	int dhtType = 3;
     	
     	DataNode dataNode = new DataNode();
         
@@ -236,13 +230,14 @@ class DataNodeClient {
     				
     			}
     			
-    			int[] virtualnodeids = this.dataNode.getLookupTable().getTable().getVirtualNodeIds(rawhash);
-    			String virtualnodeids_remote = res.getString("result");
+//    			int[] virtualnodeids = this.dataNode.getLookupTable().getTable().getVirtualNodeIds(rawhash);
+    			String[] physicalnodeids = this.dataNode.getLookupTable().getPhysicalNodeIds(rawhash);
+    			String physicalnodeid_remote = res.getString("result");
     			System.out.println("Raw hash of " + dataStr + ": " + rawhash);
-    			System.out.println("Virtual Node Ids from Local DHT: " + Arrays.toString(virtualnodeids));
-    			if (!Arrays.toString(virtualnodeids).equals(virtualnodeids_remote)) {
+    			System.out.println("Physical Node Ids from Local DHT: " + Arrays.toString(physicalnodeids));
+    			if (!Arrays.toString(physicalnodeids).equals(physicalnodeid_remote)) {
     				System.out.println("Local DHT is outdated");
-    				System.out.println("Virtual Node Ids from Remote DHT: " + virtualnodeids_remote);
+    				System.out.println("Physical Node Ids from Remote DHT: " + physicalnodeid_remote);
     				System.out.println("Starting to update DHT...");
     				sendCommandStr(new Command("dht pull"), input, output);
     			}
@@ -251,12 +246,13 @@ class DataNodeClient {
     	}
     	else if (command.getAction().equals("find")) {
     		int hash = command.getCommandSeries().size() > 0 ? Integer.valueOf(command.getCommandSeries().get(0)) : -1;
-    		String localVirtualNode = hash >= 0 ? String.valueOf(this.dataNode.getLookupTable().getTable().find(hash).getHash()) : "";
-    		String virtualNode = res.getJsonObject("jsonResult").get("hash").toString();
-    		String physicalNode = res.getJsonObject("jsonResult").getString("physicalNodeId");
-    		System.out.println("Node Info: " + physicalNode + " (hash: " + virtualNode + ")");
-    		if (!virtualNode.equals(localVirtualNode)) {
+    		String localPhysicalNode = hash >= 0 ? Arrays.toString(this.dataNode.getLookupTable().getPhysicalNodeIds(hash)) : "";
+//    		String virtualNode = res.getJsonObject("jsonResult").get("hash").toString();
+    		String physicalNode = res.getString("result");
+    		System.out.println("Node Info: " + physicalNode + " (hash: " + hash + ")");
+    		if (!physicalNode.equals(localPhysicalNode)) {
     			System.out.println("Local DHT is outdated.");
+    			System.out.println("Server physical nodes: " + physicalNode);
     		}
     		else {
     			System.out.println("Local DHT is update to date.");
@@ -264,13 +260,26 @@ class DataNodeClient {
     		return;
     	}
     	else if (command.getAction().equals("info")) {
-    		String epoch = res.getJsonObject("jsonResult").get("epoch").toString();
+    		JsonObject data = res.getJsonObject("jsonResult");
+    		String epoch = data.get("epoch").toString();
     		System.out.println("DHT table info");
     		System.out.println("Epoch number: " + epoch);
-    		JsonArray tableResult = res.getJsonObject("jsonResult").get("table").asJsonArray();
-    		for(int i = 0; i < tableResult.size(); i++) {
-    			System.out.println(tableResult.get(i));
-    		}
+			System.out.println("Hash buckets: ");
+			JsonObject table = data.getJsonObject("bucketsTable");
+			for(Entry<String, JsonValue> node: table.entrySet()) {
+				System.out.print(node.getKey() + ": ");
+				JsonObject hashPairMap = node.getValue().asJsonObject();
+				for(Entry<String, JsonValue> pair: hashPairMap.entrySet()) {
+					System.out.print("<" + pair.getKey() + ", " + pair.getValue() + "> ");
+				}
+				System.out.print("\n");
+			}
+			System.out.println("Physical nodes: ");
+			JsonObject nodes = data.getJsonObject("physicalNodesMap");
+			for(Entry<String, JsonValue> node: nodes.entrySet()) {
+				JsonObject nodeJson = node.getValue().asJsonObject();
+				System.out.println(nodeJson);
+			}
     		return;
     	}
     	
@@ -434,9 +443,10 @@ class DataNodeClient {
 	    		break;
 	    	case 3:
 	    		tip = "\nhelp";
-	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>";
-	    		tip += "\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>";
-	    		tip += "\ninfo";
+	    		tip += "\nfind <hash>    //find the virtual node on the server corresponding to the hash value";
+	    		tip += "\ndht head|pull  //fetch server dht table info";
+	    		tip += "\ndht info|list  //show local dht table info";
+	    		tip += "\ninfo           //show server dht table info";
 	    		tip += "\nexit\n";
 	    		break;
     	}

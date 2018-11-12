@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.io.Console;
 import java.util.Vector;
-
+import java.util.Map.Entry;
 import java.lang.String;
 import java.io.File;
 import java.io.FileReader;
@@ -36,6 +36,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 import javax.json.JsonWriter;
 
 import dht.common.Hashing;
@@ -231,11 +232,11 @@ public class control_client {
 		}
     }
     
-    public void sendCommandStr(Command command, BufferedReader input, PrintWriter output) throws Exception {
+    public void sendCommandStr(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
     	String[] jsonCommands = {"read", "write", "data", "dht", "info", "writebatch", "updatebatch"};
     	for(String jsonCommand: jsonCommands) {
     		if (command.getAction().startsWith(jsonCommand)) {
-    			sendCommandStr_JsonRes(command, input, output);
+    			sendCommandStr_JsonRes(command, dhtType, input, output);
     			return;
     		}
     	}
@@ -247,7 +248,7 @@ public class control_client {
         System.out.println("Response received: " + response + " ---- " + new Date().toString());
     }
     
-    public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
+    public void sendCommandStr_JsonRes(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
     	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + command.getRawCommand() + " ---- " + timeStamp);
@@ -258,7 +259,7 @@ public class control_client {
         if (res != null) {
             System.out.println();
         	System.out.println("Response received at " + timeStamp + " ---- " + res.toString());
-        	parseResponse(res, command);
+        	parseResponse(res, command, dhtType);
         	System.out.println();
          }
     }
@@ -275,15 +276,36 @@ public class control_client {
         return jsonObject;
     }
     
-    public void parseResponse(JsonObject res, Command command) {
+    public void parseResponse(JsonObject res, Command command, int dhtType) {
     	if (command.getAction().equals("info")) {
     		String epoch = res.getJsonObject("jsonResult").get("epoch").toString();
     		System.out.println("DHT table info");
     		System.out.println("Epoch number: " + epoch);
-    		JsonArray tableResult = res.getJsonObject("jsonResult").get("table").asJsonArray();
-    		for(int i = 0; i < tableResult.size(); i++) {
-    			System.out.println(tableResult.get(i));
+    		if (dhtType == 1) {
+        		JsonArray tableResult = res.getJsonObject("jsonResult").get("table").asJsonArray();
+        		for(int i = 0; i < tableResult.size(); i++) {
+        			System.out.println(tableResult.get(i));
+        		}
     		}
+    		else if (dhtType == 3) {
+    			System.out.println("Hash buckets: ");
+    			JsonObject table = res.getJsonObject("jsonResult").getJsonObject("bucketsTable");
+    			for(Entry<String, JsonValue> node: table.entrySet()) {
+    				System.out.print(node.getKey() + ": ");
+    				JsonObject hashPairMap = node.getValue().asJsonObject();
+    				for(Entry<String, JsonValue> pair: hashPairMap.entrySet()) {
+    					System.out.print("<" + pair.getKey() + ", " + pair.getValue() + "> ");
+    				}
+    				System.out.print("\n");
+    			}
+    			System.out.println("Physical nodes: ");
+    			JsonObject nodes = res.getJsonObject("jsonResult").getJsonObject("physicalNodesMap");
+    			for(Entry<String, JsonValue> node: nodes.entrySet()) {
+    				JsonObject nodeJson = node.getValue().asJsonObject();
+    				System.out.println(nodeJson);
+    			}
+    		}
+
     		return;
     	}
     	
@@ -388,7 +410,7 @@ public class control_client {
         }
         else
         {
-        	sendCommandStr(command, input, output);
+        	sendCommandStr(command, dhtType, input, output);
         }
     }
     

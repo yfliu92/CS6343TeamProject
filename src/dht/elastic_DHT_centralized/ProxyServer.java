@@ -5,6 +5,8 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import dht.common.Hashing;
+import dht.common.response.Response;
 import dht.server.Command;
 
 import java.io.BufferedReader;
@@ -121,8 +123,25 @@ public class ProxyServer extends Proxy {
 		Command command = new Command(commandStr);
 		
 		try {
-			if (command.getAction().equals("find")) {
-				return getFindInfo(command.getInput());
+			if (command.getAction().equals("read")) {
+				String dataStr = command.getCommandSeries().get(0);
+//				return dataStore.readRes(dataStr);
+				
+    			int rawhash = Hashing.getHashValFromKeyword(dataStr);
+    			try {
+    				rawhash = Integer.valueOf(dataStr);
+    			}
+    			catch (Exception e) {
+    				
+    			}
+
+    			String[] physicalnodeids = proxy.getLookupTable().getPhysicalNodeIds(rawhash);
+    			return new Response(true, Arrays.toString(physicalnodeids), "Physical Node IDs from server").serialize();
+				
+			}
+			else if (command.getAction().equals("find")) {
+				int hash = Integer.valueOf(command.getCommandSeries().get(0));
+				return new Response(true, Arrays.toString(proxy.getLookupTable().getPhysicalNodeIds(hash)), "Physical Node Info at Server").serialize();
 			}
 			else if (command.getAction().equals("loadbalance")) {
 				String fromIP = command.getCommandSeries().get(0);
@@ -149,70 +168,201 @@ public class ProxyServer extends Proxy {
 //				return "remove";
 			}
 			else if (command.getAction().equals("info")) {
-				return proxy.listNodes();
+//				return proxy.listNodes();
+				return new Response(true, proxy.getLookupTable().toJSON(), "DHT Table from Server").serialize();
+			}
+			else if (command.getAction().equals("dht")) {
+				String operation = command.getCommandSeries().size() > 0 ? command.getCommandSeries().get(0) : "head";
+				if (operation.equals("head")) {
+					return new Response(true, String.valueOf(proxy.getLookupTable().getEpoch()), "Current epoch number:").serialize();
+				}
+				else if (operation.equals("pull")) {
+//					return super.getLookupTable().serialize();
+					return new Response(true, proxy.getLookupTable().toJSON(), "Elastic DHT table").serialize();
+				}
+				else if (operation.equals("print")) {
+					proxy.getLookupTable().print();
+					return new Response(true, "DHT printed on server").serialize();
+				}
+				else {
+					return new Response(false, "Command not supported").serialize();
+				}
+			
 			}
 			else {
 				return "Command not supported";
 			}
 		}
 		catch (Exception ee) {
+			ee.printStackTrace();
 			return "Illegal command";
 		}
 
 	}
-    
-    public static void main(String[] args) throws IOException {
-        ProxyServer proxyServer = new ProxyServer();
-        //Initialize the Elastic DHT cluster
-        Proxy proxy = initializeEDHT();
-        System.out.println(proxy.addNode("192.168.0.211", 8100, 900, 910));
-//        System.out.println(proxy.deleteNode("192.168.0.201", 8100));
-//        System.out.println(proxy.loadBalance("192.168.0.204", 8100, "192.168.0.210", 8100, 12));
+	
+	public class ClientHandler extends Thread  
+	{
+	    final BufferedReader input;
+	    final PrintWriter output;
+	    final Socket s; 
+	    final ProxyServer proxyServer;
+	    final Proxy proxy;
+	  
+	    public ClientHandler(Socket s, BufferedReader input, PrintWriter output, ProxyServer proxyServer, Proxy proxy) {
+	    	this.s = s; 
+	    	this.input = input;
+	        this.output = output;
+	        this.proxy = proxy;
+	        this.proxyServer = proxyServer;
+	    }
+	  
+	    @Override
+	    public void run()  
+	    { 
+	        String msg; 
+	        while (true)  
+	        { 
+	            try {
+	            	msg = input.readLine(); 
+	                if (msg == null) {
+                		System.out.println("Connection end " + " ---- " + new Date().toString());
+                		break;
+	                }
+	                  
+	                if (msg.equals("Exit")) 
+	                {  
+	                    System.out.println("Client " + this.s + " sends exit..."); 
+	                    System.out.println("Closing this connection."); 
+	                    this.s.close(); 
+	                    System.out.println("Connection closed by " + s.getPort()); 
+	                    break; 
+	                }
+	                else { // msg != null
+                    	System.out.println("Request received from " + s.getPort() + ": " + msg + " ---- " + new Date().toString());
+                    	System.out.println();
+                    	
+                    	String response = proxyServer.getResponse(msg, proxy);
 
-        int port = 9093;
-    	System.out.println("Elastic DHT server running at " + String.valueOf(port));
-        ServerSocket listener = new ServerSocket(port);
-
-        try {
-            while (true) {
-            	Socket socket = listener.accept();
-            	System.out.println("Connection accepted" + " ---- " + new Date().toString());
-                try {
-                	BufferedReader in = new BufferedReader(
-                            new InputStreamReader(socket.getInputStream()));
-                    PrintWriter out =
-                            new PrintWriter(socket.getOutputStream(), true);
-                	String msg;
-                	while(true) {
-                		try {
-                    		msg = in.readLine();
-                        	if (msg != null) {
-                            	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
-
-                                String response = proxyServer.getResponse(msg, proxy);
-                                out.println(response);
-                                System.out.println("Response sent: " + response);
-                        	}
-                        	else {
-                        		System.out.println("Connection end " + " ---- " + new Date().toString());
-                        		break;
-                        	}
-                		}
-                		catch (Exception ee) {
-                    		System.out.println("Connection reset " + " ---- " + new Date().toString());
-                    		break;
-                		}
-
+                    	output.println(response);
+                    	output.flush();
+                    	
+                        System.out.println("Response sent to " + s.getPort() + ": " + response + " ---- " + new Date().toString());
+                        System.out.println();
                 	}
+              
+	            } catch (IOException e) { 
+	            	System.out.println("Connection reset at " + s.getPort() + " ---- " + new Date().toString());
+	                e.printStackTrace(); 
+            		break;
+	            } 
+	        } 
+	          
+	        try
+	        { 
+	        	this.output.close();
+	        	this.input.close();
+	              
+	        }catch(IOException e){ 
+	            e.printStackTrace(); 
+	        } 
+	    } 
+	}
+	
+    public static void main(String[] args) throws IOException { 
+		ProxyServer proxyServer = new ProxyServer();
+        //Initialize the Elastic DHT cluster
+	    Proxy proxy = initializeEDHT();
+	    System.out.println(proxy.addNode("192.168.0.211", 8100, 900, 910));
+		int port = 9093;
+        ServerSocket ss = new ServerSocket(port); 
+        System.out.println("Elastic DHT server running at " + String.valueOf(port));
+          
+        while (true)  
+        { 
+            Socket s = null; 
+              
+            try 
+            {
+                s = ss.accept(); 
+                  
+                System.out.println("A new client is connected : " + s); 
+                  
+            	BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
+		        PrintWriter output = new PrintWriter(s.getOutputStream(), true);
 
-                } finally {
-                    socket.close();
-                }
-            }
-        }
-        finally {
-            listener.close();
-        }
-        
+                Thread t = proxyServer.new ClientHandler(s, input, output, proxyServer, proxy); 
+
+                t.start(); 
+                  
+            } 
+            catch (Exception e){ 
+                s.close(); 
+                e.printStackTrace(); 
+            } 
+        } 
     }
+    
+//    public static void main(String[] args) throws IOException {
+//        ProxyServer proxyServer = new ProxyServer();
+//        //Initialize the Elastic DHT cluster
+//        Proxy proxy = initializeEDHT();
+//        System.out.println(proxy.addNode("192.168.0.211", 8100, 900, 910));
+////        System.out.println(proxy.deleteNode("192.168.0.201", 8100));
+////        System.out.println(proxy.loadBalance("192.168.0.204", 8100, "192.168.0.210", 8100, 12));
+//
+//        int port = 9093;
+//    	System.out.println("Elastic DHT server running at " + String.valueOf(port));
+//        ServerSocket listener = new ServerSocket(port);
+//
+//        try {
+//            while (true) {
+//            	Socket socket = null;
+//                try {
+//                	socket = listener.accept();
+//                	System.out.println("Connection accepted: " + socket + " ---- " + new Date().toString());
+//                	
+//                	BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//    		        PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+//                	
+//                    Thread t = proxyServer.new ClientHandler(socket, input, output, proxyServer); 
+//
+//                    t.start(); 
+//                	
+////                	BufferedReader in = new BufferedReader(
+////                            new InputStreamReader(socket.getInputStream()));
+////                    PrintWriter out =
+////                            new PrintWriter(socket.getOutputStream(), true);
+////                	String msg;
+////                	while(true) {
+////                		try {
+////                    		msg = in.readLine();
+////                        	if (msg != null) {
+////                            	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
+////
+////                                String response = proxyServer.getResponse(msg, proxy);
+////                                out.println(response);
+////                                System.out.println("Response sent: " + response);
+////                        	}
+////                        	else {
+////                        		System.out.println("Connection end " + " ---- " + new Date().toString());
+////                        		break;
+////                        	}
+////                		}
+////                		catch (Exception ee) {
+////                    		System.out.println("Connection reset " + " ---- " + new Date().toString());
+////                    		break;
+////                		}
+////
+////                	}
+//
+//                } finally {
+//                    socket.close();
+//                }
+//            }
+//        }
+//        finally {
+//            listener.close();
+//        }
+//        
+//    }
 }
