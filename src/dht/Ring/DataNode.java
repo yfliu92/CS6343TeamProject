@@ -173,6 +173,7 @@ class DataNodeClient {
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
         output.println(command.getRawCommand());
+        output.flush();
         
         JsonObject res = parseRequest(input);
         if (res != null) {

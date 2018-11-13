@@ -238,7 +238,7 @@ public class ProxyServer extends Proxy {
 				String toIP = command.getCommandSeries().get(2);
 				int toPort = Integer.valueOf(command.getCommandSeries().get(3));
 				int numBuckets = Integer.valueOf(command.getCommandSeries().get(4));
-				return proxy.loadBalance(fromIP, fromPort, toIP, toPort, numBuckets);
+				return proxy.loadBalance(fromIP, fromPort, toIP, toPort, numBuckets).replaceAll("\n", "  ");
 			}
 			else if (command.getAction().equals("add")) {
 				String ip = command.getCommandSeries().get(0);
@@ -247,13 +247,13 @@ public class ProxyServer extends Proxy {
 				int end = command.getCommandSeries().size() == 4 ? Integer.valueOf(command.getCommandSeries().get(3)) : -1;
 				
 				String result = start == -1 && end == -1 ? proxy.addNode(ip, port) : proxy.addNode(ip, port, start, end);
-				return result;
+				return result.replaceAll("\n", "  ");
 			}
 			else if (command.getAction().equals("remove")) {
 				String IP = command.getCommandSeries().get(0);
 				int port = Integer.valueOf(command.getCommandSeries().get(1));
 				String result = proxy.deleteNode(IP, port);
-				return result;
+				return result.replaceAll("\n", "  ");
 //				return "remove";
 			}
 			else if (command.getAction().equals("info")) {

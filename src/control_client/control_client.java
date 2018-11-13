@@ -10,6 +10,7 @@
 package control_client;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,12 +26,15 @@ import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.io.Console;
 import java.util.Vector;
 import java.util.Map.Entry;
 import java.lang.String;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -233,9 +237,13 @@ public class control_client {
     }
     
     public void sendCommandStr(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
+    	if (processBatchRequest(command, dhtType, input, output)) {
+    		return;
+    	}
+    	
     	String[] jsonCommands = {"read", "write", "data", "dht", "info", "writebatch", "updatebatch"};
     	for(String jsonCommand: jsonCommands) {
-    		if (command.getAction().startsWith(jsonCommand)) {
+    		if (command.getAction().equals(jsonCommand)) {
     			sendCommandStr_JsonRes(command, dhtType, input, output);
     			return;
     		}
@@ -246,6 +254,29 @@ public class control_client {
             output.flush();
         String response = input.readLine();
         System.out.println("Response received: " + response + " ---- " + new Date().toString());
+    }
+    
+    public boolean processBatchRequest(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
+    	if (command.getAction().equals("loadcommand")) {
+    		if (command.getCommandSeries().size() > 0) {
+    			String rootPath = System.getProperty("user.dir");
+    			String path = rootPath + File.separator + command.getCommandSeries().get(0);
+//    			List<String> commands = new LinkedList<String>();
+    			
+    			File filename = new File(path);
+    			BufferedReader reader = new BufferedReader(new FileReader(filename));
+				String line = null;
+				while((line = reader.readLine()) != null) {
+					Command lineCommand = new Command(line);
+					sendCommandStr(lineCommand, dhtType, input, output);
+				}
+				reader.close();
+  			
+    			return true;
+    		}
+    	}
+    	
+    	return false;
     }
     
     public void sendCommandStr_JsonRes(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
@@ -325,8 +356,34 @@ public class control_client {
     	}
     }
     
+    public boolean processBatchRequest_Rush(Command command) throws Exception {
+    	if (command.getAction().equals("loadcommand")) {
+    		if (command.getCommandSeries().size() > 0) {
+    			String rootPath = System.getProperty("user.dir");
+    			String path = rootPath + File.separator + command.getCommandSeries().get(0);
+//    			List<String> commands = new LinkedList<String>();
+    			
+    			File filename = new File(path);
+    			BufferedReader reader = new BufferedReader(new FileReader(filename));
+				String line = null;
+				while((line = reader.readLine()) != null) {
+					processCommandRush(line);
+				}
+				reader.close();
+  			
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
     public void processCommandRush(String cmd) throws Exception {
     	Command command = new Command(cmd);
+    	
+    	if (processBatchRequest_Rush(command)) {
+    		return;
+    	}
     	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
@@ -473,12 +530,15 @@ public class control_client {
     	switch(dhtType) {
 	    	case 1:
 	    		tip = "\nhelp";
-	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <hash>\nremove <hash>\nloadbalance <delta> <hash>";
+	    		tip += "\nloadcommand <path> | example: loadcommand /dht/Ring/ring_CCcommands.txt";
+	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <hash>\nremove <hash>";
+	    		tip += "\nloadbalance <delta> <hash>";
 	    		tip += "\ninfo";
 	    		tip += "\nexit\n";
 	    		break;
 	    	case 2:
 	    		tip = "\nhelp";
+	    		tip += "\nloadcommand <path> | example: loadcommand /dht/rush/cephControlClient.txt";
 	    		tip += "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5";
 	    		tip += "\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689";
 	    		tip += "\ngetnodes <pgid> | example: getnodes PG1";
@@ -489,7 +549,9 @@ public class control_client {
 	    		break;
 	    	case 3:
 	    		tip = "\nhelp";
-	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>\ninfo/help/exit/read file\n";
+	    		tip += "\nloadcommand <path> | example: loadcommand /dht/elastic_DHT_centralized/elastic_CCcommands.txt";
+	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>";
+	    		tip += "\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>";
 	    		tip += "\nexit\n";
 	    		break;
     	}
