@@ -16,7 +16,7 @@ import com.google.code.gossip.RemoteGossipMember;
  * 
  * @author harmenw
  */
-public class GossipExample2 extends Thread {
+public class GossipRing2 extends Thread {
 	/** The number of clients to start. */
 	private static final int NUMBER_OF_CLIENTS = 2;
 
@@ -24,14 +24,14 @@ public class GossipExample2 extends Thread {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new GossipExample2();
+		new GossipRing2();
 	}
 	
 	/**
 	 * Constructor.
 	 * This will start the this thread.
 	 */
-	public GossipExample2() {
+	public GossipRing2() {
 		start();
 	}
 
@@ -43,10 +43,10 @@ public class GossipExample2 extends Thread {
 			GossipSettings settings = new GossipSettings();
 			// Get my ip address.
 			String myIpAddress = InetAddress.getLocalHost().getHostAddress();
-			GossipMember startupMember = new RemoteGossipMember(myIpAddress, 4000);
+			GossipMember startupMember = new RemoteGossipMember(myIpAddress, 9092);
 			ArrayList<GossipMember> teamMembers = new ArrayList<GossipMember>();
-			teamMembers.add(new RemoteGossipMember(myIpAddress, 4001));
-			teamMembers.add(new RemoteGossipMember(myIpAddress, 4002));
+			teamMembers.add(new RemoteGossipMember(myIpAddress, 9091));
+			teamMembers.add(new RemoteGossipMember(myIpAddress, 9093));
 			
 			// Lets start the gossip clients.
 			// Start the clients, waiting cleaning-interval + 1 second between them which will show the dead list handling.

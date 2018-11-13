@@ -1,9 +1,13 @@
 cd java-gossip/src
 javac com/google/code/gossip/examples/GossipExample2.java
 javac com/google/code/gossip/examples/GossipExample3.java
+javac -classpath ../../lib/\* com/google/code/gossip/manager/Ring/*.java
+javac -classpath ../../lib/\*:./ com/google/code/gossip/manager/PassiveGossipThread.java
 
 java com.google.code.gossip.examples.GossipExample2
 java com.google.code.gossip.examples.GossipExample3
+
+java -classpath ../../lib/\*:./ com.google.code.gossip.examples.GossipRing1
 
 in either terminal:
 -->status

@@ -1,10 +1,8 @@
 package com.google.code.gossip.manager.impl;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.ArrayList;
+import java.io.*;
+import java.net.*;
 
 import org.json.JSONArray;
 
@@ -59,44 +57,25 @@ abstract public class SendMembersActiveGossipThread extends ActiveGossipThread {
 						GossipService.debug(other);
 					}
 					GossipService.debug("---------------------");
-					
-					// Write the objects to a byte array.
-					byte[] json_bytes = jsonArray.toString().getBytes();
-					
-					int packet_length = json_bytes.length;
-					
-					if (packet_length < GossipManager.MAX_PACKET_SIZE) {
-						
-						// Convert the packet length to the byte representation of the int.
-						byte[] length_bytes = new byte[4];
-                        length_bytes[0] = (byte)( sync_variable );
-						length_bytes[1] =(byte)( (packet_length << 8) >> 24 );
-						length_bytes[2] =(byte)( (packet_length << 16) >> 24 );
-						length_bytes[3] =(byte)( (packet_length << 24) >> 24 );
-						
-						GossipService.debug("Sending message ("+packet_length+" bytes): " + jsonArray.toString());
-						
-						//ByteArrayBuffer byteBuffer = new ByteArrayBuffer();
-						// Write the first 4 bytes with the length of the rest of the packet.
-						//byteBuffer.write(length_bytes);
-						// Write the json data.
-						//byteBuffer.write(json_bytes);
-						
-						//byte[] buf = byteBuffer.getRawData();
-						byte[] buf = new byte[length_bytes.length + json_bytes.length];
-                        System.arraycopy(length_bytes, 0, buf, 0, length_bytes.length);  
-                        System.arraycopy(json_bytes, 0, buf, length_bytes.length, json_bytes.length);  
-						
-						DatagramSocket socket = new DatagramSocket();
-						DatagramPacket datagramPacket = new DatagramPacket(buf, buf.length, dest, member.getPort());
-						socket.send(datagramPacket);
-						socket.close();
-					} else {
-						GossipService.error("The length of the to be send message is too large (" + packet_length + " > " + GossipManager.MAX_PACKET_SIZE + ").");
-					}
+					String sending_message = "Sync:" + sync_variable + ";" + jsonArray.toString();
+					GossipService.debug("Sending message: " + sending_message);
+                    SocketAddress socketAddress = new InetSocketAddress(dest, member.getPort());
+                    Socket socket = new Socket();
+                    try{
+                        socket.connect(socketAddress, 1000);
+			        } catch (IOException e1) {
+                        GossipService.debug("Connection Failed: " + dest + ":" + member.getPort());
+				        //e1.printStackTrace();
+			        }
+                    OutputStream outputStream = socket.getOutputStream();
+                    PrintWriter output = new PrintWriter(outputStream, true);
+                    output.println(sending_message);
+                    output.flush();
+					socket.close();
 				}
 			} catch (IOException e1) {
-				e1.printStackTrace();
+                GossipService.debug("Connection Failed");
+				//e1.printStackTrace();
 			}
 		}
 	}
@@ -109,23 +88,25 @@ abstract public class SendMembersActiveGossipThread extends ActiveGossipThread {
                 {   
                     InetAddress dest = InetAddress.getByName(member.getHost());
                     // Create a StringBuffer for the JSON message.
-                    byte[] text_bytes = text.getBytes();
                     GossipService.debug("Sending message \"" + text + "\" to " + dest + ":" + member.getPort());
-					byte[] buf = new byte[4 + text_bytes.length];
-					byte[] length_bytes = new byte[4];
-                    length_bytes[0] =(byte)(  text_bytes.length >> 24 );
-                    length_bytes[1] =(byte)( (text_bytes.length << 8) >> 24 );
-                    length_bytes[2] =(byte)( (text_bytes.length << 16) >> 24 );
-                    length_bytes[3] =(byte)( (text_bytes.length << 24) >> 24 );
-                    System.arraycopy(length_bytes, 0, buf, 0, 4);
-                    System.arraycopy(text_bytes, 0, buf, 4, text_bytes.length);
-                    DatagramSocket socket = new DatagramSocket();
-                    DatagramPacket datagramPacket = new DatagramPacket(buf, buf.length, dest, member.getPort());
-                    socket.send(datagramPacket);
+                    String sending_message = "Resend:" + 0 + ";" + text;
+                    SocketAddress socketAddress = new InetSocketAddress(dest, member.getPort());
+                    Socket socket = new Socket();
+                    try{
+                        socket.connect(socketAddress, 1000);
+                    } catch (IOException e1) {
+                        GossipService.debug("Connection Failed: " + dest + ":" + member.getPort());
+                        //e1.printStackTrace();
+                    }   
+                    OutputStream outputStream = socket.getOutputStream();
+                    PrintWriter output = new PrintWriter(outputStream, true);
+                    output.println(sending_message);
+                    output.flush();
                     socket.close();
                 }
             } catch (IOException e1) {
-                e1.printStackTrace();
+                GossipService.debug("Connection Failed");
+                //e1.printStackTrace();
             }
         }
     }

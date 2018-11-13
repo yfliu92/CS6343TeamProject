@@ -1,13 +1,13 @@
 package com.google.code.gossip.manager;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.lang.String;
-import java.net.InetAddress;
+import java.io.*;
+import java.sql.Timestamp;
+import java.util.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,6 +17,8 @@ import com.google.code.gossip.LocalGossipMember;
 import com.google.code.gossip.GossipMember;
 import com.google.code.gossip.GossipService;
 import com.google.code.gossip.RemoteGossipMember;
+import com.google.code.gossip.manager.Ring.ProxyServer;
+import com.google.code.gossip.manager.Ring.DataStore;
 
 /**
  * [The passive thread: reply to incoming gossip request.]
@@ -35,71 +37,72 @@ abstract public class PassiveGossipThread implements Runnable {
 
 	private AtomicBoolean _keepRunning;
 
+    private ServerSocket _ss;
+
 	public PassiveGossipThread(GossipManager gossipManager) {
 		_gossipManager = gossipManager;
 		
 		// Start the service on the given port number.
 		try {
-			_server = new DatagramSocket(_gossipManager.getMyself().getPort());
+			//_server = new DatagramSocket(_gossipManager.getMyself().getPort());
 			
 			// The server successfully started on the current port.
 			GossipService.info("Gossip service successfully initialized on port " + _gossipManager.getMyself().getPort());
 			GossipService.debug("I am " + _gossipManager.getMyself());
-		} catch (SocketException ex) {
+            _ss = new ServerSocket(_gossipManager.getMyself().getPort());
+        } catch (SocketException ex) {
 			// The port is probably already in use.
 			_server = null;
 			// Let's communicate this to the user.
 			GossipService.error("Error while starting the gossip service on port " + _gossipManager.getMyself().getPort() + ": " + ex.getMessage());
 			System.exit(-1);
 		}
+        catch (Exception e)
+        {
+            GossipService.error("IOException");
+        }
 		
 		_keepRunning = new AtomicBoolean(true);
 	}
 
 	@Override
 	public void run() {
+        GossipService.debug("I am in passive Thread of GossipThread");
+        ProxyServer proxy = new ProxyServer();
+        //Initialize the ring cluster
+        proxy.initializeRing();
+        proxy.CCcommands();
+        DataStore dataStore = new DataStore();
 		while(_keepRunning.get()) {
-			try {
-				// Create a byte array with the size of the buffer.
-				byte[] buf = new byte[_server.getReceiveBufferSize()];
-				DatagramPacket p = new DatagramPacket(buf, buf.length);
-				_server.receive(p);
-				GossipService.debug("A message has been received from " + p.getAddress() + ":" + p.getPort() + ".");
-				
-                int sync_variable = buf[0];
-		        int packet_length = 0;
-		        for (int i = 1; i < 4; i++) {
-		            int shift = (4 - 1 - i) * 8;
-		            packet_length += (buf[i] & 0x000000FF) << shift;
-		        }
-		        
-		        // Check whether the package is smaller than the maximal packet length.
-		        // A package larger than this would not be possible to be send from a GossipService,
-		        // since this is check before sending the message.
-		        // This could normally only occur when the list of members is very big,
-		        // or when the packet is misformed, and the first 4 bytes is not the right in anymore.
-		        // For this reason we regards the message.
-		        if (packet_length <= GossipManager.MAX_PACKET_SIZE) {
-		        
-			        byte[] json_bytes = new byte[packet_length];
-			        for (int i=0; i<packet_length; i++) {
-			        	json_bytes[i] = buf[i+4];
-			        }
-
+		    try {
+                Socket s = _ss.accept();
+                GossipService.debug("A new client is connected : " + s);
+                BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                PrintWriter output = new PrintWriter(s.getOutputStream(), true);
+                String msg = null;
+                while(true)
+                {
+                    msg = input.readLine();
+                    if(msg == null || msg.equals(""))
+                    {
+                        break;
+                    }
 					// Extract the members out of the packet
-					String receivedMessage = new String(json_bytes);
-					GossipService.debug("Received message (" + packet_length + " bytes): " + receivedMessage);
-					
+					String receivedMessage = msg;
+					//GossipService.debug("Received message (" + packet_length + " bytes): " + receivedMessage);
+                    GossipService.debug("Handle received message: " + receivedMessage);
 					try {
 						
 						ArrayList<GossipMember> remoteGossipMembers = new ArrayList<GossipMember>();
 						
 						RemoteGossipMember senderMember = null;
-						if(receivedMessage.startsWith("[{"))
+                        String[] tmp_split = receivedMessage.split(";");
+						if(tmp_split[0].startsWith("Sync:"))
                         {
 						GossipService.debug("Received member list:");
 						// Convert the received JSON message to a JSON array.
-						JSONArray jsonArray = new JSONArray(receivedMessage);
+                        int sync_variable = Integer.parseInt(tmp_split[0].split(":")[1]);
+						JSONArray jsonArray = new JSONArray(tmp_split[1]);
 						// The JSON array should contain all members.
 						// Let's iterate over them.
 						for (int i = 0; i < jsonArray.length(); i++) {
@@ -118,7 +121,6 @@ abstract public class PassiveGossipThread implements Runnable {
 							} else {
 								GossipService.error("The received member object does not contain 3 objects:\n" + memberJSONObject.toString());
 							}
-							
 						}
 						// Merge our list with the one we just received
 						mergeLists(_gossipManager, senderMember, remoteGossipMembers);
@@ -129,24 +131,32 @@ abstract public class PassiveGossipThread implements Runnable {
                             _gossipManager.sync_variable = sync_variable;
                             reSendMembershipList(_gossipManager.getMyself(), senderMember, _gossipManager.getMemberList(), _gossipManager.sync_variable);
                         }
-						}
+                        }
+                        else if(tmp_split[0].startsWith("Resend:"))
+                        {
+                            Thread t = proxy.new ClientHandler(s, tmp_split[1], output, proxy, dataStore);
+                            t.start();
+                        }
                         else
                         {
-                            GossipService.debug("Handle received message: " + receivedMessage);
+                            Thread t = proxy.new ClientHandler(s, tmp_split[0], output, proxy, dataStore);
+                            t.start();
+                            reSendMessage(_gossipManager.getMyself(), _gossipManager.getMemberList(), tmp_split[0]);
                         }
 					} catch (JSONException e) {
                         e.printStackTrace();
 						GossipService.error("The received message is not well-formed JSON. The following message has been dropped:\n" + receivedMessage);
 					}
-				
-		        } else {
-		        	GossipService.error("The received message is not of the expected size, it has been dropped.");
-		        }
-
-			} catch (IOException e) {
-				e.printStackTrace();
-				_keepRunning.set(false);
-			}
+                    catch (Exception e){
+                        s.close(); 
+                        e.printStackTrace();
+                    }
+                }
+                s.close();
+		    } catch (IOException e) {
+			    e.printStackTrace();
+			    _keepRunning.set(false);
+		    }
 		}
 	}
 	
@@ -157,9 +167,42 @@ abstract public class PassiveGossipThread implements Runnable {
 	 * @param remoteList The list of members known at the remote side.
 	 */
 	abstract protected void mergeLists(GossipManager gossipManager, RemoteGossipMember senderMember, ArrayList<GossipMember> remoteList);
+
     //dirty code, for convenience
+    protected void reSendMessage(LocalGossipMember me, ArrayList<LocalGossipMember> memberList,String text)
+    {
+        GossipService.debug("reSendMessage() is called.");
+        synchronized (memberList) {
+            try {
+                for(LocalGossipMember member:memberList)
+                {   
+                    InetAddress dest = InetAddress.getByName(member.getHost());
+                    // Create a StringBuffer for the JSON message.
+                    GossipService.debug("Sending message \"" + text + "\" to " + dest + ":" + member.getPort());
+                    String sending_message = "Resend:" + 0 + ";" + text;
+                    SocketAddress socketAddress = new InetSocketAddress(dest, member.getPort());
+                    Socket socket = new Socket();
+                    try{
+                        socket.connect(socketAddress, 1000);
+                    } catch (IOException e1) {
+                        GossipService.debug("Connection Failed: " + dest + ":" + member.getPort());
+                        //e1.printStackTrace();
+                    }   
+                    OutputStream outputStream = socket.getOutputStream();
+                    PrintWriter output = new PrintWriter(outputStream, true);
+                    output.println(sending_message);
+                    output.flush();
+                    socket.close();
+                }
+            } catch (IOException e1) {
+                GossipService.debug("Connection Failed");
+                //e1.printStackTrace();
+            }
+        }
+    }
+
     protected void reSendMembershipList(LocalGossipMember me, RemoteGossipMember senderMember, ArrayList<LocalGossipMember> memberList, int sync_variable) {
-        GossipService.debug("Send sendMembershipList() is called.");
+        GossipService.debug("reSendMembershipList() is called.");
 
         // Increase the heartbeat of myself by 1.
         me.setHeartbeat(me.getHeartbeat() + 1); 
@@ -192,37 +235,25 @@ abstract public class PassiveGossipThread implements Runnable {
                         GossipService.debug(other);
                     }
                     GossipService.debug("---------------------");
-
-                    // Write the objects to a byte array.
-                    byte[] json_bytes = jsonArray.toString().getBytes();
-
-                    int packet_length = json_bytes.length;
-
-                    if (packet_length < GossipManager.MAX_PACKET_SIZE) {
-
-                        // Convert the packet length to the byte representation of the int.
-                        byte[] length_bytes = new byte[4];
-                        length_bytes[0] = (byte)( sync_variable );
-                        length_bytes[1] =(byte)( (packet_length << 8) >> 24 );
-                        length_bytes[2] =(byte)( (packet_length << 16) >> 24 );
-                        length_bytes[3] =(byte)( (packet_length << 24) >> 24 );
-
-
-                        GossipService.debug("Sending message ("+packet_length+" bytes): " + jsonArray.toString());
-                        byte[] buf = new byte[length_bytes.length + json_bytes.length];
-                        System.arraycopy(length_bytes, 0, buf, 0, length_bytes.length);
-                        System.arraycopy(json_bytes, 0, buf, length_bytes.length, json_bytes.length);
-
-                        DatagramSocket socket = new DatagramSocket();
-                        DatagramPacket datagramPacket = new DatagramPacket(buf, buf.length, dest, member.getPort());
-                        socket.send(datagramPacket);
-                        socket.close();
-                    } else {
-                        GossipService.error("The length of the to be send message is too large (" + packet_length + " > " + GossipManager.MAX_PACKET_SIZE + ").");
-                    }
+					String sending_message = "Sync:" + sync_variable + ";" + jsonArray.toString();
+					GossipService.debug("Sending message: " + sending_message);
+                    SocketAddress socketAddress = new InetSocketAddress(dest, member.getPort());
+                    Socket socket = new Socket();
+                    try{
+                        socket.connect(socketAddress, 1000);
+			        } catch (IOException e1) {
+                        GossipService.debug("Connection Failed: " + dest + ":" + member.getPort());
+				        //e1.printStackTrace();
+			        }
+                    OutputStream outputStream = socket.getOutputStream();
+                    PrintWriter output = new PrintWriter(outputStream, true);
+                    output.println(sending_message);
+                    output.flush();
+					socket.close();
                 }
             } catch (IOException e1) {
-                e1.printStackTrace();
+                GossipService.debug("Connection Failed");
+                //e1.printStackTrace();
             }
         }
     }
