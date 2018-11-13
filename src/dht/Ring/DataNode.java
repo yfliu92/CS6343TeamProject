@@ -241,7 +241,8 @@ class DataNodeClient {
     			String virtualnodeids_remote = res.getString("result");
     			System.out.println("Raw hash of " + dataStr + ": " + rawhash);
     			System.out.println("Virtual Node Ids from Local DHT: " + Arrays.toString(virtualnodeids));
-    			if (!Arrays.toString(virtualnodeids).equals(virtualnodeids_remote)) {
+    			if (virtualnodeids_remote.indexOf(String.valueOf(virtualnodeids[0])) < 0) {
+//    			if (!Arrays.toString(virtualnodeids).equals(virtualnodeids_remote)) {
     				System.out.println("Local DHT is outdated");
     				System.out.println("Virtual Node Ids from Remote DHT: " + virtualnodeids_remote);
     				System.out.println("Starting to update DHT...");
