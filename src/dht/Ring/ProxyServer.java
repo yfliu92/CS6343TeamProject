@@ -42,7 +42,14 @@ public class ProxyServer extends PhysicalNode {
 			hashRange = Integer.parseInt(document.getRootElement().element("hashRange").getStringValue());
 			vm_to_pm_ratio = Integer.parseInt(document.getRootElement().element("vm_to_pm_ratio").getStringValue());
 			total_CCcommands = Integer.parseInt(document.getRootElement().element("total_CCcommands").getStringValue());
-            Element nodes = document.getRootElement().element("nodes");
+
+			// Get the port
+			Element port = document.getRootElement().element("port");
+			int startPort = Integer.parseInt(port.element("startPort").getStringValue());
+			int portRange = Integer.parseInt(port.element("portRange").getStringValue());
+
+			// Get the IPs
+			Element nodes = document.getRootElement().element("nodes");
             List<Element> listOfNodes = nodes.elements();
             int numOfNodes = listOfNodes.size();
 
@@ -51,10 +58,11 @@ public class ProxyServer extends PhysicalNode {
 
             for (int i = 0; i < numOfNodes; i++){
                 String ip = listOfNodes.get(i).element("ip").getStringValue();
-                int port = Integer.parseInt(listOfNodes.get(i).element("port").getStringValue());
-                String nodeID = ip + "-" + Integer.toString(port);
-                PhysicalNode node = new PhysicalNode(nodeID, ip, port, "active");
-                physicalNodes.put(nodeID, node);
+				for (int j = 0; j < portRange; j++){
+					String nodeID = ip + "-" + (startPort + j) ;
+					PhysicalNode node = new PhysicalNode(nodeID, ip, startPort + j, "active");
+					physicalNodes.put(nodeID, node);
+				}
             }
             // If hashRange is 1000 and there are 10 physical nodes in total, then stepSize is 100
             // The first physical node will start from 0 and map to virtual nodes of hash 0, 100, 200,...,900
@@ -76,7 +84,7 @@ public class ProxyServer extends PhysicalNode {
                 start += hashRange / (physicalNodes.size() * vm_to_pm_ratio);
             }
             
-            table.updateIndex();
+//            table.updateIndex();
             
             // Create a lookupTable and set it to every physical node
             LookupTable t = new LookupTable();
@@ -109,11 +117,10 @@ public class ProxyServer extends PhysicalNode {
         }
     }
 	public void CCcommands(){
-		Writer writer = null;
+		BufferedWriter writer = null;
 
 		try {
-			writer = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream("ring_CCcommands.txt"), "utf-8"));
+			writer = new BufferedWriter(new FileWriter("ring_CCcommands.txt"), 32768);
 			String[] availableCommands = {"add1", "add2", "remove1", "remove2", "loadbalance"};
 			String[] availableIPs = {"192.168.0.211","192.168.0.212","192.168.0.213","192.168.0.214",
 					"192.168.0.215","192.168.0.216","192.168.0.217","192.168.0.218","192.168.0.219","192.168.0.220",
@@ -283,19 +290,19 @@ public class ProxyServer extends PhysicalNode {
 			else if (command.getAction().equals("loadbalance")) {
 				int delta = Integer.valueOf(command.getCommandSeries().get(0));
 				int hash = Integer.valueOf(command.getCommandSeries().get(1));
-				return super.loadBalance(delta, hash);
+				return super.loadBalance(delta, hash).replaceAll("\n", "  ");
 			}
 			else if (command.getAction().equals("add")) {
 				String ip = command.getCommandSeries().get(0);
 				int port = Integer.valueOf(command.getCommandSeries().get(1));
 				int hash = command.getCommandSeries().size() == 3 ? Integer.valueOf(command.getCommandSeries().get(2)) : -1;
 				String result = hash == -1 ? super.addNode(ip, port) : super.addNode(ip, port, hash);
-				return result;
+				return result.replaceAll("\n", "  ");
 			}
 			else if (command.getAction().equals("remove")) {
 				int hash = Integer.valueOf(command.getCommandSeries().get(0));
 				String result = super.deleteNode(hash);
-				return result;
+				return result.replaceAll("\n", "  ");
 			}
 			else if (command.getAction().equals("find")) {
 				int hash = Integer.valueOf(command.getCommandSeries().get(0));
@@ -405,6 +412,7 @@ public class ProxyServer extends PhysicalNode {
 		//Initialize the ring cluster
 		proxy.initializeRing();
 		proxy.CCcommands();
+		//System.out.println(proxy.loadBalance(-13, 320));
 		DataStore dataStore = new DataStore();
 		int port = 9091;
         ServerSocket ss = new ServerSocket(port); 
@@ -422,9 +430,6 @@ public class ProxyServer extends PhysicalNode {
                   
             	BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		        PrintWriter output = new PrintWriter(s.getOutputStream(), true);
-//		        
-//            	output.println(s.getPort());
-//            	output.flush();
   
                 Thread t = proxy.new ClientHandler(s, input, output, proxy, dataStore); 
 

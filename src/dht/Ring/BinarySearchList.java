@@ -248,11 +248,21 @@ public class BinarySearchList extends ArrayList<VirtualNode> {
         return virtualNodeIds;
     }
     
-    public void updateIndex() {
+    public void updateIndex(int index) {
     	if (this.size() > 0) {
-    		for(int i = 0; i < this.size(); i++) {
+    		for(int i = index; i < this.size(); i++) {
     			this.get(i).setIndex(i);
     		}
     	}
+    }
+
+    public void updateIndex(int startIndex, int endIndex) {
+        if (endIndex == this.size())
+            endIndex--;
+        if (this.size() > 0) {
+            for(int i = startIndex; i <= endIndex; i++) {
+                this.get(i).setIndex(i);
+            }
+        }
     }
 }

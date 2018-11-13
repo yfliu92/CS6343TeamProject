@@ -1,6 +1,9 @@
 package dht.rush.clusters;
 
 import java.util.*;
+import java.util.Map.Entry;
+
+import javax.json.*;
 
 public class Cluster {
     private String id;  // ip:port
@@ -167,4 +170,104 @@ public class Cluster {
         }
         return sb.toString();
     }
+    
+	public String serialize() {
+		return this.toJSON().toString();
+	}
+
+	public JsonObject toJSON() {
+		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+		jsonBuilder.add("id",this.id)
+			.add("ip",this.ip)
+			.add("port",this.port)
+			.add("weight",this.weight)
+			.add("isActive",this.isActive)
+			.add("parentId",this.parentId);
+		JsonObjectBuilder placementGroupJson = Json.createObjectBuilder();
+		for(Map.Entry<String, Integer> group: placementGroupMap.entrySet()) {
+			placementGroupJson.add(group.getKey(), group.getValue());
+		}
+		if (this.subClusters.size() > 0) {
+			JsonArrayBuilder subclusters = Json.createArrayBuilder();
+			for(int i = 0; i < this.subClusters.size(); i++) {
+				subclusters.add(this.subClusters.get(i).toJSON());
+			}
+			jsonBuilder.add("subClusters", subclusters.build());
+		}
+
+		jsonBuilder.add("placementGroupMap",placementGroupJson.build());
+		jsonBuilder.add("cachedTreeStructure", this.cachedTreeStructure.toJSON());
+		jsonBuilder.add("type", this.type.toString());
+		
+		return jsonBuilder.build();
+	}
+	
+	public static Cluster fromJSON(JsonObject data) {
+		Cluster cluster = new Cluster();
+		if (data.containsKey("id")) {
+			cluster.id = data.getString("id");
+		}
+		if (data.containsKey("ip")) {
+			cluster.ip = data.getString("ip");
+		}
+		if (data.containsKey("port")) {
+			cluster.port = data.getString("port");
+		}
+		if (data.containsKey("parentId")) {
+			cluster.parentId = data.getString("parentId");
+		}
+		if (data.containsKey("numberOfChildren")) {
+			cluster.numberOfChildren = data.getInt("numberOfChildren");
+		}
+		if (data.containsKey("weight")) {
+			cluster.weight = Double.valueOf(data.get("weight").toString());
+		}
+		if (data.containsKey("isActive")) {
+			cluster.isActive = data.getBoolean("isActive");
+		}
+		if (data.containsKey("type")) {
+			cluster.type = ClusterType.valueOf(data.getString("type"));
+		}
+		cluster.cachedTreeStructure = new ClusterStructureMap();
+		cluster.subClusters = new ArrayList<>();
+		cluster.placementGroupMap = new HashMap<>();
+        if (data.containsKey("placementGroupMap")) {
+        	JsonObject groups = data.getJsonObject("placementGroupMap");
+        	for(Entry<String, JsonValue> group: groups.entrySet()) {
+        		cluster.placementGroupMap.put(group.getKey(), Integer.valueOf(group.getValue().toString()));
+        	}
+        }
+        if (data.containsKey("subClusters")) {
+        	JsonArray subclustersJson = data.get("subClusters").asJsonArray();
+        	for(int i = 0; i < subclustersJson.size(); i++) {
+        		JsonObject clusterJson = subclustersJson.get(i).asJsonObject();
+        		cluster.subClusters.add(fromJSON(clusterJson));
+        	}
+        }
+        
+        return cluster;
+	}
+	
+	public void print() {
+		System.out.print("\n");
+		System.out.print("id: " + this.id + ", ");
+		System.out.print("ip: " + this.ip + ", ");
+		System.out.print("port: " + this.port + ", ");
+		System.out.print("weight: " + this.weight + ", ");
+		System.out.print("isActive: " + this.isActive + ", ");
+		System.out.print("parentId: " + this.parentId + ", ");
+		System.out.print("subClusters: " + this.getSubClusterListString());
+		StringBuilder placementgroup = new StringBuilder();
+		for(Map.Entry<String, Integer> group: placementGroupMap.entrySet()) {
+			if (placementgroup.length() > 0) {
+				placementgroup.append(" ");
+			}
+			placementgroup.append("<" + group.getKey() + ", " + group.getValue() + ">");
+		}
+		System.out.print("placementGroupMap: " + placementgroup + ", ");
+		// cachedTreeStructure
+		System.out.print("ClusterType: " + this.type.toString());
+		System.out.print("\n");
+		
+	}
 }

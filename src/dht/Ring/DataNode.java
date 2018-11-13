@@ -1,4 +1,4 @@
-package control_client;
+package dht.Ring;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -173,6 +173,7 @@ class DataNodeClient {
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
         output.println(command.getRawCommand());
+        output.flush();
         
         JsonObject res = parseRequest(input);
         if (res != null) {
@@ -418,6 +419,7 @@ class DataNodeClient {
     	switch(dhtType) {
 	    	case 1:
 	    		tip = "\nhelp";
+	    		tip += "\nread <randomStr>";
 	    		tip += "\nfind <hash>    //find the virtual node on the server corresponding to the hash value";
 	    		tip += "\ndht head|pull  //fetch server dht table info";
 	    		tip += "\ndht info|list  //show local dht table info";

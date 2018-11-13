@@ -10,6 +10,7 @@
 package control_client;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,17 +26,21 @@ import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.io.Console;
 import java.util.Vector;
-
+import java.util.Map.Entry;
 import java.lang.String;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 import javax.json.JsonWriter;
 
 import dht.common.Hashing;
@@ -231,11 +236,15 @@ public class control_client {
 		}
     }
     
-    public void sendCommandStr(Command command, BufferedReader input, PrintWriter output) throws Exception {
+    public void sendCommandStr(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
+    	if (processBatchRequest(command, dhtType, input, output)) {
+    		return;
+    	}
+    	
     	String[] jsonCommands = {"read", "write", "data", "dht", "info", "writebatch", "updatebatch"};
     	for(String jsonCommand: jsonCommands) {
-    		if (command.getAction().startsWith(jsonCommand)) {
-    			sendCommandStr_JsonRes(command, input, output);
+    		if (command.getAction().equals(jsonCommand)) {
+    			sendCommandStr_JsonRes(command, dhtType, input, output);
     			return;
     		}
     	}
@@ -247,7 +256,30 @@ public class control_client {
         System.out.println("Response received: " + response + " ---- " + new Date().toString());
     }
     
-    public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
+    public boolean processBatchRequest(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
+    	if (command.getAction().equals("loadcommand")) {
+    		if (command.getCommandSeries().size() > 0) {
+    			String rootPath = System.getProperty("user.dir");
+    			String path = rootPath + File.separator + command.getCommandSeries().get(0);
+//    			List<String> commands = new LinkedList<String>();
+    			
+    			File filename = new File(path);
+    			BufferedReader reader = new BufferedReader(new FileReader(filename));
+				String line = null;
+				while((line = reader.readLine()) != null) {
+					Command lineCommand = new Command(line);
+					sendCommandStr(lineCommand, dhtType, input, output);
+				}
+				reader.close();
+  			
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
+    public void sendCommandStr_JsonRes(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
     	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + command.getRawCommand() + " ---- " + timeStamp);
@@ -258,7 +290,7 @@ public class control_client {
         if (res != null) {
             System.out.println();
         	System.out.println("Response received at " + timeStamp + " ---- " + res.toString());
-        	parseResponse(res, command);
+        	parseResponse(res, command, dhtType);
         	System.out.println();
          }
     }
@@ -275,15 +307,36 @@ public class control_client {
         return jsonObject;
     }
     
-    public void parseResponse(JsonObject res, Command command) {
+    public void parseResponse(JsonObject res, Command command, int dhtType) {
     	if (command.getAction().equals("info")) {
     		String epoch = res.getJsonObject("jsonResult").get("epoch").toString();
     		System.out.println("DHT table info");
     		System.out.println("Epoch number: " + epoch);
-    		JsonArray tableResult = res.getJsonObject("jsonResult").get("table").asJsonArray();
-    		for(int i = 0; i < tableResult.size(); i++) {
-    			System.out.println(tableResult.get(i));
+    		if (dhtType == 1) {
+        		JsonArray tableResult = res.getJsonObject("jsonResult").get("table").asJsonArray();
+        		for(int i = 0; i < tableResult.size(); i++) {
+        			System.out.println(tableResult.get(i));
+        		}
     		}
+    		else if (dhtType == 3) {
+    			System.out.println("Hash buckets: ");
+    			JsonObject table = res.getJsonObject("jsonResult").getJsonObject("bucketsTable");
+    			for(Entry<String, JsonValue> node: table.entrySet()) {
+    				System.out.print(node.getKey() + ": ");
+    				JsonObject hashPairMap = node.getValue().asJsonObject();
+    				for(Entry<String, JsonValue> pair: hashPairMap.entrySet()) {
+    					System.out.print("<" + pair.getKey() + ", " + pair.getValue() + "> ");
+    				}
+    				System.out.print("\n");
+    			}
+    			System.out.println("Physical nodes: ");
+    			JsonObject nodes = res.getJsonObject("jsonResult").getJsonObject("physicalNodesMap");
+    			for(Entry<String, JsonValue> node: nodes.entrySet()) {
+    				JsonObject nodeJson = node.getValue().asJsonObject();
+    				System.out.println(nodeJson);
+    			}
+    		}
+
     		return;
     	}
     	
@@ -303,8 +356,34 @@ public class control_client {
     	}
     }
     
+    public boolean processBatchRequest_Rush(Command command) throws Exception {
+    	if (command.getAction().equals("loadcommand")) {
+    		if (command.getCommandSeries().size() > 0) {
+    			String rootPath = System.getProperty("user.dir");
+    			String path = rootPath + File.separator + command.getCommandSeries().get(0);
+//    			List<String> commands = new LinkedList<String>();
+    			
+    			File filename = new File(path);
+    			BufferedReader reader = new BufferedReader(new FileReader(filename));
+				String line = null;
+				while((line = reader.readLine()) != null) {
+					processCommandRush(line);
+				}
+				reader.close();
+  			
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
     public void processCommandRush(String cmd) throws Exception {
     	Command command = new Command(cmd);
+    	
+    	if (processBatchRequest_Rush(command)) {
+    		return;
+    	}
     	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
@@ -344,6 +423,35 @@ public class control_client {
 
             jobj = Json.createObjectBuilder()
                     .add("method", "getNodes")
+                    .add("parameters", params)
+                    .build();
+		}
+		else if(command.getAction().equals("loadbalancing")) {
+			params = Json.createObjectBuilder()
+					.add("subClusterId", command.getCommandSeries().get(0))
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "loadbalancing")
+                    .add("parameters", params)
+                    .build();
+		}
+		else if (command.getAction().equals("getmap")) {
+			params = Json.createObjectBuilder()
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "getmap")
+                    .add("parameters", params)
+                    .build();
+		}
+		else if (command.getAction().equals("changeweight")) {
+			params = Json.createObjectBuilder()
+					.add("subClusterId", command.getCommandSeries().get(0))
+					.add("ip", command.getCommandSeries().get(1))
+					.add("port", command.getCommandSeries().get(2))
+					.add("weight", command.getCommandSeries().get(3))
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "changeweight")
                     .add("parameters", params)
                     .build();
 		}
@@ -388,7 +496,7 @@ public class control_client {
         }
         else
         {
-        	sendCommandStr(command, input, output);
+        	sendCommandStr(command, dhtType, input, output);
         }
     }
     
@@ -422,18 +530,28 @@ public class control_client {
     	switch(dhtType) {
 	    	case 1:
 	    		tip = "\nhelp";
-	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <hash>\nremove <hash>\nloadbalance <delta> <hash>";
+	    		tip += "\nloadcommand <path> | example: loadcommand /dht/Ring/ring_CCcommands.txt";
+	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <hash>\nremove <hash>";
+	    		tip += "\nloadbalance <delta> <hash>";
 	    		tip += "\ninfo";
 	    		tip += "\nexit\n";
 	    		break;
 	    	case 2:
 	    		tip = "\nhelp";
-	    		tip += "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689\ngetnodes <pgid> | example: getnodes PG1\nhelp\n";
+	    		tip += "\nloadcommand <path> | example: loadcommand /dht/rush/cephControlClient.txt";
+	    		tip += "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5";
+	    		tip += "\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689";
+	    		tip += "\ngetnodes <pgid> | example: getnodes PG1";
+	    		tip += "\nloadbalancing <subClusterId>";
+	    		tip += "\ngetmap";
+	    		tip += "\nchangeweight <subClusterId> <ip> <port> <weight>";
 	    		tip += "\nexit\n";
 	    		break;
 	    	case 3:
 	    		tip = "\nhelp";
-	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>\ninfo/help/exit/read file\n";
+	    		tip += "\nloadcommand <path> | example: loadcommand /dht/elastic_DHT_centralized/elastic_CCcommands.txt";
+	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>";
+	    		tip += "\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>";
 	    		tip += "\nexit\n";
 	    		break;
     	}

@@ -7,7 +7,10 @@ import dht.server.Command;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+
 import java.util.*;
+import java.util.Map.Entry;
 
 public class ClusterStructureMap {
     private int epoch;
@@ -159,6 +162,33 @@ public class ClusterStructureMap {
 
         return ret;
     }
+    
+    public String getNodesInfoByPGID(String pgid) {
+        int r = 0;
+        int count = 0;
+        Map<Integer, Cluster> ret = new HashMap<>();
+        Map<String, Cluster> map = new HashMap<>();
+
+        StringBuilder result = new StringBuilder();
+        while (count < 3) {
+            Cluster cluster = rush(pgid, r);
+            if (cluster != null && cluster.getActive() && !map.containsKey(cluster.getId())) {
+                count += 1;
+                cluster.getPlacementGroupMap().put(pgid, r);
+                ret.put(r, cluster);
+                map.put(cluster.getId(), cluster);
+                result.append("PGID: " + pgid + ", Replica: " + r + ", Node: " + cluster.toString() + ";");
+            }
+            r++;
+        }
+
+        return result.toString();
+    }
+    
+    public String getNodesInfoByStr(String dataStr) {
+    	String pgid = generatePlacementGroupId(dataStr);
+        return getNodesInfoByPGID(pgid);
+    }
 
     /**
      * Based on the placementGroupID and r, get the cluster(physical node)
@@ -309,6 +339,65 @@ public class ClusterStructureMap {
     /**
      * @return The most recent cluster structure map
      */
+    
+	public String serialize() {
+		return this.toJSON().toString();
+	}
+
+	public JsonObject toJSON() {
+		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+		jsonBuilder.add("epoch", this.epoch);
+
+		JsonObjectBuilder tableBuilder = Json.createObjectBuilder();
+		for(HashMap.Entry<String, Cluster> entry: this.childrenList.entrySet()) {
+			tableBuilder.add(entry.getKey(), entry.getValue().toJSON());
+		}
+		jsonBuilder.add("childrenList", tableBuilder.build());
+		
+		return jsonBuilder.build();
+	}
+	
+	public boolean buildTable(JsonObject data) {
+		this.childrenList = new HashMap<String, Cluster>();
+		if (data.containsKey("epoch")) {
+			this.setEpoch(Integer.valueOf(data.get("epoch").toString()));
+		}
+		if (data.containsKey("childrenList")) {
+			JsonObject nodes = data.getJsonObject("childrenList");
+			for(Entry<String, JsonValue> node: nodes.entrySet()) {
+				JsonObject nodeJson = node.getValue().asJsonObject();
+				Cluster cluster = Cluster.fromJSON(nodeJson);
+				this.childrenList.put(node.getKey(), cluster);
+			}
+		}
+		
+		return true;
+	}
+	
+	public void print() {
+		if (this.childrenList == null || this.childrenList.size() == 0) {
+			System.out.println("No data found in the table");
+		}
+		else {
+			System.out.println("Epoch number: " + this.epoch);
+			System.out.println("Hash buckets: ");
+			for(Map.Entry<String, Cluster> node: this.childrenList.entrySet()) {
+				
+				System.out.print(node.getKey() + ": ");
+				node.getValue().print();
+			}
+		}
+
+	}
+	
+	public JsonObject info() {
+		JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("epoch", this.getEpoch());
+        job.add("childrenList", this.childrenList.size());
+        
+        JsonObject jsonObject = job.build();
+        return jsonObject;
+	}
 
     public JsonObject getClusterMap() {
         JsonObjectBuilder job = Json.createObjectBuilder();

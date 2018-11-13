@@ -23,7 +23,9 @@ public class GenerateControlClientCommandUtil {
 
     public static void run() {
         String rootPath = System.getProperty("user.dir");
-        String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "cephControlClient.txt";
+//        String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "cephControlClient.txt";
+        String path = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "cephControlClient.txt";
+
         try {
 
             File filename = new File(path);
