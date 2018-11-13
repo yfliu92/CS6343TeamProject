@@ -23,7 +23,7 @@ public class ReadCommand extends ServerCommand {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JsonWriter writer = Json.createWriter(baos);
 
-        JsonObject params = Json.createObjectBuilder().add("destination: ", ret.toString()).build();
+        JsonObject params = Json.createObjectBuilder().add("destination", ret.toString()).build();
 
         writer.writeObject(params);
         writer.close();

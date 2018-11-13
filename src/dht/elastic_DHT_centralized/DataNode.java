@@ -443,6 +443,7 @@ class DataNodeClient {
 	    		break;
 	    	case 3:
 	    		tip = "\nhelp";
+	    		tip += "\nread <randomStr>";
 	    		tip += "\nfind <hash>    //find the virtual node on the server corresponding to the hash value";
 	    		tip += "\ndht head|pull  //fetch server dht table info";
 	    		tip += "\ndht info|list  //show local dht table info";

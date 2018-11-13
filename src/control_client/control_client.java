@@ -369,6 +369,35 @@ public class control_client {
                     .add("parameters", params)
                     .build();
 		}
+		else if(command.getAction().equals("loadbalancing")) {
+			params = Json.createObjectBuilder()
+					.add("subClusterId", command.getCommandSeries().get(0))
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "loadbalancing")
+                    .add("parameters", params)
+                    .build();
+		}
+		else if (command.getAction().equals("getmap")) {
+			params = Json.createObjectBuilder()
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "getmap")
+                    .add("parameters", params)
+                    .build();
+		}
+		else if (command.getAction().equals("changeweight")) {
+			params = Json.createObjectBuilder()
+					.add("subClusterId", command.getCommandSeries().get(0))
+					.add("ip", command.getCommandSeries().get(1))
+					.add("port", command.getCommandSeries().get(2))
+					.add("weight", command.getCommandSeries().get(3))
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "changeweight")
+                    .add("parameters", params)
+                    .build();
+		}
 		else if (command.getAction().equals("help")) {
 			System.out.println(getHelpText(2));
 			return;
@@ -450,7 +479,12 @@ public class control_client {
 	    		break;
 	    	case 2:
 	    		tip = "\nhelp";
-	    		tip += "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689\ngetnodes <pgid> | example: getnodes PG1\nhelp\n";
+	    		tip += "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5";
+	    		tip += "\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689";
+	    		tip += "\ngetnodes <pgid> | example: getnodes PG1";
+	    		tip += "\nloadbalancing <subClusterId>";
+	    		tip += "\ngetmap";
+	    		tip += "\nchangeweight <subClusterId> <ip> <port> <weight>";
 	    		tip += "\nexit\n";
 	    		break;
 	    	case 3:

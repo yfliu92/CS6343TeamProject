@@ -84,7 +84,7 @@ public class ProxyServer extends PhysicalNode {
                 start += hashRange / (physicalNodes.size() * vm_to_pm_ratio);
             }
             
-            table.updateIndex();
+//            table.updateIndex();
             
             // Create a lookupTable and set it to every physical node
             LookupTable t = new LookupTable();

@@ -27,13 +27,12 @@ java -classpath .:../lib/\* dht/Ring/ProxyServer
 javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar control_client/control_client.java dht/server/Command.java
 javac -classpath ../lib/\* control_client/control_client.java dht/server/Command.java dht/common/Hashing.java
 
-java control_client/control_client
 java -classpath .:../lib/\* control_client/control_client
 
 
 ## compile and run Rush server
 -- javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar dht/rush/test.java dht/rush/clusters/*.java dht/rush/utils/*.java
-javac -classpath ../lib/\* dht/rush/*.java dht/rush/clusters/*.java dht/rush/commands/*.java dht/rush/utils/*.java -Xlint:unchecked
+javac -classpath ../lib/\* dht/rush/*.java dht/rush/clusters/*.java dht/rush/commands/*.java dht/rush/utils/*.java dht/server/Command.java -Xlint:unchecked
 java -classpath .:../lib/\* dht/rush/CentralServer
 java -classpath .:../lib/\* dht/rush/test
 
@@ -49,5 +48,6 @@ java -classpath .:../lib/\* dht/elastic_DHT_centralized/ProxyServer
 
 java -classpath .:../lib/\* dht/Ring/DataNode
 java -classpath .:../lib/\* dht/elastic_DHT_centralized/DataNode
+java -classpath .:../lib/\* dht/rush/DataNode
 
 

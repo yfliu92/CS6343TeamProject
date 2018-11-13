@@ -1,8 +1,9 @@
-package dht.Ring;
+package dht.rush;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Console;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,48 +16,39 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import javax.json.*;
 
-import dht.Ring.LookupTable;
-import dht.Ring.VirtualNode;
-import dht.common.Hashing;
+import dht.rush.clusters.ClusterStructureMap;
+import dht.rush.utils.ConfigurationUtil;
 import dht.server.Command;
 
 public class DataNode {
-	private LookupTable lookupTable;
+    private ClusterStructureMap clusterStructureMap;
 	
 	public void printTable() {
-		if (lookupTable == null) {
+		if (clusterStructureMap == null) {
 			System.out.println("Local DHT table is not initialized");
 			return;
 		}
-		lookupTable.print();
+		clusterStructureMap.print();
 	}
 	
 	public boolean buildTable(JsonObject data) {
-		lookupTable = new LookupTable();
-		if (data.containsKey("epoch")) {
-			this.lookupTable.setEpoch(Long.valueOf(data.get("epoch").toString()));
-		}
-		if (data.containsKey("table")) {
-			JsonArray jsonArray = data.get("table").asJsonArray();
-			for(int i = 0; i < jsonArray.size(); i++) {
-				lookupTable.getTable().add(new VirtualNode(jsonArray.getJsonObject(i)));
-			}
-		}
-		
-		return true;
+		clusterStructureMap = new ClusterStructureMap();
+		return clusterStructureMap.buildTable(data);
 	}
 	
 	public void printTableInfo() {
-		int items = lookupTable != null ? lookupTable.getTable().size() : 0;
-		String epoch = items != 0 ? String.valueOf(lookupTable.getEpoch()): "";
-		System.out.println("A total of " + items + " records found in the table, epoch " + epoch);
+		int items = clusterStructureMap != null ? clusterStructureMap.getChildrenList().size() : 0;
+		String epoch = items != 0 ? String.valueOf(clusterStructureMap.getEpoch()): "";
+		System.out.println("A total of " + items + " hash buckets found in the table, epoch " + epoch);
 	}
 	
 	public boolean isTableLatest(String epoch) {
-		String localEpoch = lookupTable != null ? String.valueOf(lookupTable.getEpoch()): "";
+		String localEpoch = clusterStructureMap != null ? String.valueOf(clusterStructureMap.getEpoch()): "";
 		if (localEpoch.equals(epoch)) {
 			return true;
 		}
@@ -65,12 +57,16 @@ public class DataNode {
 		}
 	}
 	
-    public LookupTable getLookupTable() {
-        return lookupTable;
+    public ClusterStructureMap getLookupTable() {
+        return clusterStructureMap;
+    }
+    
+    public void setLookupTable(ClusterStructureMap map) {
+    	this.clusterStructureMap = map;
     }
 	
 	public String getDHTEpoch() {
-		String epoch = this.lookupTable != null ? String.valueOf(this.lookupTable.getEpoch()) : "";
+		String epoch = this.clusterStructureMap != null ? String.valueOf(this.clusterStructureMap.getEpoch()) : "";
 		return epoch;
 	}
     
@@ -78,19 +74,34 @@ public class DataNode {
         System.out.println("==== Welcome to Data Node !!! =====");
         
     	String serverAddress = "localhost";
-    	int port = 9091; 
-    	String dhtName = "Ring";
-    	int dhtType = 1;
+    	int port = 8100; 
+    	String dhtName = "Ceph DHT";
+    	int dhtType = 2;
     	
     	DataNode dataNode = new DataNode();
-        
+       
+        String rootPath = System.getProperty("user.dir");
+//        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+
+        String xmlPath = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+        dataNode.setLookupTable(ConfigurationUtil.parseConfig(xmlPath));
+
+        if (dataNode.getLookupTable() == null) {
+            System.out.println("Central Server initialization failed");
+            System.exit(-1);
+        }
+
     	DataNodeClient client = new DataNodeClient(dataNode);
     	boolean connected = client.connectServer(serverAddress, port);
+    	
+    	
+    	
+    	
 		
 		if (connected) {
 			System.out.println("Connected to " + dhtName + " Server ");
 			
-			client.sendCommandStr_JsonRes(new Command("dht pull"), client.input, client.output);
+//			client.sendCommandStr_JsonRes(new Command("dht pull"), client.input, client.output);
 			
 		}
 		else {
@@ -154,18 +165,20 @@ class DataNodeClient {
     		return;
     	}
     	
-    	String[] jsonCommands = {"read", "write", "data", "dht", "find", "info", "writebatch", "updatebatch"};
-    	for(String jsonCommand: jsonCommands) {
-    		if (command.getAction().equals(jsonCommand)) {
-    			sendCommandStr_JsonRes(command, input, output);
-    			return;
-    		}
-    	}
+//    	String[] jsonCommands = {"read", "write", "data", "dht", "find", "info", "writebatch", "updatebatch"};
+//    	for(String jsonCommand: jsonCommands) {
+//    		if (command.getAction().equals(jsonCommand)) {
+//    			sendCommandStr_JsonRes(command, input, output);
+//    			return;
+//    		}
+//    	}
+    	
+    	sendCommandStr_JsonRes(command, input, output);
 
-    	System.out.println("Sending command" + " ---- " + new Date().toString());
-            output.println(command);
-        String response = input.readLine();
-        System.out.println("Response received: " + response + " ---- " + new Date().toString());
+//    	System.out.println("Sending command" + " ---- " + new Date().toString());
+//            output.println(command);
+//        String response = input.readLine();
+//        System.out.println("Response received: " + response + " ---- " + new Date().toString());
     }
     
     public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
@@ -211,7 +224,7 @@ class DataNodeClient {
     			return;
     		}
     		else if (action2.equals("head")) {
-    			String latestEpoch = res.getString("result");
+    			String latestEpoch = String.valueOf(res.getJsonObject("jsonResult").getInt("epoch"));
     			if (dataNode.isTableLatest(latestEpoch)) {
     				System.out.println("DHT table is already the latest");
     				dataNode.printTableInfo();
@@ -227,67 +240,72 @@ class DataNodeClient {
     	else if (command.getAction().equals("read")) {
     		if (command.getCommandSeries().size() > 0) {
     			String dataStr = command.getCommandSeries().get(0);
-    			
-    			int rawhash = Hashing.getHashValFromKeyword(dataStr);
-    			try {
-    				rawhash = Integer.valueOf(dataStr);
-    			}
-    			catch (Exception e) {
-    				
-    			}
-    			
-    			int[] virtualnodeids = this.dataNode.getLookupTable().getTable().getVirtualNodeIds(rawhash);
-    			String virtualnodeids_remote = res.getString("result");
-    			System.out.println("Raw hash of " + dataStr + ": " + rawhash);
-    			System.out.println("Virtual Node Ids from Local DHT: " + Arrays.toString(virtualnodeids));
-    			if (!Arrays.toString(virtualnodeids).equals(virtualnodeids_remote)) {
+
+    			String nodeinfo = this.dataNode.getLookupTable().read(dataStr).toString();
+    			String nodeinfo_remote = res.getString("destination");
+    			System.out.println("Node Info from Local DHT: " + nodeinfo);
+    			if (!nodeinfo.equals(nodeinfo_remote)) {
     				System.out.println("Local DHT is outdated");
-    				System.out.println("Virtual Node Ids from Remote DHT: " + virtualnodeids_remote);
+    				System.out.println("Node Info from Remote DHT: " + nodeinfo_remote);
     				System.out.println("Starting to update DHT...");
     				sendCommandStr(new Command("dht pull"), input, output);
     			}
     			return;
     		}
     	}
-    	else if (command.getAction().equals("find")) {
-    		int hash = command.getCommandSeries().size() > 0 ? Integer.valueOf(command.getCommandSeries().get(0)) : -1;
-    		String localVirtualNode = hash >= 0 ? String.valueOf(this.dataNode.getLookupTable().getTable().find(hash).getHash()) : "";
-    		String virtualNode = res.getJsonObject("jsonResult").get("hash").toString();
-    		String physicalNode = res.getJsonObject("jsonResult").getString("physicalNodeId");
-    		System.out.println("Node Info: " + physicalNode + " (hash: " + virtualNode + ")");
-    		if (!virtualNode.equals(localVirtualNode)) {
-    			System.out.println("Local DHT is outdated.");
-    		}
-    		else {
-    			System.out.println("Local DHT is update to date.");
-    		}
-    		return;
-    	}
-    	else if (command.getAction().equals("info")) {
-    		String epoch = res.getJsonObject("jsonResult").get("epoch").toString();
-    		System.out.println("DHT table info");
-    		System.out.println("Epoch number: " + epoch);
-    		JsonArray tableResult = res.getJsonObject("jsonResult").get("table").asJsonArray();
-    		for(int i = 0; i < tableResult.size(); i++) {
-    			System.out.println(tableResult.get(i));
-    		}
-    		return;
-    	}
+//    	else if (command.getAction().equals("find")) {
+//    		String pgid = command.getCommandSeries().size() > 0 ? command.getCommandSeries().get(0) : "";
+//    		String localPhysicalNode = !pgid.equals("") ? this.dataNode.getLookupTable().getNodesInfoByPGID(pgid) : "";
+//    		String physicalNode = res.getString("result");
+//    		System.out.println("Cluster Info: " + physicalNode + " (pgid: " + pgid + ")");
+//    		if (!physicalNode.equals(localPhysicalNode)) {
+//    			System.out.println("Local DHT is outdated.");
+//    			System.out.println("Server cluster info: " + physicalNode);
+//    		}
+//    		else {
+//    			System.out.println("Local DHT is update to date.");
+//    		}
+//    		return;
+//    	}
+//    	else if (command.getAction().equals("info")) {
+//    		JsonObject data = res.getJsonObject("jsonResult");
+//    		String epoch = data.get("epoch").toString();
+//    		System.out.println("DHT table info");
+//    		System.out.println("Epoch number: " + epoch);
+//			System.out.println("Hash buckets: ");
+//			JsonObject table = data.getJsonObject("bucketsTable");
+//			for(Entry<String, JsonValue> node: table.entrySet()) {
+//				System.out.print(node.getKey() + ": ");
+//				JsonObject hashPairMap = node.getValue().asJsonObject();
+//				for(Entry<String, JsonValue> pair: hashPairMap.entrySet()) {
+//					System.out.print("<" + pair.getKey() + ", " + pair.getValue() + "> ");
+//				}
+//				System.out.print("\n");
+//			}
+//			System.out.println("Physical nodes: ");
+//			JsonObject nodes = data.getJsonObject("physicalNodesMap");
+//			for(Entry<String, JsonValue> node: nodes.entrySet()) {
+//				JsonObject nodeJson = node.getValue().asJsonObject();
+//				System.out.println(nodeJson);
+//			}
+//    		return;
+//    	}
     	
-    	if (res.containsKey("status")) {
-    		if (res.containsKey("message")) {
-    			System.out.println(res.getString("message"));
-    		}
-    		if (res.containsKey("result")) {
-    			System.out.println(res.getString("result"));
-    		}
-    		if (res.containsKey("jsonResult")) {
-    			System.out.println(res.getJsonObject("jsonResult").toString());
-    		}
-    	}
-    	else {
-    		System.out.println(res.toString());
-    	}
+    	System.out.println(res.toString());
+//    	if (res.containsKey("status")) {
+//    		if (res.containsKey("message")) {
+//    			System.out.println(res.getString("message"));
+//    		}
+//    		if (res.containsKey("result")) {
+//    			System.out.println(res.getString("result"));
+//    		}
+//    		if (res.containsKey("jsonResult")) {
+//    			System.out.println(res.getJsonObject("jsonResult").toString());
+//    		}
+//    	}
+//    	else {
+//    		System.out.println(res.toString());
+//    	}
     }
 	
     public static JsonObject parseRequest(BufferedReader br) throws Exception {
@@ -305,9 +323,9 @@ class DataNodeClient {
     public void processCommandRush(String cmd) throws Exception {
     	Command command = new Command(cmd);
     	
-    	String timeStamp = new Date().toString();
-    	System.out.println("Sending command" + " ---- " + timeStamp);
-    	System.out.println();
+    	if (processLocalRequest(command)) {
+    		return;
+    	}
         
         JsonObject params = null;
         JsonObject jobj = null;
@@ -346,6 +364,62 @@ class DataNodeClient {
                     .add("parameters", params)
                     .build();
 		}
+//		else if(command.getAction().equals("loadbalancing")) {
+//			params = Json.createObjectBuilder()
+//					.add("subClusterId", command.getCommandSeries().get(0))
+//					.build();
+//			jobj = Json.createObjectBuilder()
+//                    .add("method", "loadbalancing")
+//                    .add("parameters", params)
+//                    .build();
+//		}
+		else if (command.getAction().equals("write")) {
+			params = Json.createObjectBuilder()
+					.add("fileName", command.getCommandSeries().get(0))
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "write")
+                    .add("parameters", params)
+                    .build();
+		}
+		else if (command.getAction().equals("read")) {
+			params = Json.createObjectBuilder()
+					.add("fileName", command.getCommandSeries().get(0))
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "read")
+                    .add("parameters", params)
+                    .build();
+		}
+		else if (command.getAction().equals("getmap")) {
+			params = Json.createObjectBuilder()
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "getmap")
+                    .add("parameters", params)
+                    .build();
+		}
+//		else if (command.getAction().equals("changeweight")) {
+//			params = Json.createObjectBuilder()
+//					.add("subClusterId", command.getCommandSeries().get(0))
+//					.add("ip", command.getCommandSeries().get(1))
+//					.add("port", command.getCommandSeries().get(2))
+//					.add("weight", command.getCommandSeries().get(3))
+//					.build();
+//			jobj = Json.createObjectBuilder()
+//                    .add("method", "changeweight")
+//                    .add("parameters", params)
+//                    .build();
+//		}
+		else if (command.getAction().equals("dht")) {
+			params = Json.createObjectBuilder()
+					.add("fetchtype", command.getCommandSeries().get(0))
+					.build();
+			jobj = Json.createObjectBuilder()
+                    .add("method", "dht")
+                    .add("parameters", params)
+                    .build();
+		}
 		else if (command.getAction().equals("help")) {
 			System.out.println(getHelpText(2));
 			return;
@@ -354,6 +428,10 @@ class DataNodeClient {
 			System.out.println("command not supported");
 			return;
 		}
+		
+    	String timeStamp = new Date().toString();
+    	System.out.println("Sending command" + " ---- " + timeStamp);
+    	System.out.println();
     	
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JsonWriter writer = Json.createWriter(baos);
@@ -371,6 +449,9 @@ class DataNodeClient {
             if (res.containsKey("status") && res.containsKey("message")) {
                 System.out.println("REPONSE STATUS: " + res.getString("status") + ", " + "message: " + res.getString("message"));
             }
+            
+            parseResponse(res, command, input, output);
+            
             System.out.println();
          }
     }
@@ -418,26 +499,28 @@ class DataNodeClient {
     	switch(dhtType) {
 	    	case 1:
 	    		tip = "\nhelp";
-	    		tip += "\nread <randomStr>";
 	    		tip += "\nfind <hash>    //find the virtual node on the server corresponding to the hash value";
-	    		tip += "\ndht head|pull  //fetch server dht table info";
+	    		tip += "\ndht head|pull|print  //fetch server dht table info";
 	    		tip += "\ndht info|list  //show local dht table info";
 	    		tip += "\ninfo           //show server dht table info";
 	    		tip += "\nexit\n";
 	    		break;
 	    	case 2:
 	    		tip = "\nhelp";
-	    		tip += "\naddnode <subClusterId> <IP> <Port> <weight>  //example: addnode S0 localhost 689 0.5";
-	    		tip += "\ndeletenode <subClusterId> <IP> <Port>  //example: deletenode S0 localhost 689";
+	    		tip += "\nread <randomStr>";
+	    		tip += "\nwrite <randomStr>";
 	    		tip += "\ngetnodes <pgid> | example: getnodes PG1";
-	    		tip += "\ninfo";
+	    		tip += "\ndht head|pull|print  //fetch server dht table info";
+	    		tip += "\ndht info|list  //show local dht table info";
+	    		tip += "\ngetmap";
 	    		tip += "\nexit\n";
 	    		break;
 	    	case 3:
 	    		tip = "\nhelp";
-	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>";
-	    		tip += "\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>";
-	    		tip += "\ninfo";
+	    		tip += "\nfind <hash>    //find the virtual node on the server corresponding to the hash value";
+	    		tip += "\ndht head|pull|print  //fetch server dht table info";
+	    		tip += "\ndht info|list  //show local dht table info";
+	    		tip += "\ninfo           //show server dht table info";
 	    		tip += "\nexit\n";
 	    		break;
     	}
