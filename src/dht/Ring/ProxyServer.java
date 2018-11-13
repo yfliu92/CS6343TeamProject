@@ -84,7 +84,7 @@ public class ProxyServer extends PhysicalNode {
                 start += hashRange / (physicalNodes.size() * vm_to_pm_ratio);
             }
             
-//            table.updateIndex();
+            table.updateIndex();
             
             // Create a lookupTable and set it to every physical node
             LookupTable t = new LookupTable();
@@ -296,7 +296,15 @@ public class ProxyServer extends PhysicalNode {
 				String ip = command.getCommandSeries().get(0);
 				int port = Integer.valueOf(command.getCommandSeries().get(1));
 				int hash = command.getCommandSeries().size() == 3 ? Integer.valueOf(command.getCommandSeries().get(2)) : -1;
-				String result = hash == -1 ? super.addNode(ip, port) : super.addNode(ip, port, hash);
+				int numHashes = command.getCommandSeries().size() - 2;
+				int[] hashes = numHashes > 0 ? new int[numHashes] : new int[0];
+				
+				for(int i = 0; i < numHashes; i++) {
+					hashes[i] = Integer.valueOf(command.getCommandSeries().get(i+2));
+				}
+				
+//				String result = hash == -1 ? super.addNode(ip, port) : super.addNode(ip, port, hash);
+				String result = hashes.length == 0 ? super.addNode(ip, port) : super.addNode(ip, port, hashes);
 				return result.replaceAll("\n", "  ");
 			}
 			else if (command.getAction().equals("remove")) {
