@@ -113,13 +113,29 @@ public class Proxy{
         PhysicalNode newNode = new PhysicalNode(ip, port, "active");
         String id = newNode.getId();
         lookupTable.getPhysicalNodesMap().put(id, newNode);
-        // Use this new node as a replica for the first loadPerNode buckets in the bucketsTable
         String result = "";
-        for (int i = start; i < end; i++){
-            HashMap<String, String> replicas = lookupTable.getBucketsTable().get(i);
-            String fromID = replicas.entrySet().iterator().next().getKey();
-            replicas.put(id, id);
-            result += dataTransfer(fromID, id, i);
+        if (start < end){
+            for (int i = start; i < end; i++){
+                HashMap<String, String> replicas = lookupTable.getBucketsTable().get(i);
+                String fromID = replicas.entrySet().iterator().next().getKey();
+                replicas.put(id, id);
+                result += dataTransfer(fromID, id, i);
+            }
+        }
+        else{
+            for (int i = start; i < ProxyServer.INITIAL_HASH_RANGE; i++){
+                HashMap<String, String> replicas = lookupTable.getBucketsTable().get(i);
+                String fromID = replicas.entrySet().iterator().next().getKey();
+                replicas.put(id, id);
+                result += dataTransfer(fromID, id, i);
+            }
+            for (int i = 0; i < end; i++){
+                HashMap<String, String> replicas = lookupTable.getBucketsTable().get(i);
+                String fromID = replicas.entrySet().iterator().next().getKey();
+                replicas.put(id, id);
+                result += dataTransfer(fromID, id, i);
+            }
+
         }
 
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -168,11 +184,12 @@ public class Proxy{
                     // Randomly select a node to replace the deleted node
                     do {
                         Random ran = new Random();
-                        toID = idList.get(ran.nextInt(idList.size()));
+                        toID = idList.get(ran.nextInt(idSet.size()));
                         valueReturned = table.get(i).put(toID, toID);
                     } while (valueReturned != null);
 
                     result += (dataTransfer(fromID, toID, i));
+//                    dataTransfer(fromID, toID, i);
                 }
             }
             // Update the epoch time
@@ -210,7 +227,7 @@ public class Proxy{
         int count = numOfBuckets;
         int i = 0;
         String result = "";
-        while (count > 0){
+        while (count > 0 && i < table.size()){
             if (table.get(i).get(fromID) == null)
                 i++;
             else {
@@ -233,12 +250,12 @@ public class Proxy{
         return "  true|loadBalance from " + fromID + " to " + toID + " for " + numOfBuckets + " buckets: " + result;
     }
     public String expandTable(){
-        int oldHashRange = HashAndReplicationConfig.CURRENT_HASH_RANGE;
+        int oldHashRange = ProxyServer.CURRENT_HASH_RANGE;
         int newHashRange = oldHashRange * 2;
         for (int i = oldHashRange; i < newHashRange; i++){
             lookupTable.getBucketsTable().put(i, lookupTable.getBucketsTable().get(i - oldHashRange));
         }
-        HashAndReplicationConfig.CURRENT_HASH_RANGE *= 2;
+        ProxyServer.CURRENT_HASH_RANGE *= 2;
         // Update the timestamp
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         lookupTable.setEpoch(timestamp.getTime());
@@ -251,8 +268,8 @@ public class Proxy{
         return "  true|expandTable from " + oldHashRange + " buckets to " + newHashRange + " buckets is successful.";
     }
     public String shrinkTable(){
-        int oldHashRange = HashAndReplicationConfig.CURRENT_HASH_RANGE;
-        if (oldHashRange <= HashAndReplicationConfig.INITIAL_HASH_RANGE){
+        int oldHashRange = ProxyServer.CURRENT_HASH_RANGE;
+        if (oldHashRange <= ProxyServer.INITIAL_HASH_RANGE){
 //            return "\nfalse|Shrunk cannot be done beyond the original table.";
         	return "  false|Shrunk cannot be done beyond the original table.";
         }
@@ -260,7 +277,7 @@ public class Proxy{
         for (int i = newHashRange; i < oldHashRange; i++){
             lookupTable.getBucketsTable().remove(i);
         }
-        HashAndReplicationConfig.CURRENT_HASH_RANGE /= 2;
+        ProxyServer.CURRENT_HASH_RANGE /= 2;
         // Update the timestamp
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         lookupTable.setEpoch(timestamp.getTime());

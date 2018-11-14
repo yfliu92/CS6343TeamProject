@@ -3,13 +3,13 @@
 <Ring>
     // Number of replicas
     <replicationLevel>3</replicationLevel>
-    <hashRange>1000</hashRange>
+    <hashRange>100000</hashRange>
     <!-- The number of virtual nodes mapped to each physical node -->
     <vm_to_pm_ratio>10</vm_to_pm_ratio>
-    <total_CCcommands>500</total_CCcommands>
+    <total_CCcommands>100</total_CCcommands>
     <port>
     <startPort>8100</startPort>
-    <portRange>1</portRange>
+    <portRange>10</portRange>
     </port>
     <nodes>
         <node>

@@ -335,7 +335,11 @@ public class PhysicalNode {
         if (index < 0) {
             return "\nfalse|" + "hash " + hash + " is not a virtual node.";
         }
-        int newHash = hash + delta;
+        int newHash = (hash + delta) % ProxyServer.hashRange;
+        if (newHash < 0){
+            newHash += ProxyServer.hashRange;
+        }
+
         VirtualNode newNode = new VirtualNode(newHash,physicalNodeID);
         if (lookupTable.getTable().add(newNode) == false) {
             return "\nfalse|virtual node " + newHash + " already exists";
