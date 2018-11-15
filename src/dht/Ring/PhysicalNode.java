@@ -371,7 +371,6 @@ public class PhysicalNode {
                 newPredecessors.add(pre);
             }
 
-
             for (int i = 0; i < ProxyServer.numOfReplicas; i++) {
                 VirtualNode oldSuccessor = oldSuccessors.get(i);
                 if ((!newSuccessors.contains(oldSuccessor)) && (oldSuccessor.getHash() != newHash)) {

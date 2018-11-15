@@ -30,7 +30,6 @@ public class ProxyServer extends PhysicalNode {
         try {
             // Read from the configuration file "config_ring.xml"
 			String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
-
 //            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
             System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
@@ -118,9 +117,13 @@ public class ProxyServer extends PhysicalNode {
     }
 	public void CCcommands(){
 		BufferedWriter writer = null;
+		String rootPath = System.getProperty("user.dir");
+//		String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "ring_CCcommands.txt";
+
+		String path = rootPath + File.separator + "dht" + File.separator + "Ring" + File.separator + "ring_CCcommands.txt";
 
 		try {
-			writer = new BufferedWriter(new FileWriter("ring_CCcommands.txt"), 32768);
+			writer = new BufferedWriter(new FileWriter(path), 32768);
 			String[] availableCommands = {"add1", "add2", "remove1", "remove2", "loadbalance"};
 			String[] availableIPs = {"192.168.0.211","192.168.0.212","192.168.0.213","192.168.0.214",
 					"192.168.0.215","192.168.0.216","192.168.0.217","192.168.0.218","192.168.0.219","192.168.0.220",
@@ -144,7 +147,7 @@ public class ProxyServer extends PhysicalNode {
 				currentVNodes.add(node.getHash());
 			}
 
-			// Write control client commands into the "ring_CCcommands.txt" file (in the "/src" folder by default)
+			// Write control client commands into the "ring_CCcommands.txt" file
 			for (int i = 0; i < total_CCcommands; i++){
 				// Randomly pick a command from available commands
 				Random ran = new Random();
@@ -236,7 +239,7 @@ public class ProxyServer extends PhysicalNode {
 					int ran_hash = currentVNodes.get(ran.nextInt(currentVNodes.size())) ;
 					int ran_delta;
 					do {
-						ran_delta = ran.nextInt(200) - 100;
+						ran_delta = ran.nextInt(100) - 50;
 					} while (ran_delta == 0);
 
 					writer.write("loadbalance " + ran_delta + " " + ran_hash + "\n");
@@ -425,8 +428,13 @@ public class ProxyServer extends PhysicalNode {
 		int port = 9091;
         ServerSocket ss = new ServerSocket(port); 
         System.out.println("Ring server running at " + String.valueOf(port));
-          
-        while (true)  
+//        int[] hashes = {38337,72419,61684,51782,61592,63337,81197,72141,17165,12943};
+//		System.out.println(proxy.addNode("192.168.0.217", 8005, hashes ));
+//		System.out.println(proxy.addNode("192.168.0.203", 8191, 91939 ));
+//		System.out.println(proxy.deleteNode(89280 ));
+//		System.out.println(proxy.loadBalance(25, 99420 ));
+
+        while (true)
         { 
             Socket s = null; 
               

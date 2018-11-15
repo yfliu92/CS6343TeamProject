@@ -101,11 +101,8 @@ public class Proxy{
             pNode.setLookupTable(lookupTable);
         }
 
-        System.out.println("Buckets table size " + lookupTable.getBucketsTable().size());
-        System.out.println("Physical nodes size " + lookupTable.getPhysicalNodesMap().size());
-
-//        return "\ntrue|node " + id + " is added successfully: " + result;
-        return "  true|node " + id + " is added successfully: " + result;
+//        return "\ntrue|node " + id + " has been added successfully: " + result;
+        return "  true|node " + id + " has been added successfully: " + result;
     }
 
     // Add a physical node, clearly specify for what range of buckets it will serve as a replica
@@ -119,6 +116,7 @@ public class Proxy{
                 HashMap<String, String> replicas = lookupTable.getBucketsTable().get(i);
                 String fromID = replicas.entrySet().iterator().next().getKey();
                 replicas.put(id, id);
+                newNode.getHashBuckets().add(i);
                 result += dataTransfer(fromID, id, i);
             }
         }
@@ -127,12 +125,14 @@ public class Proxy{
                 HashMap<String, String> replicas = lookupTable.getBucketsTable().get(i);
                 String fromID = replicas.entrySet().iterator().next().getKey();
                 replicas.put(id, id);
+                newNode.getHashBuckets().add(i);
                 result += dataTransfer(fromID, id, i);
             }
             for (int i = 0; i < end; i++){
                 HashMap<String, String> replicas = lookupTable.getBucketsTable().get(i);
                 String fromID = replicas.entrySet().iterator().next().getKey();
                 replicas.put(id, id);
+                newNode.getHashBuckets().add(i);
                 result += dataTransfer(fromID, id, i);
             }
 
@@ -145,11 +145,8 @@ public class Proxy{
             pNode.setLookupTable(lookupTable);
         }
 
-        System.out.println("Buckets table size " + lookupTable.getBucketsTable().size());
-        System.out.println("Physical nodes size " + lookupTable.getPhysicalNodesMap().size());
-
-//        return "\ntrue|node " + id + " is added successfully: " + result;
-        return "  true|node " + id + " is added successfully: " + result;
+//        return "\ntrue|node " + id + " has been added successfully: " + result;
+        return "  true|node " + id + " has been added successfully: " + result;
     }
     public String deleteNode(String ip, int port) {
         String nodeID = ip + "-" + Integer.toString(port);
@@ -159,39 +156,40 @@ public class Proxy{
         
         try {
             PhysicalNode node = lookupTable.getPhysicalNodesMap().remove(nodeID);
+            node.setStatus("inactive");
             if (node == null){
 //                return "\nfalse|This node doesn't exist!";
                 return "  false|This node doesn't exist!";
             }
-            node.setStatus("inactive");
+
+            // Get a list of all physical node ids
+            Set<String> idSet = lookupTable.getPhysicalNodesMap().keySet();
+            List<String> idList = new ArrayList<>(idSet);
+            String toID = "";
+
             // Get the bucketsTable
             HashMap<Integer, HashMap<String, String>> table = lookupTable.getBucketsTable();
             String result = "";
-            for (int i = 0; i < table.size(); i++) {
-                if (table.get(i).get(nodeID) == null)
-                    continue;
-                else {
-                    // Remove this node ID from the bucket's replicas
-                    table.get(i).remove(nodeID);
-                    // Since the node is deleted/failed, must find another existing replica to transfer data to the newly added replica
-                    String fromID = table.get(i).entrySet().iterator().next().getKey();
-
-                    // Get a list of all physical node ids
-                    Set<String> idSet = lookupTable.getPhysicalNodesMap().keySet();
-                    List<String> idList = new ArrayList<>(idSet);
-                    String toID;
-                    String valueReturned;
-                    // Randomly select a node to replace the deleted node
-                    do {
-                        Random ran = new Random();
-                        toID = idList.get(ran.nextInt(idSet.size()));
-                        valueReturned = table.get(i).put(toID, toID);
-                    } while (valueReturned != null);
-
-                    result += (dataTransfer(fromID, toID, i));
-//                    dataTransfer(fromID, toID, i);
-                }
+            HashSet<Integer> buckets = node.getHashBuckets();
+            Iterator<Integer> iter = buckets.iterator();
+            while (iter.hasNext()){
+                int idx = iter.next();
+                iter.remove();
+                // Remove this node ID from the bucket's replicas
+                table.get(idx).remove(nodeID);
+                // Since the node is deleted/failed, must find another existing replica to transfer data to the newly added replica
+                String fromID = table.get(idx).entrySet().iterator().next().getKey();
+                // Randomly pick a physical node to serve as the new replica
+                String returnedValue;
+                do {
+                    Random ran = new Random();
+                    toID = idList.get(ran.nextInt(idSet.size()));
+                    returnedValue = table.get(idx).put(toID, toID);
+                } while (returnedValue != null);
+                lookupTable.getPhysicalNodesMap().get(toID).getHashBuckets().add(idx);
+                result += (dataTransfer(fromID, toID, idx));
             }
+
             // Update the epoch time
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             lookupTable.setEpoch(timestamp.getTime());
@@ -199,8 +197,9 @@ public class Proxy{
             for (PhysicalNode pNode: lookupTable.getPhysicalNodesMap().values()){
                 pNode.setLookupTable(lookupTable);
             }
-            return "  true|the node of " + nodeID + " has been successfully removed: " + result;
-//            return "\ntrue|the node of " + nodeID + " has been successfully removed: " + result;
+
+            return "  true|node " + nodeID + " has been successfully removed: " + result;
+//            return "\ntrue|node " + nodeID + " has been successfully removed: " + result;
         }
         catch (Exception e) {
             return "  false|This node doesn't exist!";
@@ -216,7 +215,7 @@ public class Proxy{
         if (fromNode == null){
             return "false|This node of " + fromID + "doesn't exist!";
         }
-        PhysicalNode toNode = lookupTable.getPhysicalNodesMap().get(fromID);
+        PhysicalNode toNode = lookupTable.getPhysicalNodesMap().get(toID);
         if (toNode == null){
             // Create a new physical node of toID
             PhysicalNode newNode = new PhysicalNode(toIP, toPort, "active");
@@ -224,19 +223,20 @@ public class Proxy{
         }
         // Get the bucketsTable
         HashMap<Integer, HashMap<String, String>> table = lookupTable.getBucketsTable();
-        int count = numOfBuckets;
-        int i = 0;
+        int count = Math.min(fromNode.getHashBuckets().size(), numOfBuckets);
         String result = "";
-        while (count > 0 && i < table.size()){
-            if (table.get(i).get(fromID) == null)
-                i++;
-            else {
-                table.get(i).remove(fromID);
-                table.get(i).put(toID, toID);
-                result += dataTransfer(fromID, toID, i) + " ";
-                i++;
-                count--;
-            }
+
+        HashSet<Integer> bucketsOfFromNode = fromNode.getHashBuckets();
+        HashSet<Integer> bucketsOfToNode = toNode.getHashBuckets();
+        Iterator<Integer> iter = bucketsOfFromNode.iterator();
+        for (int i = 0; i < count; i++){
+            Integer idx = iter.next();
+            iter.remove();
+            bucketsOfToNode.add(idx);
+            // Remove this node ID from the bucket's replicas
+            table.get(idx).remove(fromID);
+            table.get(idx).put(toID, toID);
+            result += dataTransfer(fromID, toID, idx) + " ";
         }
         // Update the epoch number
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());

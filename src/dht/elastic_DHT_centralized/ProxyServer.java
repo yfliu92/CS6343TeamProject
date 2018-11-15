@@ -29,8 +29,8 @@ public class ProxyServer extends Proxy {
     public static Proxy initializeEDHT(){
         try {
             // Read from the configuration file "config_ring.xml"
-              String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
-//            String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+//              String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+            String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
 
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
@@ -75,7 +75,7 @@ public class ProxyServer extends Proxy {
             // The second node gets assigned (100, 199)
             // ...
             // The last node gets assigned (900, 999)
-            int loadPerNode = CURRENT_HASH_RANGE / physicalNodes.size();
+            int loadPerNode = INITIAL_HASH_RANGE / physicalNodes.size();
             // Define the start hash value for hash nodes
             int start = 0;
             // Get a list of all physical node ids
@@ -89,6 +89,7 @@ public class ProxyServer extends Proxy {
                     HashMap<String, String> replicas = new HashMap<>();
                     for (int k = 0; k < REPLICATION_LEVEL; k++) {
                         replicas.put(idList.get((i + k) % numOfPhysicalNodes), idList.get((i + k) % numOfPhysicalNodes));
+                        physicalNodes.get(idList.get((i + k) % numOfPhysicalNodes)).getHashBuckets().add(j);
                     }
                     table.put(j, replicas);
 
@@ -118,11 +119,14 @@ public class ProxyServer extends Proxy {
 //            }
 //            System.out.print("\n");
 
-            System.out.println("Initilization success");
+            System.out.println("Initialization succeeded");
+            System.out.println("Buckets table size " + table.size());
+            System.out.println("Physical nodes size " + physicalNodes.size());
+
             return proxy;
 
         }catch(DocumentException e) {
-            System.out.println("Initilization failed");
+            System.out.println("Initialization failed");
             e.printStackTrace();
             return null;
         }
@@ -160,7 +164,7 @@ public class ProxyServer extends Proxy {
             for (int i = 0; i < TOTAL_CCCOMMANDS; i++){
                 Random ran = new Random();
                 // Randomly pick a command between "expand" and "shrink" when i is 99, 199, 299....
-                if (i % 100 == 99){
+                if (i % 200 == 199){
                     String command = expand_shrink_commands[ran.nextInt(expand_shrink_commands.length)];
                     writer.write(command + "\n");
                     continue;
@@ -203,7 +207,7 @@ public class ProxyServer extends Proxy {
                         toID = currentPNodes.get(ran.nextInt(currentPNodes.size()));
                     } while (toID == fromID);
 
-                    int numOfBuckets = ran.nextInt(5) + 10;
+                    int numOfBuckets = ran.nextInt(15) + 10;
                     writer.write("loadbalance " + fromID + " " + toID + " " + numOfBuckets + "\n");
                 }
             }
@@ -375,24 +379,30 @@ public class ProxyServer extends Proxy {
         //Initialize the Elastic DHT cluster
 	    Proxy proxy = initializeEDHT();
         proxyServer.CCcommands(proxy);
-//
-//        System.out.println(proxy.loadBalance("192.168.0.207", 8137, "192.168.0.205", 8177, 10));
-//        System.out.println(proxy.loadBalance("192.168.0.206", 8156, "192.168.0.209", 8180, 15));
-//        System.out.println(proxy.addNode("192.168.0.220", 8002, 21485, 21495));
-//        System.out.println(proxy.addNode("192.168.0.223", 8001, 60279, 60289));
-//        System.out.println(proxy.deleteNode("192.168.0.209", 8143));
-//        System.out.println(proxy.deleteNode("192.168.0.202", 8194));
-//        System.out.println(proxy.loadBalance("192.168.0.209", 8104, "192.168.0.207", 8196, 15));
-//        System.out.println(proxy.addNode("192.168.0.225", 8005, 50083, 50093));
-//        System.out.println(proxy.loadBalance("192.168.0.207", 8180, "192.168.0.208", 8138, 17));
-//        System.out.println(proxy.loadBalance("192.168.0.206", 8165, "192.168.0.203", 8131, 18));
-//        System.out.println(proxy.addNode("192.168.0.212", 8002, 78636, 78646));
-//        System.out.println(proxy.deleteNode("192.168.0.207", 8141));
 
-		int port = 9093;
-        ServerSocket ss = new ServerSocket(port); 
+        int port = 9093;
+        ServerSocket ss = new ServerSocket(port);
         System.out.println("Elastic DHT server running at " + String.valueOf(port));
-          
+
+//        System.out.println(proxy.addNode("192.168.0.219", 8001, 16568, 16578));
+//        System.out.println(proxy.deleteNode("192.168.0.201", 8133));
+//        System.out.println(proxy.addNode("192.168.0.229", 8003, 45875, 45885));
+//        System.out.println(proxy.deleteNode("192.168.0.204", 8199));
+//        System.out.println(proxy.addNode("192.168.0.215", 8004, 10460, 10470));
+//        System.out.println(proxy.deleteNode("192.168.0.202", 8199));
+//        System.out.println(proxy.deleteNode("192.168.0.210", 8177));
+//        System.out.println(proxy.deleteNode("192.168.0.201", 8198));
+//        System.out.println(proxy.deleteNode("192.168.0.207", 8161));
+//        System.out.println(proxy.deleteNode("192.168.0.201", 8107));
+//        System.out.println(proxy.addNode("192.168.0.221", 8005, 63555, 63565));
+//        System.out.println(proxy.loadBalance("192.168.0.206", 8110, "192.168.0.205", 8111, 14));
+//        System.out.println(proxy.loadBalance("192.168.0.205", 8146, "192.168.0.203", 8110, 11));
+//        System.out.println(proxy.addNode("192.168.0.227", 8002, 58275, 58285));
+//        System.out.println(proxy.addNode("192.168.0.220", 8001, 85506, 85516));
+//        System.out.println(proxy.deleteNode("192.168.0.210", 8110));
+//        System.out.println(proxy.deleteNode("192.168.0.209", 8146));
+//        System.out.println(proxy.loadBalance("192.168.0.207", 8138, "192.168.0.201", 8168, 14));
+
         while (true)  
         { 
             Socket s = null; 
