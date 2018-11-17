@@ -34,8 +34,10 @@ public class DeleteNodeCommand extends ServerCommand {
         JsonObject params = null;
         if (status == 1) {
             JsonObjectBuilder jcb = Json.createObjectBuilder();
+            JsonObject ret = clusterStructureMap.getClusterMap();
             jcb.add("message", "Delete success, epoch:" + clusterStructureMap.getEpoch()).add("status", "OK");
-
+            jcb.add("message", "Change weight success, epoch:" + clusterStructureMap.getEpoch()).add("status", "OK");
+            jcb.add("epoch", ret.get("epoch")).add("nodes", ret.getJsonObject("nodes"));
             if (commandResponse.getTransferMap() != null && commandResponse.getTransferMap().size() > 0) {
                 jcb.add("transferMessage", "Need to transfer files!");
                 jcb.add("transferList", commandResponse.toString());
