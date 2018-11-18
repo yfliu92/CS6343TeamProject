@@ -17,8 +17,7 @@ import com.google.code.gossip.LocalGossipMember;
 import com.google.code.gossip.GossipMember;
 import com.google.code.gossip.GossipService;
 import com.google.code.gossip.RemoteGossipMember;
-import com.google.code.gossip.manager.Ring.ProxyServer;
-import com.google.code.gossip.manager.Ring.DataStore;
+import com.google.code.gossip.manager.Ring.*;
 
 /**
  * [The passive thread: reply to incoming gossip request.]
@@ -67,11 +66,10 @@ abstract public class PassiveGossipThread implements Runnable {
 
 	@Override
 	public void run() {
-        GossipService.debug("I am in passive Thread of GossipThread");
-        ProxyServer proxy = new ProxyServer();
+        GossipService.debug("I am in passive Thread of GossipThread" + _gossipManager.getMyself().getHost() + " "+ _gossipManager.getMyself().getPort());
+        ProxyServer proxy = new ProxyServer(_gossipManager.getMyself().getHost(), _gossipManager.getMyself().getPort());
         //Initialize the ring cluster
-        proxy.initializeRing();
-        proxy.CCcommands();
+        proxy.initializeRing_gossip();
         DataStore dataStore = new DataStore();
 		while(_keepRunning.get()) {
 		    try {
@@ -134,8 +132,11 @@ abstract public class PassiveGossipThread implements Runnable {
                         }
                         else if(tmp_split[0].startsWith("Resend:"))
                         {
-                            Thread t = proxy.new ClientHandler(s, tmp_split[1], output, proxy, dataStore);
-                            t.start();
+                            if(tmp_split.length > 1)
+                            {
+                                Thread t = proxy.new ClientHandler(s, tmp_split[1], output, proxy, dataStore);
+                                t.start();
+                            }
                         }
                         else
                         {
@@ -187,7 +188,7 @@ abstract public class PassiveGossipThread implements Runnable {
                     } catch (IOException e1) {
                         GossipService.debug("Connection Failed: " + dest + ":" + member.getPort());
                         //e1.printStackTrace();
-                    }   
+                    }
                     OutputStream outputStream = socket.getOutputStream();
                     PrintWriter output = new PrintWriter(outputStream, true);
                     output.println(sending_message);

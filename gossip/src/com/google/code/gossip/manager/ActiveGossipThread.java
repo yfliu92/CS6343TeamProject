@@ -34,7 +34,7 @@ abstract public class ActiveGossipThread implements Runnable {
 			try {
                 Console console = System.console();
 				//TimeUnit.MILLISECONDS.sleep(_gossipManager.getSettings().getGossipInterval());
-                String cmd = console.readLine("Input your command (exit/status/send [message]/):");
+                String cmd = console.readLine("Input your command (exit/status/send [message]/sendme [message]/):");
                 if(cmd.equals("exit"))
                 {
                     System.exit(0);
@@ -44,6 +44,11 @@ abstract public class ActiveGossipThread implements Runnable {
                     _gossipManager.sync_variable += 1;
 				    sendMembershipList(_gossipManager.getMyself(), _gossipManager.getMemberList(), _gossipManager.sync_variable);
 				    //sendMembershipList(_gossipManager.getMyself(), _gossipManager.getDeadList());
+                }
+                else if(cmd.startsWith("sendme"))
+                {
+                    String text = cmd.split(" ",2)[1];
+                    sendmeMessage(_gossipManager.getMyself(),text);
                 }
                 else if(cmd.startsWith("send"))
                 {
@@ -71,6 +76,7 @@ abstract public class ActiveGossipThread implements Runnable {
 	 */
 	abstract protected void sendMembershipList(LocalGossipMember me, ArrayList<LocalGossipMember> memberList, int sync_variable);
 	abstract protected void sendMessage(LocalGossipMember me, ArrayList<LocalGossipMember> memberList,String text);
+	abstract protected void sendmeMessage(LocalGossipMember me, String text);
 
 	/**
 	 * Abstract method which should be implemented by a subclass.

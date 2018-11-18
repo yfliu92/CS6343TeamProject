@@ -79,6 +79,7 @@ abstract public class SendMembersActiveGossipThread extends ActiveGossipThread {
 			}
 		}
 	}
+
     protected void sendMessage(LocalGossipMember me, ArrayList<LocalGossipMember> memberList,String text)
     {
         GossipService.debug("Send sendMessage() is called.");
@@ -109,5 +110,32 @@ abstract public class SendMembersActiveGossipThread extends ActiveGossipThread {
                 //e1.printStackTrace();
             }
         }
+    }
+
+    protected void sendmeMessage(LocalGossipMember me, String text)
+    {
+        GossipService.debug("Send sendmeMessage() is called.");
+            try {
+                    InetAddress dest = InetAddress.getByName(me.getHost());
+                    // Create a StringBuffer for the JSON message.
+                    GossipService.debug("Sending message \"" + text + "\" to " + dest + ":" + me.getPort());
+                    String sending_message = "Resend:" + 0 + ";" + text;
+                    SocketAddress socketAddress = new InetSocketAddress(dest, me.getPort());
+                    Socket socket = new Socket();
+                    try{
+                        socket.connect(socketAddress, 1000);
+                    } catch (IOException e1) {
+                        GossipService.debug("Connection Failed: " + dest + ":" + me.getPort());
+                        //e1.printStackTrace();
+                    }   
+                    OutputStream outputStream = socket.getOutputStream();
+                    PrintWriter output = new PrintWriter(outputStream, true);
+                    output.println(sending_message);
+                    output.flush();
+                    socket.close();
+            } catch (IOException e1) {
+                GossipService.debug("Connection Failed");
+                //e1.printStackTrace();
+            }
     }
 }

@@ -4,7 +4,7 @@ import java.util.*;
 public class Hashing {
 	
 	// maximum hash value configurable from config file
-	public static final int MAX_HASH = 10000; 
+	public static int MAX_HASH = 1000000; 
 	
 	public static int getHashValFromIP(String IP) {
 		String md5IP = IP;
@@ -29,7 +29,7 @@ public class Hashing {
 	public static int getVMIdFromKeyword(String keyword, int numVMs) {
 		return getVMIdFromHashVal(getHashValFromKeyword(keyword), numVMs);
 	}
-	
+
 	public static String getRanStr(int maxlength) {
 		Random ran = new Random();
 		if (maxlength == 0) {
