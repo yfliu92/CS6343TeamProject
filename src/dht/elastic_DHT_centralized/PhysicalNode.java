@@ -1,6 +1,7 @@
 package dht.elastic_DHT_centralized;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -18,6 +19,8 @@ public class PhysicalNode {
 
     private LookupTable lookupTable;
 
+    private HashSet<Integer> hashBuckets;
+
     public PhysicalNode() {
     }
 
@@ -27,6 +30,7 @@ public class PhysicalNode {
         this.port = port;
         this.status = status;
         this.lookupTable = new LookupTable();
+        this.hashBuckets = new HashSet<>();
     }
 
     public String getId() {
@@ -69,7 +73,15 @@ public class PhysicalNode {
         this.lookupTable = lookupTable;
     }
 
-	public String serialize() {
+    public HashSet<Integer> getHashBuckets() {
+        return hashBuckets;
+    }
+
+    public void setHashBuckets(HashSet<Integer> hashBuckets) {
+        this.hashBuckets = hashBuckets;
+    }
+
+    public String serialize() {
 		return this.toJSON().toString();
 	}
 

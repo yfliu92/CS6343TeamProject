@@ -29,10 +29,13 @@ public class AddNodeCommand extends ServerCommand {
         JsonWriter writer = Json.createWriter(baos);
         JsonObject params = null;
         if (status == 1) {
+            JsonObject ret = clusterStructureMap.getClusterMap();
             params = Json.createObjectBuilder()
                     .add("message", "Add Node Success, new epoch is :" + clusterStructureMap.getEpoch())
                     .add("status", "OK")
                     .add("transferList", commandResponse.toString())
+                    .add("epoch", ret.get("epoch"))
+                    .add("nodes", ret.getJsonObject("nodes"))
                     .build();
         } else if (status == 2) {
             params = Json.createObjectBuilder()

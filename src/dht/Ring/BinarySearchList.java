@@ -72,7 +72,7 @@ public class BinarySearchList extends ArrayList<VirtualNode> {
             index = -(index + 1);
             this.add(index, t);
             t.setIndex(index);
-            occupied[t.getHash()] = true;
+//            occupied[t.getHash()] = true;
             return true;
         }
     }
@@ -246,6 +246,14 @@ public class BinarySearchList extends ArrayList<VirtualNode> {
         }
         
         return virtualNodeIds;
+    }
+
+    public void updateIndex() {
+    	if (this.size() > 0) {
+    		for(int i = 0; i < this.size(); i++) {
+    			this.get(i).setIndex(i);
+    		}
+    	}
     }
     
     public void updateIndex(int index) {

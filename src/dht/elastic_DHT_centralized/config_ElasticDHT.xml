@@ -5,9 +5,12 @@
         <ip>192.168.0.200</ip>
         <port>8100</port>
     </proxy>
+    <replication_level>3</replication_level>
+    <initial_hash_range>100000</initial_hash_range>
+    <total_CCcommands>100</total_CCcommands>
     <port>
         <startPort>8100</startPort>
-        <portRange>1</portRange>
+        <portRange>100</portRange>
     </port>
     <nodes>
         <node>
@@ -41,5 +44,5 @@
             <ip>192.168.0.210</ip>
         </node>
     </nodes>
-
+    <loadPerNode>25</loadPerNode>
 </EDHT>
