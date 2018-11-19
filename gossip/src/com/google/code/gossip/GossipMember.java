@@ -17,6 +17,7 @@ public abstract class GossipMember {
 	public static final String JSON_PORT = "port";
 	/** The JSON key for the heartbeat property. */
 	public static final String JSON_HEARTBEAT = "heartbeat";
+    public int _sync_variable;
 
 	/** The hostname or IP address of this gossip member. */
 	protected String _host;
@@ -37,6 +38,7 @@ public abstract class GossipMember {
 		_host = host;
 		_port = port;
 		_heartbeat = heartbeat;
+        _sync_variable = 0;
 	}
 	
 	/**

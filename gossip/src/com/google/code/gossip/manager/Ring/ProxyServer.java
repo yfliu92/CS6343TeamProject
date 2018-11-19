@@ -253,7 +253,8 @@ public class ProxyServer extends PhysicalNode {
 				return result;
 			}
 			else if (command.getAction().equals("find")) {
-				int hash = Integer.valueOf(command.getCommandSeries().get(0));
+				int hash = Hashing.getHashValFromKeyword(command.getCommandSeries().get(0));
+                System.out.println(command.getCommandSeries().get(0) + "  hash:" + hash);
 				return new Response(true, physicalNodes.get(physicalNodes.find(hash)).toJSON(), "Physical Node Info at Server").serialize();
 			}
 			else if (command.getAction().equals("info")) {

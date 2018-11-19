@@ -23,16 +23,16 @@ abstract public class SendMembersActiveGossipThread extends ActiveGossipThread {
 	 * Performs the sending of the membership list, after we have
 	 * incremented our own heartbeat.
 	 */
-	protected void sendMembershipList(LocalGossipMember me, ArrayList<LocalGossipMember> memberList, int sync_variable) {
+	protected void sendMembershipList(LocalGossipMember me, ArrayList<LocalGossipMember> memberList) {
 		GossipService.debug("Send sendMembershipList() is called." );
 
 		// Increase the heartbeat of myself by 1.
 		me.setHeartbeat(me.getHeartbeat() + 1);
 		
 		synchronized (memberList) {
-			try {
                 for(LocalGossipMember member:memberList)
 				{
+                    try{
                     if (member != _gossipManager.getMyself())
                     {
 					    GossipService.debug("start timeouttimer");
@@ -57,26 +57,21 @@ abstract public class SendMembersActiveGossipThread extends ActiveGossipThread {
 						GossipService.debug(other);
 					}
 					GossipService.debug("---------------------");
-					String sending_message = "Sync:" + sync_variable + ";" + jsonArray.toString();
+					String sending_message = "Sync:" + me._sync_variable + ";" + jsonArray.toString();
 					GossipService.debug("Sending message: " + sending_message);
                     SocketAddress socketAddress = new InetSocketAddress(dest, member.getPort());
                     Socket socket = new Socket();
-                    try{
                         socket.connect(socketAddress, 1000);
-			        } catch (IOException e1) {
-                        GossipService.debug("Connection Failed: " + dest + ":" + member.getPort());
-				        //e1.printStackTrace();
-			        }
                     OutputStream outputStream = socket.getOutputStream();
                     PrintWriter output = new PrintWriter(outputStream, true);
                     output.println(sending_message);
                     output.flush();
 					socket.close();
+			        } catch (IOException e1) {
+                        GossipService.debug("Connection Failed");
+				        //e1.printStackTrace();
+			        }
 				}
-			} catch (IOException e1) {
-                GossipService.debug("Connection Failed");
-				//e1.printStackTrace();
-			}
 		}
 	}
 
@@ -84,31 +79,26 @@ abstract public class SendMembersActiveGossipThread extends ActiveGossipThread {
     {
         GossipService.debug("Send sendMessage() is called.");
         synchronized (memberList) {
-            try {
                 for(LocalGossipMember member:memberList)
                 {   
+            try {
                     InetAddress dest = InetAddress.getByName(member.getHost());
                     // Create a StringBuffer for the JSON message.
                     GossipService.debug("Sending message \"" + text + "\" to " + dest + ":" + member.getPort());
                     String sending_message = "Resend:" + 0 + ";" + text;
                     SocketAddress socketAddress = new InetSocketAddress(dest, member.getPort());
                     Socket socket = new Socket();
-                    try{
                         socket.connect(socketAddress, 1000);
-                    } catch (IOException e1) {
-                        GossipService.debug("Connection Failed: " + dest + ":" + member.getPort());
-                        //e1.printStackTrace();
-                    }   
                     OutputStream outputStream = socket.getOutputStream();
                     PrintWriter output = new PrintWriter(outputStream, true);
                     output.println(sending_message);
                     output.flush();
                     socket.close();
-                }
             } catch (IOException e1) {
                 GossipService.debug("Connection Failed");
                 //e1.printStackTrace();
             }
+                }
         }
     }
 
@@ -122,12 +112,7 @@ abstract public class SendMembersActiveGossipThread extends ActiveGossipThread {
                     String sending_message = "Resend:" + 0 + ";" + text;
                     SocketAddress socketAddress = new InetSocketAddress(dest, me.getPort());
                     Socket socket = new Socket();
-                    try{
                         socket.connect(socketAddress, 1000);
-                    } catch (IOException e1) {
-                        GossipService.debug("Connection Failed: " + dest + ":" + me.getPort());
-                        //e1.printStackTrace();
-                    }   
                     OutputStream outputStream = socket.getOutputStream();
                     PrintWriter output = new PrintWriter(outputStream, true);
                     output.println(sending_message);

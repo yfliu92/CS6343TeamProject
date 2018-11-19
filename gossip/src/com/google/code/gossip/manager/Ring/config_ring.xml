@@ -10,7 +10,7 @@
     <nodes>
         <node>
             <ip>192.168.1.14</ip>
-            <port>8100</port>
+            <port>9080</port>
         </node>
     </nodes>
 </Ring>

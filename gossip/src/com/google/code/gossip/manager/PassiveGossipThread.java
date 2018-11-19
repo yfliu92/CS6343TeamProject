@@ -114,6 +114,7 @@ abstract public class PassiveGossipThread implements Runnable {
 								// This is the first member found, so this should be the member who is communicating with me.
 								if (i == 0) {
 									senderMember = member;
+                                    senderMember._sync_variable = sync_variable;
 								}
 								remoteGossipMembers.add(member);
 							} else {
@@ -123,11 +124,11 @@ abstract public class PassiveGossipThread implements Runnable {
 						// Merge our list with the one we just received
 						mergeLists(_gossipManager, senderMember, remoteGossipMembers);
                         // Gossip spread among all servers
-						GossipService.debug("sync_variable:" + sync_variable + " _gossipManager.sync_variable:" + _gossipManager.sync_variable);
-                        if(sync_variable > _gossipManager.sync_variable)
+						GossipService.debug("sync_variable:" + sync_variable + " _gossipManager.myself.sync_variable:" + _gossipManager.getMyself()._sync_variable);
+                        if(sync_variable > _gossipManager.getMyself()._sync_variable)
                         {
-                            _gossipManager.sync_variable = sync_variable;
-                            reSendMembershipList(_gossipManager.getMyself(), senderMember, _gossipManager.getMemberList(), _gossipManager.sync_variable);
+                            _gossipManager.getMyself()._sync_variable = sync_variable;
+                            reSendMembershipList(_gossipManager.getMyself(), senderMember, _gossipManager.getMemberList());
                         }
                         }
                         else if(tmp_split[0].startsWith("Resend:"))
@@ -202,17 +203,18 @@ abstract public class PassiveGossipThread implements Runnable {
         }
     }
 
-    protected void reSendMembershipList(LocalGossipMember me, RemoteGossipMember senderMember, ArrayList<LocalGossipMember> memberList, int sync_variable) {
+    protected void reSendMembershipList(LocalGossipMember me, RemoteGossipMember senderMember, ArrayList<LocalGossipMember> memberList) {
         GossipService.debug("reSendMembershipList() is called.");
 
         // Increase the heartbeat of myself by 1.
         me.setHeartbeat(me.getHeartbeat() + 1); 
      
         synchronized (memberList) {
-            try {
+            //try {
                 for(LocalGossipMember member:memberList)
                 {   
-                    if (member != _gossipManager.getMyself() && !member.equals(senderMember))
+                    try{
+                    if (member != _gossipManager.getMyself() && !member.equals(senderMember) && me._sync_variable > member._sync_variable)
                     {   
                         GossipService.debug("start timeouttimer");
                         member.startTimeoutTimer();
@@ -236,26 +238,25 @@ abstract public class PassiveGossipThread implements Runnable {
                         GossipService.debug(other);
                     }
                     GossipService.debug("---------------------");
-					String sending_message = "Sync:" + sync_variable + ";" + jsonArray.toString();
+					String sending_message = "Sync:" + me._sync_variable + ";" + jsonArray.toString();
 					GossipService.debug("Sending message: " + sending_message);
                     SocketAddress socketAddress = new InetSocketAddress(dest, member.getPort());
                     Socket socket = new Socket();
-                    try{
-                        socket.connect(socketAddress, 1000);
-			        } catch (IOException e1) {
-                        GossipService.debug("Connection Failed: " + dest + ":" + member.getPort());
-				        //e1.printStackTrace();
-			        }
+                    socket.connect(socketAddress, 1000);
                     OutputStream outputStream = socket.getOutputStream();
                     PrintWriter output = new PrintWriter(outputStream, true);
                     output.println(sending_message);
                     output.flush();
 					socket.close();
+			        } catch (IOException e1) {
+                        GossipService.debug("Connection Failed.");
+				        //e1.printStackTrace();
+			        }
                 }
-            } catch (IOException e1) {
+            /*} catch (IOException e1) {
                 GossipService.debug("Connection Failed");
                 //e1.printStackTrace();
-            }
+            }*/
         }
     }
 
