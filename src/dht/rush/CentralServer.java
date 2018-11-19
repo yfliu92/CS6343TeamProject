@@ -53,6 +53,8 @@ public class CentralServer {
 //        GenerateControlClientCommandUtil.run();
 
         cs.root = cs.clusterStructureMap.getChildrenList().get("R");
+        
+        cs.initializeDataNode(cs.root);
         try {
             cs.startup();
         } catch (IOException e) {
@@ -218,7 +220,7 @@ public class CentralServer {
 	
 	public void startup() throws IOException {
 //		CentralServer server = new CentralServer();
-//		server.initializeDataNode();
+//		proxy.initializeDataNode();
 	    int port = 8100;
         ServerSocket ss = new ServerSocket(port); 
         

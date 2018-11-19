@@ -80,7 +80,7 @@ public class client {
     	String serverAddress = "localhost";
     	int port = 0; 
     	
-    	int dhtType = 1;
+    	int dhtType = 2;
     	
     	if (args.length == 3) {
     		serverAddress = args[0];
@@ -279,6 +279,9 @@ class RWClient {
 			System.out.println(getHelpText(2));
 			return;
 		}
+		else if (command.getAction().equals("dht")) {
+			
+		}
 		else {
 			System.out.println("command not supported");
 			return;
@@ -334,7 +337,8 @@ class RWClient {
 	    		processCommandRing(cmd);
 	    		break;
 	    	case 2:
-	    		processCommandRush(cmd);
+//	    		processCommandRush(cmd);
+	    		processCommandRing(cmd, 2);
 	    		break;
 	    	case 3:
 	    		processCommandElastic(cmd);
