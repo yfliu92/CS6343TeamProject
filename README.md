@@ -34,7 +34,8 @@ java -classpath .:../lib/\* control_client/client
 
 ## compile and run Rush server
 -- javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar dht/rush/test.java dht/rush/clusters/*.java dht/rush/utils/*.java
-javac -classpath ../lib/\* dht/rush/*.java dht/rush/clusters/*.java dht/rush/commands/*.java dht/rush/utils/*.java dht/server/Command.java -Xlint:unchecked
+
+javac -classpath ../lib/\* dht/rush/*.java dht/rush/clusters/*.java dht/rush/commands/*.java dht/common/response/*.java storage_server/Datum.java dht/common/Hashing.java dht/rush/utils/*.java dht/server/Command.java -Xlint:unchecked
 java -classpath .:../lib/\* dht/rush/CentralServer
 java -classpath .:../lib/\* dht/rush/test
 
