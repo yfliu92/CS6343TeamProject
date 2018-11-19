@@ -34,6 +34,9 @@ public class ConfigurationUtil {
             int numberOfCommands = Integer.parseInt(rootElement.element("commandNumber").getStringValue());
             RushUtil.setNumberOfCommands(numberOfCommands);
 
+            double unitWeight = Double.parseDouble(rootElement.element("weight").getStringValue());
+            int subClusterChildrenNumber = Integer.parseInt(rootElement.element("offset").getStringValue());
+
             Element subClusters = rootElement.element("subClusters");
             List subClusterList = subClusters.elements();
 
@@ -45,10 +48,10 @@ public class ConfigurationUtil {
             for (int i = 0; i < numberOfRootChildren; i++) {
                 Element subClusterElement = ((Element) subClusterList.get(i));
                 List<Element> nodesList = ((Element) subClusterList.get(i)).elements();
-                int subClusterChildrenNumber = Integer.parseInt(subClusterElement.element("offset").getStringValue());
+//                int subClusterChildrenNumber = Integer.parseInt(subClusterElement.element("offset").getStringValue());
                 String subClusterId = "S" + i;
 
-                double unitWeight = Double.parseDouble(subClusterElement.element("weight").getStringValue());
+//                double unitWeight = Double.parseDouble(subClusterElement.element("weight").getStringValue());
 
                 double subClusterWeight = subClusterChildrenNumber * unitWeight;
 
