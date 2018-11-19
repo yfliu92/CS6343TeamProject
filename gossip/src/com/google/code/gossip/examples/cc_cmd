@@ -1,0 +1,100 @@
+add 192.168.0.1 16000
+add 192.168.0.1 16001
+add 192.168.0.1 16002
+add 192.168.0.1 16003
+add 192.168.0.1 16004
+add 192.168.0.1 16005
+add 192.168.0.1 16006
+add 192.168.0.1 16007
+add 192.168.0.1 16008
+add 192.168.0.1 16009
+balance 27
+balance 14
+balance 18
+balance 10
+balance 21
+balance 3
+balance 28
+balance 15
+balance 21
+balance 5
+balance 21
+balance 5
+balance 29
+balance 4
+balance 21
+balance 28
+balance 9
+balance 14
+balance 8
+balance 26
+balance 3
+balance 2
+balance 6
+balance 5
+balance 29
+balance 8
+balance 27
+balance 29
+balance 17
+balance 3
+balance 23
+balance 9
+balance 2
+balance 22
+balance 6
+balance 27
+balance 14
+balance 22
+balance 4
+balance 20
+remove 23
+remove 3
+remove 3
+remove 21
+remove 17
+remove 7
+remove 20
+remove 20
+remove 8
+remove 17
+balance 2
+balance 5
+balance 12
+balance 8
+balance 18
+balance 18
+balance 0
+balance 18
+balance 12
+balance 14
+balance 10
+balance 13
+balance 1
+balance 7
+balance 2
+balance 17
+balance 16
+balance 9
+balance 8
+balance 12
+balance 5
+balance 17
+balance 15
+balance 13
+balance 18
+balance 17
+balance 2
+balance 0
+balance 0
+balance 5
+balance 14
+balance 5
+balance 10
+balance 18
+balance 17
+balance 6
+balance 1
+balance 15
+balance 6
+balance 16

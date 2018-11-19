@@ -1,258 +1,288 @@
 package com.google.code.gossip.manager.Ring;
 
 import java.util.*;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonArrayBuilder;
 
 import com.google.code.gossip.manager.Ring.Hashing;
 
-public class BinarySearchList extends ArrayList<VirtualNode> {
-	boolean[] occupied = new boolean[Hashing.MAX_HASH];
-    
+public class BinarySearchList extends ArrayList<PhysicalNode> {
+    private ProxyServer proxy;
+
+    public BinarySearchList(ProxyServer proxy)
+    {
+        this.proxy = proxy;
+    }
+
     public boolean checkExist(int hash) {
-    	VirtualNode vNode = new VirtualNode(hash);
+    	PhysicalNode vNode = new PhysicalNode(hash);
     	int index = Collections.binarySearch(this, vNode);
-        if (index < 0) {
+        //System.out.println("index:" + index);
+        if (get(index).start_vir != hash) {
         	return false;
         }
         else {
         	return true;
         }
     }
-    
+
     public int getRanHash() {
-    	Random ran = new Random();
-    	int hash = ran.nextInt(Hashing.MAX_HASH);
-    	int count = 0;
-    	while(checkExist(hash)) {
-    		hash = ran.nextInt(Hashing.MAX_HASH);
-    		count++;
-    		
-    		if (count > Hashing.MAX_HASH / 10) {
-    			break;
-    		}
-    	}
-    	
-    	if (count > 1000) {
-    		boolean isfound = false;
-    		for(int i = 0; i < occupied.length; i++) {
-    			if (!occupied[i]) {
-    				hash = i;
-    				isfound = true;
-    				break;
-    			}
-    		}
-    		if (!isfound) {
-    			hash = -1;
-    		}
-    	}
-    	
-    	return hash;
-    }
-    /**
-     * @Param  Node to be added
-     * @return false if virtual node with the same hash is already in list
-     *          true if insertion succeed
-     *
-     *          This function first uses binary search {@see Collections.binarySearch} to locate where the new
-     *          node should be added to.
-     *
-     *          Collections.binarySearch returns non-negative index if the node is found.
-     *          Otherwise, returns -(insertion point) - 1.
-     *
-     *          Time Complexity O(log n)
-     */
-    @Override
-    public boolean add(VirtualNode t) {
-        int index = Collections.binarySearch(this, t);
-
-        if (index >= 0) {
-            // virtual node is already in the list
-            return false;
+        Random ran = new Random();
+        int hash = ran.nextInt(Hashing.MAX_HASH);
+        while(checkExist(hash)) {
+            hash = ran.nextInt(Hashing.MAX_HASH);
         }
-        else {
-            index = -(index + 1);
-            this.add(index, t);
-            t.setIndex(index);
-            occupied[t.getHash()] = true;
-            return true;
-        }
-    }
+        return hash;
+    }   
 
-    /**
-     * @Param  Node dummy node with hash
-     * @return the node where the hash is hosted.
-     *
-     *          This function uses binary search {@see Collections.binarySearch} to locate the
-     *          host node of the given hash.
-     *
-     *          Collections.binarySearch returns non-negative index if the node is found.
-     *          Otherwise, returns -(insertion point) - 1.
-     *
-     *          If the index is negative, -(index + 1) is the index of host node.
-     *          If the index is greater than the size of list, the host is the first node in list.
-     *          Otherwise, the index is the actual index of the host
-     *
-     *
-     *          Time Complexity O(log n)
-     */
-    public VirtualNode find(int hash) {
-    	VirtualNode target = new VirtualNode(hash);
+    public int find(int hash) {
+    	PhysicalNode target = new PhysicalNode(hash);
+        //System.out.println("PhysicalNode.find, hash:" + hash);
         int index = Collections.binarySearch(this, target);
-
-        if (index < 0)
-            index = -(index + 1);
-        if (index >= size())
-            index = 0;
-
-        target = get(index);
-        return target;
+        //System.out.println("PhysicalNode.find, hash:" + index);
+        if (index < 0 || index >= size())
+        {
+            System.out.println("PhysicalNode.find error, hash:" + hash);
+            //System.exit(0);
+        }
+        return index;
     }
     
-    public VirtualNode find(VirtualNode node) {
+    public int find(PhysicalNode node) {
         int index = Collections.binarySearch(this, node);
-
-        if (index < 0)
-            index = -(index + 1);
-        if (index >= size())
-            index = 0;
-
-        node = get(index);
-        return node;
+        if (index < 0 || index >= size())
+        {
+            System.out.println("PhysicalNode.find error, hash:" + node.start_vir);
+            //System.exit(0);
+        }
+        return index;
     }
 
-    /**
-     * @Param  index
-     * @return node of the given index
-     *
-     *          Index is cached to the node, for fast access of its successor.
-     */
     @Override
-    public VirtualNode get(int index) {
-        if (index < 0)
-            index = size() + index;
-        else if (index >= size())
-            index = index % size();
-        VirtualNode node = super.get(index);
-        //node.setIndex(index); // set current index in the table, for fast access to successor and predecessor
+    public PhysicalNode get(int index) {
+        if (index < 0 || index >= size())
+        {
+            System.out.println("PhysicalNode.get error, index:" + index);
+            System.exit(0);
+        }
+        PhysicalNode node = super.get(index);
 
         return node;
     }
 
-    /**
-     * @Param  Node source node
-     * @return the successor of the given node
-     *
-     *          Time Complexity O(1)
-     */
-    public VirtualNode next(VirtualNode node) {
+    public int next(PhysicalNode node) {
         int index = Collections.binarySearch(this, node);
         return next(index);
     }
 
-    public VirtualNode next(int index) {
+    public int next(int index) {
         if (index + 1 == size()) // current node is the last element in list
-            return get(0);
-        else if (index + 1 > size())
-            return get((index + 1) % size());
+            return 0;
         else
-            return get(index + 1);
+            return index + 1;
     }
 
-    /**
-     * @Param  Node source node
-     * @return the predecessor of the given node
-     *
-     *          Time Complexity O(1)
-     */
-    public VirtualNode pre(VirtualNode node) {
-        int index = Collections.binarySearch(this, node);
-        return pre(index);
-    }
-    public VirtualNode pre(int index) {
-    	if (index < 0) {
-                index--;
-    		index = size() + index;
-    		index = index % size();
-    		return get(index);
-    	}
-    	else if (index == 0) // current node is the  first element in list
-            return get(size() - 1);
+    public int next(int index, int count) {
+        if (index + count >= size()) // current node is the last element in list
+            return index + count - size();
         else
-            return get(index - 1);
+            return index + count;
+    }
+
+    public int pre(int index) {
+    	if (index == 0) // current node is the  first element in list
+            return size() - 1;
+        else
+            return index - 1;
     }
     
-    public VirtualNode getVirtualNode(String keyword) {
-    	int rawHash = Hashing.getHashValFromKeyword(keyword);
-    	VirtualNode node = find(rawHash);
-    	return node;
+    public int next_vir(int index, int count) {
+        if (index + count >= ProxyServer.vir_nodes_num) // current node is the last element in list
+            return index + count - ProxyServer.vir_nodes_num;
+        else
+            return index + count;
+    }
+
+    public int pre(int index, int count) {
+    	if (index < count) // current node is the  first element in list
+            return size() - count + index;
+        else
+            return index - count;
+    }
+
+    public int pre_vir(int index, int count) {
+    	if (index < count) // current node is the  first element in list
+            return ProxyServer.vir_nodes_num - count + index;
+        else
+            return index - count;
+    }
+
+    public PhysicalNode getPhysicalNode(String keyword) {
+        for(PhysicalNode node : this)
+            if(node.getId() == keyword)
+    	        return node;
+        return null;
     }
     
-    public List<VirtualNode> getSuccessors(int rawHash) {
-    	VirtualNode vNode = find(rawHash);
-    	int index = vNode.getIndex();
-        List<VirtualNode> successors = new ArrayList<>();
+    public List<PhysicalNode> getSuccessors(int index) {
+        List<PhysicalNode> successors = new ArrayList<>();
         for (int i = 0; i < ProxyServer.numOfReplicas; i++){
-            VirtualNode next = next(index + i);
-            successors.add(next);
+            int next = next(index + i);
+            successors.add(get(next));
         }
-        
         return successors;
     }
     
-    public List<VirtualNode> getSuccessors(String keyword) {
-    	VirtualNode vNode = getVirtualNode(keyword);
-    	int index = vNode.getIndex();
-        List<VirtualNode> successors = new ArrayList<>();
+    public List<PhysicalNode> getSuccessors(String keyword) {
+    	PhysicalNode node = getPhysicalNode(keyword);
+    	int index = find(node);
+        List<PhysicalNode> successors = new ArrayList<>();
         for (int i = 0; i < ProxyServer.numOfReplicas; i++){
-            VirtualNode next = next(index + i);
-            successors.add(next);
+            int next = next(index + i);
+            successors.add(this.get(next));
         }
-        
         return successors;
     }
     
-    public List<VirtualNode> getVirtualNodes(String keyword) {
-    	VirtualNode vNode = getVirtualNode(keyword);
-        List<VirtualNode> successors = getSuccessors(keyword);
-        successors.add(0, vNode);
-        
+    public List<PhysicalNode> getPhysicalNodes(String keyword) {
+    	int[] tmp = getPhysicalNodeIds(keyword);
+        List<PhysicalNode> successors = new ArrayList<>();
+        for(int item:tmp)
+            successors.add(get(item));
         return successors;
     }
     
-    public List<VirtualNode> getVirtualNodes(int rawHash) {
-    	VirtualNode vNode = find(rawHash);
-        List<VirtualNode> successors = getSuccessors(rawHash);
-        successors.add(0, vNode);
-        
+    public List<PhysicalNode> getPhysicalNodes(int rawHash) {
+        //System.out.println("rawHash:" + rawHash);
+    	int[] tmp = getPhysicalNodeIds(rawHash);
+        List<PhysicalNode> successors = new ArrayList<>();
+        for(int item:tmp)
+            successors.add(get(item));
         return successors;
     }
     
-    public int[] getVirtualNodeIds(String keyword) {
-        List<VirtualNode> virtualNodes = getVirtualNodes(keyword);
-        
-        int[] virtualNodeIds = new int[virtualNodes.size() + 1];
-        for (int i = 0; i < virtualNodes.size(); i++){
-        	virtualNodeIds[i] = virtualNodes.get(i).getHash();
+    public int[] getPhysicalNodeIds(String keyword) {
+        int index = find(getPhysicalNode(keyword));
+        int[] rlt = new int[ProxyServer.numOfReplicas];
+        for(int i = 0; i < ProxyServer.numOfReplicas; i++)
+        {
+            rlt[i] = index;
+            index = next(index);
         }
-        
-        return virtualNodeIds;
+        return rlt;
     }
     
-    public int[] getVirtualNodeIds(int rawHash) {
-        List<VirtualNode> virtualNodes = getVirtualNodes(rawHash);
-        
-        int[] virtualNodeIds = new int[virtualNodes.size()];
-        for (int i = 0; i < virtualNodes.size(); i++){
-        	virtualNodeIds[i] = virtualNodes.get(i).getHash();
+    public int[] getPhysicalNodeIds(int rawHash) {
+        int index = find(rawHash);
+        //System.out.println("index:" + index);
+        int[] rlt = new int[ProxyServer.numOfReplicas];
+        for(int i = 0; i < ProxyServer.numOfReplicas; i++)
+        {
+            rlt[i] = index;
+            index = next(index);
         }
-        
-        return virtualNodeIds;
+        return rlt;
     }
     
     public void updateIndex() {
-    	if (this.size() > 0) {
-    		for(int i = 0; i < this.size(); i++) {
-    			this.get(i).setIndex(i);
-    		}
-    	}
+        Collections.sort(this);
+    }
+
+    public String serialize() {
+        return this.toJSON().toString();
+    }   
+
+    public JsonObject toJSON() {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+     
+        JsonArrayBuilder tableBuilder = Json.createArrayBuilder();
+        for(PhysicalNode node: this) {
+            tableBuilder.add(node.toJSON());
+        }
+        jsonBuilder.add("table", tableBuilder.build());
+        jsonBuilder.add("virtualnodes",String.valueOf(proxy.start_vir) + "~" + String.valueOf(proxy.end_vir));
+     
+        return jsonBuilder.build();
+    }
+
+    public String addNode(PhysicalNode node)
+    {
+        StringBuilder result = new StringBuilder();
+        int prev_node = this.find(node);
+        //System.out.println("prev_node:" + prev_node);
+        int cur_node = next(prev_node);
+        this.add(cur_node, node);
+
+        result.append(proxy.dataTransfer(prev_node, cur_node, this.get(cur_node).start_vir, this.get(prev_node).end_vir));
+        int next_node = next(cur_node);
+        for(int i = 0; i < ProxyServer.numOfReplicas - 1; i++)
+        {
+            int first_backup = pre(next_node, ProxyServer.numOfReplicas);
+            result.append(proxy.backupTransfer(next_node, cur_node, this.get(first_backup).start_vir, this.get(first_backup).end_vir));
+            next_node = next(next_node);
+        }
+        return result.toString();
+    }
+    
+    public String deleteNode(PhysicalNode node)
+    {
+        StringBuilder result = new StringBuilder();
+        int cur_node = this.find(node);
+        int prev_node = pre(cur_node);
+        result.append(proxy.dataTransfer(cur_node, prev_node, this.get(cur_node).start_vir, this.get(cur_node).end_vir));
+        int next_node = next(cur_node);
+        for(int i = 0; i < ProxyServer.numOfReplicas - 1 - 1; i++)
+        {
+            int first_backup = pre(next_node, ProxyServer.numOfReplicas);
+            result.append(proxy.backupTransfer(cur_node, next_node, this.get(first_backup).start_vir, this.get(first_backup).end_vir));
+            next_node = next(next_node);
+        }
+        int first_backup = pre(next_node, ProxyServer.numOfReplicas);
+        result.append(proxy.backupTransfer(cur_node, next_node, this.get(first_backup).start_vir, this.get(cur_node).back_end_vir));
+        this.remove(cur_node);
+        return result.toString();
+    }
+
+    public String loadBalance(int hash)
+    {
+        StringBuilder result = new StringBuilder();
+        int cur_node = hash;
+        int prev_node = pre(cur_node);
+        int next_node = next(cur_node);
+        int size = this.get(cur_node).end_vir - this.get(cur_node).start_vir + 1;
+        if(size < 0) size = size + ProxyServer.vir_nodes_num + 1;
+        int size_1 = this.get(prev_node).end_vir - this.get(prev_node).start_vir + 1;
+        if(size_1 < 0) size_1 = size_1 + ProxyServer.vir_nodes_num + 1;
+        int size_2 = this.get(next_node).end_vir - this.get(next_node).start_vir + 1;
+        if(size_2 < 0) size_2 = size_2 + ProxyServer.vir_nodes_num + 1;
+        System.out.println("size:" + size + "  size1:" + size_1 + "  size2:" + size_2);
+        if (size_1 - size > ProxyServer.balance_level)
+        {
+            int count = (int)((size_1 - size) / 2);
+            result.append(proxy.balanceTransfer(prev_node, cur_node, pre(get(prev_node).end_vir, count - 1), get(prev_node).end_vir));
+            //loadBalance(prev_node);
+        }
+        if (size_2 - size > ProxyServer.balance_level)
+        {
+            int count = (int)((size_2 - size) / 2);
+            result.append(proxy.balanceTransfer(next_node, cur_node, get(next_node).start_vir, next(get(prev_node).start_vir, count -1)));
+            //loadBalance(next_node);
+        }
+        if (size - size_1 > ProxyServer.balance_level)
+        {
+            int count = (int)((size - size_1) / 2);
+            result.append(proxy.balanceTransfer(cur_node, prev_node, get(cur_node).start_vir, next(get(prev_node).start_vir, count - 1)));
+            //loadBalance(prev_node);
+        }
+        if (size - size_2 > ProxyServer.balance_level)
+        {
+            int count = (int)((size - size_2) / 2);
+            result.append(proxy.balanceTransfer(cur_node, next_node, pre(get(cur_node).end_vir, count - 1), get(cur_node).end_vir));
+            //loadBalance(next_node);
+        }
+        return result.toString();
     }
 }

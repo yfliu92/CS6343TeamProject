@@ -1,0 +1,20 @@
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9081 > 192.168.1.14_9081.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9082 > 192.168.1.14_9082.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9083 > 192.168.1.14_9083.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9084 > 192.168.1.14_9084.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9085 > 192.168.1.14_9085.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9086 > 192.168.1.14_9086.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9087 > 192.168.1.14_9087.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9088 > 192.168.1.14_9088.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9089 > 192.168.1.14_9089.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9090 > 192.168.1.14_9090.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9091 > 192.168.1.14_9091.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9092 > 192.168.1.14_9092.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9093 > 192.168.1.14_9093.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9094 > 192.168.1.14_9094.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9095 > 192.168.1.14_9095.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9096 > 192.168.1.14_9096.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9097 > 192.168.1.14_9097.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9098 > 192.168.1.14_9098.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9099 > 192.168.1.14_9099.log 2>&1 & 
+cd /root/DHT/cs6343TeamProject/gossip/src && java  -classpath ../../lib/\*:./  com/google/code/gossip/examples/GossipRing 192.168.1.14 9080

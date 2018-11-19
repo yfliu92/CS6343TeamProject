@@ -1,53 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Ring>
-    // Number of replicas
     <replicationLevel>3</replicationLevel>
-    <hashRange>1000</hashRange>
+    <physical>20</physical>
+    <virtual>1000000</virtual>
     <!-- The number of virtual nodes mapped to each physical node -->
-    <vm_to_pm_ratio>10</vm_to_pm_ratio>
     <total_CCcommands>500</total_CCcommands>
+    <balance>1000</balance>
     <nodes>
         <node>
-            <ip>192.168.0.201</ip>
-            <port>8100</port>
-        </node>
-        <node>
-            <ip>192.168.0.202</ip>
-            <port>8100</port>
-        </node>
-        <node>
-            <ip>192.168.0.203</ip>
-            <port>8100</port>
-        </node>
-        <node>
-            <ip>192.168.0.204</ip>
-            <port>8100</port>
-        </node>
-        <node>
-            <ip>192.168.0.205</ip>
-            <port>8100</port>
-        </node>
-        <node>
-            <ip>192.168.0.206</ip>
-            <port>8100</port>
-        </node>
-        <node>
-            <ip>192.168.0.207</ip>
-            <port>8100</port>
-        </node>
-        <node>
-            <ip>192.168.0.208</ip>
-            <port>8100</port>
-        </node>
-        <node>
-            <ip>192.168.0.209</ip>
-            <port>8100</port>
-        </node>
-        <node>
-            <ip>192.168.0.210</ip>
-            <port>8100</port>
+            <ip>192.168.1.14</ip>
+            <port>9080</port>
         </node>
     </nodes>
-
 </Ring>

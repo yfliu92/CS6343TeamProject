@@ -46,6 +46,7 @@ public class OnlyProcessReceivedPassiveGossipThread extends PassiveGossipThread 
 							}
                             if(senderMember.equals(remoteMember))
                             {
+                                localMember._sync_variable = senderMember._sync_variable;
                                 localMember.stopTimeoutTimer();
                             }
 							// TODO: Otherwise, should we inform the other when the heartbeat is already higher?
@@ -76,7 +77,7 @@ public class OnlyProcessReceivedPassiveGossipThread extends PassiveGossipThread 
 									gossipManager.getDeadList().remove(localDeadMember);
 									// Add it as a new member and add it to the member list.
 									LocalGossipMember newLocalMember = new LocalGossipMember(remoteMember.getHost(), remoteMember.getPort(), remoteMember.getHeartbeat(), gossipManager, gossipManager.getSettings().getCleanupInterval());
-									gossipManager.getMemberList().add(newLocalMember);
+                                    gossipManager.getMemberList().add(newLocalMember);
 									//newLocalMember.startTimeoutTimer();
 									GossipService.info("Removed remote member " + remoteMember.getAddress() + " from dead list and added to local member list.");
 								}
@@ -84,7 +85,9 @@ public class OnlyProcessReceivedPassiveGossipThread extends PassiveGossipThread 
 								// Brand spanking new member - welcome.
 								LocalGossipMember newLocalMember = new LocalGossipMember(remoteMember.getHost(), remoteMember.getPort(), remoteMember.getHeartbeat(), gossipManager, gossipManager.getSettings().getCleanupInterval());
 								gossipManager.getMemberList().add(newLocalMember);
-								newLocalMember.startTimeoutTimer();
+								newLocalMember._sync_variable = senderMember._sync_variable;
+                                //if(newLocalMember._sync_variable < gossipManager.getMyself()._sync_variable)
+								//newLocalMember.startTimeoutTimer();
 								GossipService.info("Added new remote member " + remoteMember.getAddress() + " to local member list.");
 							}
 						}

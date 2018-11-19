@@ -18,7 +18,6 @@ import com.google.code.gossip.LocalGossipMember;
 public abstract class GossipManager extends Thread implements NotificationListener {
 	/** The maximal number of bytes the packet with the GOSSIP may be. (Default is 100 kb) */
 	public static final int MAX_PACKET_SIZE = 102400;
-    public int sync_variable;
 	
 	/** The list of members which are in the gossip group (not including myself). */
 	private ArrayList<LocalGossipMember> _memberList;
@@ -43,7 +42,6 @@ public abstract class GossipManager extends Thread implements NotificationListen
 	private Class<? extends ActiveGossipThread> _activeGossipThreadClass;
 	
 	public GossipManager(Class<? extends PassiveGossipThread> passiveGossipThreadClass, Class<? extends ActiveGossipThread> activeGossipThreadClass, String address, int port, GossipSettings settings, ArrayList<GossipMember> gossipMembers) {
-		sync_variable = 0;
         // Set the active and passive gossip thread classes to use.
 		_passiveGossipThreadClass = passiveGossipThreadClass;
 		_activeGossipThreadClass = activeGossipThreadClass;

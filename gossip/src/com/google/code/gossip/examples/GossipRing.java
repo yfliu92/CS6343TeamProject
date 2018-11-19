@@ -16,22 +16,33 @@ import com.google.code.gossip.RemoteGossipMember;
  * 
  * @author harmenw
  */
-public class GossipRing1 extends Thread {
+public class GossipRing extends Thread {
 	/** The number of clients to start. */
-	private static final int NUMBER_OF_CLIENTS = 2;
+	private static final int NUMBER_OF_CLIENTS = 3;
+    private int port;
+    private String ip;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new GossipRing1();
+        if(args.length < 2)
+        {   
+            System.out.println("java GossipRing [ip] [port]");
+            System.exit(0);
+        }
+        String ip = args[0];
+        int port = Integer.parseInt(args[1]);
+		new GossipRing(ip, port);
 	}
 	
 	/**
 	 * Constructor.
 	 * This will start the this thread.
 	 */
-	public GossipRing1() {
+	public GossipRing(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
 		start();
 	}
 
@@ -42,15 +53,14 @@ public class GossipRing1 extends Thread {
 		try {
 			GossipSettings settings = new GossipSettings();
 			// Get my ip address.
-			String myIpAddress = InetAddress.getLocalHost().getHostAddress();
-			GossipMember startupMember = new RemoteGossipMember(myIpAddress, 9091);
+			GossipMember startupMember = new RemoteGossipMember(ip, port);
 			ArrayList<GossipMember> teamMembers = new ArrayList<GossipMember>();
-			teamMembers.add(new RemoteGossipMember(myIpAddress, 9092));
-			teamMembers.add(new RemoteGossipMember(myIpAddress, 9093));
+			teamMembers.add(new RemoteGossipMember(ip, port + 1));
+			teamMembers.add(new RemoteGossipMember(ip, port + 2));
 			
 			// Lets start the gossip clients.
 			// Start the clients, waiting cleaning-interval + 1 second between them which will show the dead list handling.
-			GossipService gossipService = new GossipService(myIpAddress, startupMember.getPort(), LogLevel.DEBUG, teamMembers, settings);
+			GossipService gossipService = new GossipService(ip, startupMember.getPort(), LogLevel.DEBUG, teamMembers, settings);
 			//GossipService gossipService = new GossipService(myIpAddress, startupMember.getPort(), LogLevel.INFO, teamMembers, settings);
 			gossipService.start();
 			sleep(settings.getCleanupInterval() + 1000);

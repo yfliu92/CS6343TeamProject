@@ -5,6 +5,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.Console;
 import java.lang.String;
+import java.util.*;
+import java.io.*;
 
 import com.google.code.gossip.GossipService;
 import com.google.code.gossip.LocalGossipMember;
@@ -34,21 +36,52 @@ abstract public class ActiveGossipThread implements Runnable {
 			try {
                 Console console = System.console();
 				//TimeUnit.MILLISECONDS.sleep(_gossipManager.getSettings().getGossipInterval());
-                String cmd = console.readLine("Input your command (exit/status/send [message]/):");
+                String cmd = console.readLine("Input your command (exit/status/send [message]/sendme [message]/):");
                 if(cmd.equals("exit"))
                 {
                     System.exit(0);
                 }
                 else if(cmd.equals("status"))
                 {
-                    _gossipManager.sync_variable += 1;
-				    sendMembershipList(_gossipManager.getMyself(), _gossipManager.getMemberList(), _gossipManager.sync_variable);
+                    _gossipManager.getMyself()._sync_variable += 1;
+				    sendMembershipList(_gossipManager.getMyself(), _gossipManager.getMemberList());
 				    //sendMembershipList(_gossipManager.getMyself(), _gossipManager.getDeadList());
+                }
+                else if(cmd.startsWith("sendme"))
+                {
+                    String text = cmd.split(" ",2)[1];
+                    sendmeMessage(_gossipManager.getMyself(),text);
                 }
                 else if(cmd.startsWith("send"))
                 {
                     String text = cmd.split(" ",2)[1];
+                    sendmeMessage(_gossipManager.getMyself(),text);
                     sendMessage(_gossipManager.getMyself(), _gossipManager.getMemberList(),text);
+                }
+                else if(cmd.startsWith("readfile"))
+                {
+                    Vector<String> cmds = new Vector<String>();
+                    String filename = cmd.split(" ")[1];
+                    File file = new File(filename);
+                    BufferedReader reader = null;
+                    try 
+                    {
+                        reader = new BufferedReader(new FileReader(file));
+                        String tempString;
+                        while ((tempString = reader.readLine()) != null)
+                        {
+                            cmds.addElement(tempString);
+                        }
+                    }
+                    catch(IOException e)
+                    {}
+                    for(String tmp : cmds)
+                    {   
+                        System.out.println(tmp);
+                        sendmeMessage(_gossipManager.getMyself(),tmp);
+                        sendMessage(_gossipManager.getMyself(), _gossipManager.getMemberList(),tmp);
+                        Thread.sleep(1000);
+                    }   
                 }
                 else
                 {
@@ -69,8 +102,9 @@ abstract public class ActiveGossipThread implements Runnable {
 	 * Performs the sending of the membership list, after we have
 	 * incremented our own heartbeat.
 	 */
-	abstract protected void sendMembershipList(LocalGossipMember me, ArrayList<LocalGossipMember> memberList, int sync_variable);
+	abstract protected void sendMembershipList(LocalGossipMember me, ArrayList<LocalGossipMember> memberList);
 	abstract protected void sendMessage(LocalGossipMember me, ArrayList<LocalGossipMember> memberList,String text);
+	abstract protected void sendmeMessage(LocalGossipMember me, String text);
 
 	/**
 	 * Abstract method which should be implemented by a subclass.
