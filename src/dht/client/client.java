@@ -1,4 +1,4 @@
-//package dht.client;
+package dht.client;
 
 import java.io.BufferedReader;
 import java.io.IOException;

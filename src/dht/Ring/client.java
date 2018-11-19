@@ -1,4 +1,4 @@
-package dht.elastic_DHT_centralized;
+package dht.Ring;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -15,18 +15,22 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map.Entry;
 
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
+import javax.json.JsonWriter;
 
-import dht.elastic_DHT_centralized.LookupTable;
-//import dht.Ring.VirtualNode;
-
+import dht.Ring.LookupTable;
+import dht.Ring.VirtualNode;
 import dht.common.Hashing;
+import dht.common.response.Response;
 import dht.server.Command;
 
-public class DataNode {
+public class client {
 	private LookupTable lookupTable;
 	
 	public void printTable() {
@@ -39,14 +43,23 @@ public class DataNode {
 	
 	public boolean buildTable(JsonObject data) {
 		lookupTable = new LookupTable();
-		return lookupTable.buildTable(data);
+		if (data.containsKey("epoch")) {
+			this.lookupTable.setEpoch(Long.valueOf(data.get("epoch").toString()));
+		}
+		if (data.containsKey("table")) {
+			JsonArray jsonArray = data.get("table").asJsonArray();
+			for(int i = 0; i < jsonArray.size(); i++) {
+				lookupTable.getTable().add(new VirtualNode(jsonArray.getJsonObject(i)));
+			}
+		}
+		
+		return true;
 	}
 	
 	public void printTableInfo() {
-		int items = lookupTable != null ? lookupTable.getBucketsTable().size() : 0;
-		int physicalNodes = lookupTable != null ? lookupTable.getPhysicalNodesMap().size() : 0;
+		int items = lookupTable != null ? lookupTable.getTable().size() : 0;
 		String epoch = items != 0 ? String.valueOf(lookupTable.getEpoch()): "";
-		System.out.println("A total of " + items + " hash buckets and " + physicalNodes + " physical nodes found in the table, epoch " + epoch);
+		System.out.println("A total of " + items + " records found in the table, epoch " + epoch);
 	}
 	
 	public boolean isTableLatest(String epoch) {
@@ -67,25 +80,28 @@ public class DataNode {
 		String epoch = this.lookupTable != null ? String.valueOf(this.lookupTable.getEpoch()) : "";
 		return epoch;
 	}
-    
+	
     public static void main(String[] args) throws Exception {
-        System.out.println("==== Welcome to Data Node !!! =====");
+        System.out.println("==== Welcome to Client !!! =====");
         
     	String serverAddress = "localhost";
-    	int port = 9093; 
-    	String dhtName = "Elastic DHT";
-    	int dhtType = 3;
+    	int port = 0; 
     	
-    	DataNode dataNode = new DataNode();
-        
-    	DataNodeClient client = new DataNodeClient(dataNode);
+    	int dhtType = 1;
+    	
+    	if (args.length == 3) {
+    		serverAddress = args[0];
+    		port = Integer.valueOf(args[1]);
+    		dhtType = Integer.valueOf(args[2]);
+    	}
+    	String dhtName = dhtType == 1 ? "DHT Ring" : dhtType == 2 ? "DHT Ceph" : dhtType == 3 ? "Elastic DHT" : "";
+    	dhtName += " Data Node";
+
+    	RWClient client = new RWClient();
     	boolean connected = client.connectServer(serverAddress, port);
 		
 		if (connected) {
 			System.out.println("Connected to " + dhtName + " Server ");
-			
-			client.sendCommandStr_JsonRes(new Command("dht pull"), client.input, client.output);
-			
 		}
 		else {
 			System.out.println("Unable to connect to " + dhtName + " server!");
@@ -103,18 +119,13 @@ public class DataNode {
 
 }
 
-class DataNodeClient {
+class RWClient {
     PrintWriter output;
     BufferedReader input;
     InputStream inputStream;
     OutputStream outputStream;
 	SocketAddress socketAddress;
 	Socket socket;
-	DataNode dataNode;
-	
-	public DataNodeClient(DataNode dataNode) {
-		this.dataNode = dataNode;
-	}
 	
     public boolean connectServer(String serverAddress, int port) {
     	int timeout = 2000;
@@ -144,10 +155,6 @@ class DataNodeClient {
     }
     
     public void sendCommandStr(Command command, BufferedReader input, PrintWriter output) throws Exception {
-    	if (processLocalRequest(command)) {
-    		return;
-    	}
-    	
     	String[] jsonCommands = {"read", "write", "data", "dht", "find", "info", "writebatch", "updatebatch"};
     	for(String jsonCommand: jsonCommands) {
     		if (command.getAction().equals(jsonCommand)) {
@@ -163,10 +170,30 @@ class DataNodeClient {
         System.out.println("Response received: " + response + " ---- " + new Date().toString());
     }
     
+    public void sendCommandJson(Command command, BufferedReader input, PrintWriter output) throws Exception {
+    	
+    	String timeStamp = new Date().toString();
+    	System.out.println("Sending command" + " ---- " + timeStamp);
+    	
+    	output.println(new Response(true, command.getRawCommand(), command.getRawCommand()).serialize());
+    	output.flush();
+        
+        JsonObject res = parseRequest(input);
+        if (res != null) {
+            System.out.println();
+            System.out.println("Response received at " + timeStamp);
+            System.out.println(res.toString());
+            parseResponse(res, command, input, output);
+        	
+        	System.out.println();
+         }
+    }
+    
     public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
     	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
+    	
         output.println(command.getRawCommand());
         output.flush();
         
@@ -180,124 +207,22 @@ class DataNodeClient {
          }
     }
     
-    public boolean processLocalRequest(Command command) {
-    	if (command.getAction().equals("dht")) {
-    		if (command.getCommandSeries().size() > 0) {
-    			if (command.getCommandSeries().get(0).equals("info")) {
-    				this.dataNode.printTableInfo();
-    				return true;
-    			}
-    			else if (command.getCommandSeries().get(0).equals("list")) {
-    				this.dataNode.printTable();
-    				return true;
-    			}
-    		}
-    	}
-    	
-    	return false;
-    }
-    
     public void parseResponse(JsonObject res, Command command, BufferedReader input, PrintWriter output) throws Exception {
-    	if (command.getAction().equals("dht")) {
-    		String action2 = command.getCommandSeries().size() > 0 ? command.getCommandSeries().get(0) : "head";
-    		if (action2.equals("pull")) {
-    			dataNode.buildTable(res.getJsonObject("jsonResult"));
-    			System.out.println("DHT table pulled successfully");
-    			dataNode.printTableInfo();
-    			return;
-    		}
-    		else if (action2.equals("head")) {
-    			String latestEpoch = res.getString("result");
-    			if (dataNode.isTableLatest(latestEpoch)) {
-    				System.out.println("DHT table is already the latest");
-    				dataNode.printTableInfo();
-    			}
-    			else {
-    				System.out.println("DHT table is outdated");
-    				System.out.println("Latest epoch number: " + latestEpoch);
-    				System.out.println("Local epoch number: " + dataNode.getDHTEpoch());
-    			}
-    			return;
-    		}
-    	}
-    	else if (command.getAction().equals("read")) {
+    	if (command.getAction().equals("read")) {
     		if (command.getCommandSeries().size() > 0) {
-    			String dataStr = command.getCommandSeries().get(0);
-    			
-    			int rawhash = Hashing.getHashValFromKeyword(dataStr);
-    			try {
-    				rawhash = Integer.valueOf(dataStr);
-    			}
-    			catch (Exception e) {
-    				
-    			}
-    			
-//    			int[] virtualnodeids = this.dataNode.getLookupTable().getTable().getVirtualNodeIds(rawhash);
-    			String[] physicalnodeids = this.dataNode.getLookupTable().getPhysicalNodeIds(rawhash);
+
     			String physicalnodeid_remote = res.getString("result");
-    			System.out.println("Raw hash of " + dataStr + ": " + rawhash);
-    			System.out.println("Physical Node Ids from Local DHT: " + Arrays.toString(physicalnodeids));
-    			if (!Arrays.toString(physicalnodeids).equals(physicalnodeid_remote)) {
-    				System.out.println("Local DHT is outdated");
-    				System.out.println("Physical Node Ids from Remote DHT: " + physicalnodeid_remote);
-    				System.out.println("Starting to update DHT...");
-    				sendCommandStr(new Command("dht pull"), input, output);
-    			}
+    			System.out.println("Physical Node Ids from Remote DHT: " + physicalnodeid_remote);
     			return;
     		}
     	}
-    	else if (command.getAction().equals("find")) {
-    		int hash = command.getCommandSeries().size() > 0 ? Integer.valueOf(command.getCommandSeries().get(0)) : -1;
-    		String localPhysicalNode = hash >= 0 ? Arrays.toString(this.dataNode.getLookupTable().getPhysicalNodeIds(hash)) : "";
-//    		String virtualNode = res.getJsonObject("jsonResult").get("hash").toString();
-    		String physicalNode = res.getString("result");
-    		System.out.println("Node Info: " + physicalNode + " (hash: " + hash + ")");
-    		if (!physicalNode.equals(localPhysicalNode)) {
-    			System.out.println("Local DHT is outdated.");
-    			System.out.println("Server physical nodes: " + physicalNode);
-    		}
-    		else {
-    			System.out.println("Local DHT is update to date.");
-    		}
-    		return;
+    	else if (command.getAction().equals("write")) {
+    		
     	}
     	else if (command.getAction().equals("info")) {
-    		JsonObject data = res.getJsonObject("jsonResult");
-    		String epoch = data.get("epoch").toString();
-    		System.out.println("DHT table info");
-    		System.out.println("Epoch number: " + epoch);
-			System.out.println("Hash buckets: ");
-			JsonObject table = data.getJsonObject("bucketsTable");
-			for(Entry<String, JsonValue> node: table.entrySet()) {
-				System.out.print(node.getKey() + ": ");
-				JsonObject hashPairMap = node.getValue().asJsonObject();
-				for(Entry<String, JsonValue> pair: hashPairMap.entrySet()) {
-					System.out.print("<" + pair.getKey() + ", " + pair.getValue() + "> ");
-				}
-				System.out.print("\n");
-			}
-			System.out.println("Physical nodes: ");
-			JsonObject nodes = data.getJsonObject("physicalNodesMap");
-			for(Entry<String, JsonValue> node: nodes.entrySet()) {
-				JsonObject nodeJson = node.getValue().asJsonObject();
-				System.out.println(nodeJson);
-			}
-    		return;
-    	}
-    	
-    	if (res.containsKey("status")) {
-    		if (res.containsKey("message")) {
-    			System.out.println(res.getString("message"));
-    		}
     		if (res.containsKey("result")) {
-    			System.out.println(res.getString("result"));
+    			System.out.println("Epoch number: " + res.getString("result"));
     		}
-    		if (res.containsKey("jsonResult")) {
-    			System.out.println(res.getJsonObject("jsonResult").toString());
-    		}
-    	}
-    	else {
-    		System.out.println(res.toString());
     	}
     }
 	
@@ -398,7 +323,7 @@ class DataNodeClient {
         }
         else
         {
-        	sendCommandStr(command, input, output);
+        	sendCommandJson(command, input, output);
         }
     }
     

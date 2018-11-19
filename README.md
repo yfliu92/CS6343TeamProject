@@ -17,17 +17,19 @@ java dht/client/client loadbalance 3 6
 java dht/client/controlclient
 
 
-## compile and run Ring server
+## compile and run Ring server/ Data Node / Client
 javac -classpath ../lib/\* dht/Ring/*.java dht/server/Command.java dht/common/Hashing.java dht/common/response/*.java storage_server/Datum.java control_client/control_client.java
 
 java -classpath .:../lib/\* dht/Ring/ProxyServer
+java -classpath .:../lib/\* dht/Ring/DataNode
+java -classpath .:../lib/\* dht/Ring/client
 
 
 ## compile and run control client
 javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar control_client/control_client.java dht/server/Command.java
-javac -classpath ../lib/\* control_client/control_client.java dht/server/Command.java dht/common/Hashing.java
-
+javac -classpath ../lib/\* control_client/*.java dht/server/Command.java dht/common/Hashing.java
 java -classpath .:../lib/\* control_client/control_client
+java -classpath .:../lib/\* control_client/client
 
 
 ## compile and run Rush server
