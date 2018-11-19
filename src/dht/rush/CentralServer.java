@@ -53,6 +53,7 @@ public class CentralServer {
 //        GenerateControlClientCommandUtil.run();
 
         cs.root = cs.clusterStructureMap.getChildrenList().get("R");
+//        System.out.println(cs.clusterStructureMap.toJSON().toString());
         
         cs.initializeDataNode(cs.root);
         try {
@@ -66,7 +67,15 @@ public class CentralServer {
         if (root == null) {
         	return;
         }
-        pushDHT(root.getIp(), Integer.valueOf(root.getPort()));
+//        System.out.println("root" + root);
+        
+        try {
+        	pushDHT(root.getIp(), Integer.valueOf(root.getPort()));
+        }
+        catch (Exception e){
+        	
+        }
+        
         if (root.getSubClusters() != null && root.getSubClusters().size() > 0) {
         	for(Cluster cluster: root.getSubClusters()) {
         		initializeDataNode(cluster);
@@ -414,7 +423,7 @@ class ProxyClient_Rush{
  
 		} catch (SocketTimeoutException exception) {
 //			socket.close();
-			System.out.println("SocketTimeoutException " + serverAddress + ":" + port + ". " + exception.getMessage());
+//			System.out.println("SocketTimeoutException " + serverAddress + ":" + port + ". " + exception.getMessage());
 			return false;
 		} catch (IOException exception) {
 //			socket.close();
@@ -669,7 +678,7 @@ class RunDataNode_Rush extends Thread {
 		boolean success = false;
         try {
         	String dataPortNum = String.valueOf(port);
-			Process p = Runtime.getRuntime().exec("java -classpath .:../lib/* dht/elastic_DHT_centralized/DataNode " + ip + " " + dataPortNum);
+			Process p = Runtime.getRuntime().exec("java -classpath .:../lib/* dht/rush/DataNode " + ip + " " + dataPortNum);
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(p.getInputStream()));
 			String line = null;
