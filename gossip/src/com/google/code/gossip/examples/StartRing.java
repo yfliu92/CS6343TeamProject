@@ -44,7 +44,7 @@ public class StartRing
                 else
                 {
                     String log = ip + "_" + (port + j) + ".log";
-                    String command = "cd " + path + " && java " + variables + shpath + parametors + " > " + log + " 2>&1 & \n";
+                    String command = " cd " + path + " && java " + variables + shpath + parametors + " > " + log + " 2>&1 & \n";
                     System.out.println(command);
                     writer.write(command);
                 }
