@@ -126,8 +126,6 @@ public class ProxyServer extends PhysicalNode {
     }
 	
 	public int initializeDataNode() {
-		String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "DataNode.java";
-		
 		Element port = config.getRootElement().element("port");
 		int startPort = Integer.parseInt(port.element("startPort").getStringValue());
 		int portRange = Integer.parseInt(port.element("portRange").getStringValue());
@@ -292,21 +290,16 @@ public class ProxyServer extends PhysicalNode {
 	
 	public boolean pushDHT(String serverAddress, int port) {
 		try {
-		   	ProxyClient client = new ProxyClient(this);
+		   	ProxyClient_Ring client = new ProxyClient_Ring(this);
 	    	boolean connected = client.connectServer(serverAddress, port);
 	    	
 	    	Thread t = null;
 	    	if (!connected) {
-	    		t = new RunDataNode(serverAddress, port);
+	    		t = new RunDataNode_Ring(serverAddress, port);
 	    		t.start();
 	    		
 	    		Thread.sleep(1000);
 	    		connected = client.connectServer(serverAddress, port);
-//	    		if (runDataNode(serverAddress, port)) {
-//	    			Thread.sleep(1000);
-//	    			connected = client.connectServer(serverAddress, port);
-//	    			
-//	    		}
 	    	}
 	    	
 	    	Thread.sleep(1000);
@@ -347,7 +340,7 @@ public class ProxyServer extends PhysicalNode {
 				return true;
 			}
 			else {
-				System.out.println("Unable to connect to Data Node Server at " + serverAddress + " " + port);
+//				System.out.println("Unable to connect to Data Node Server at " + serverAddress + " " + port);
 				return false;
 			}
 		}
@@ -662,7 +655,7 @@ public class ProxyServer extends PhysicalNode {
 
 }
 
-class ProxyClient{
+class ProxyClient_Ring{
     PrintWriter output;
     BufferedReader input;
     InputStream inputStream;
@@ -670,7 +663,7 @@ class ProxyClient{
     
     Socket socket;
     ProxyServer proxy;
-	public ProxyClient(ProxyServer proxy) { 
+	public ProxyClient_Ring(ProxyServer proxy) { 
 		this.proxy = proxy;
 //		this.address = address;
 //		this.port = port;
@@ -934,10 +927,10 @@ class ProxyClient{
     }
 }
 
-class RunDataNode extends Thread {
+class RunDataNode_Ring extends Thread {
 	final String ip;
 	final int port;
-	public RunDataNode(String ip, int port) {
+	public RunDataNode_Ring(String ip, int port) {
 		this.ip = ip;
 		this.port = port;
 	}

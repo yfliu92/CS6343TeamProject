@@ -43,13 +43,17 @@ java -classpath .:../lib/\* dht/rush/test
 javac -classpath ../lib/\* dht/elastic_DHT_centralized/*.java dht/server/Command.java dht/common/Hashing.java dht/common/response/Response.java
 java -classpath .:../lib/\* dht/elastic_DHT_centralized/ProxyServer
 
-## compile and run Data Node
+## compile and run Data Node and test client
 ## Data node should already be compiled with each proxy server
 --javac -classpath ../lib/\* control_client/*.java dht/server/Command.java dht/Ring/*.java dht/common/Hashing.java dht/common/response/*.java storage_server/Datum.java
 --java -classpath .:../lib/\* control_client/DataNode
 
-java -classpath .:../lib/\* dht/Ring/DataNode
-java -classpath .:../lib/\* dht/elastic_DHT_centralized/DataNode
-java -classpath .:../lib/\* dht/rush/DataNode
+java -classpath .:../lib/\* dht/Ring/DataNode <IP> <port>
+java -classpath .:../lib/\* dht/elastic_DHT_centralized/DataNode <IP> <port>
+java -classpath .:../lib/\* dht/rush/DataNode <IP> <port>
+
+java -classpath .:../lib/\* dht/Ring/client <IP> <port> <dhtType>
+java -classpath .:../lib/\* dht/elastic_DHT_centralized/client <IP> <port> <dhtType>
+java -classpath .:../lib/\* dht/rush/client <IP> <port> <dhtType>
 
 
