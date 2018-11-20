@@ -312,7 +312,7 @@ public class CentralServer {
         String method = requestObject.getString("method").toLowerCase();
         ServerCommand serverCommand = null;
         JsonObject params = null;
-        if (method.equals("addnode")) {
+        if (method.toLowerCase().equals("addnode")) {
                 System.out.println("Adding node command");
                 serverCommand = new AddNodeCommand();
                 params = requestObject.getJsonObject("parameters");
@@ -322,7 +322,7 @@ public class CentralServer {
                 ((AddNodeCommand) serverCommand).setWeight(Double.parseDouble(params.getString("weight")));
                 ((AddNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
         }
-        else if (method.equals("deletenode")) {
+        else if (method.toLowerCase().equals("deletenode")) {
                 System.out.println("Deleting node command");
                 serverCommand = new DeleteNodeCommand();
                 params = requestObject.getJsonObject("parameters");
@@ -331,40 +331,40 @@ public class CentralServer {
                 ((DeleteNodeCommand) serverCommand).setPort(params.getString("port"));
                 ((DeleteNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
         }
-        else if (method.equals("getnodes")) {
+        else if (method.toLowerCase().equals("getnodes")) {
                 System.out.println("Getting node command");
                 serverCommand = new GetNodesCommand();
                 params = requestObject.getJsonObject("parameters");
                 ((GetNodesCommand) serverCommand).setPgid(params.getString("pgid"));
                 ((GetNodesCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
         }
-        else if (method.equals("loadbalancing")) {
+        else if (method.toLowerCase().equals("loadbalancing")) {
                 System.out.println("Start loading balancing in a subcluster");
                 serverCommand = new LoadBalancingCommand();
                 params = requestObject.getJsonObject("parameters");
                 ((LoadBalancingCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
                 ((LoadBalancingCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
         }
-        else if (method.equals("write")) {
+        else if (method.toLowerCase().equals("write")) {
                 System.out.println("Start to write a file into the cluster");
                 serverCommand = new WriteCommand();
                 params = requestObject.getJsonObject("parameters");
                 ((WriteCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 ((WriteCommand) serverCommand).setFileName(params.getString("fileName"));
         }
-        else if (method.equals("read")) {
+        else if (method.toLowerCase().equals("read")) {
                 System.out.println("Start to return a physical node for the file");
                 serverCommand = new ReadCommand();
                 params = requestObject.getJsonObject("parameters");
                 ((ReadCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 ((ReadCommand) serverCommand).setFileName(params.getString("fileName"));
         }
-        else if (method.equals("getmap")) {
+        else if (method.toLowerCase().equals("getmap")) {
                 System.out.println("Start to get the most recent tree map");
                 serverCommand = new GetMapCommand();
                 ((GetMapCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
         }
-        else if (method.equals("changeweight")) {
+        else if (method.toLowerCase().equals("changeweight")) {
                 System.out.println("Change node weight command");
                 serverCommand = new ChangeWeightCommand();
                 params = requestObject.getJsonObject("parameters");
@@ -374,7 +374,7 @@ public class CentralServer {
                 ((ChangeWeightCommand) serverCommand).setWeight(Double.parseDouble(params.getString("weight")));
                 ((ChangeWeightCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
         }
-        else if (method.equals("dht")) {
+        else if (method.toLowerCase().equals("dht")) {
             	System.out.println("DHT fetch command");
             	serverCommand = new GetDHTCommand();
             	params = requestObject.getJsonObject("parameters");
@@ -486,7 +486,7 @@ class ProxyClient_Rush{
         
         JsonObject params = null;
         JsonObject jobj = null;
-		if(command.getAction().equals("addnode")) {
+		if(command.getAction().toLowerCase().equals("addnode")) {
 			  params = Json.createObjectBuilder()
 			  .add("subClusterId", command.getCommandSeries().get(0))
 			  .add("ip", command.getCommandSeries().get(1))
@@ -499,7 +499,7 @@ class ProxyClient_Rush{
 			  .add("parameters", params)
 			  .build();
 		}
-		else if(command.getAction().equals("deletenode")) {
+		else if(command.getAction().toLowerCase().equals("deletenode")) {
 	          params = Json.createObjectBuilder()
 	          .add("subClusterId", command.getCommandSeries().get(0))
 	          .add("ip", command.getCommandSeries().get(1))
@@ -511,7 +511,7 @@ class ProxyClient_Rush{
 	          .add("parameters", params)
 	          .build();
 		}
-		else if(command.getAction().equals("getnodes")) {
+		else if(command.getAction().toLowerCase().equals("getnodes")) {
             params = Json.createObjectBuilder()
                     .add("pgid", command.getCommandSeries().get(0))
                     .build();
@@ -526,7 +526,7 @@ class ProxyClient_Rush{
 			return;
 		}
 		else {
-			System.out.println("command not supported");
+			System.out.println("command not supported111");
 			return;
 		}
     	
@@ -602,6 +602,7 @@ class ProxyClient_Rush{
         else
         {
         	sendCommandStr_JsonRes(command, input, output);
+        	
         }
     }
     

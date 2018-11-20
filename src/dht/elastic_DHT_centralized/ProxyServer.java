@@ -408,6 +408,19 @@ public class ProxyServer extends Proxy {
 					proxy.getLookupTable().print();
 					return new Response(true, "DHT printed on server").serialize();
 				}
+				else if (operation.equals("push")) {
+					if (command.getCommandSeries().size() == 3) {
+						String ip = command.getCommandSeries().get(1);
+						int port = Integer.valueOf(command.getCommandSeries().get(2));
+						pushDHT(ip, port);
+						return new Response(true, "DHT pushed for " + ip + " " + port).serialize();
+					}
+					else {
+						return new Response(false, "DHT not pushed").serialize();
+					}
+					
+					
+				}
 				else {
 					return new Response(false, "Command not supported").serialize();
 				}
@@ -656,7 +669,7 @@ class ProxyClient_Elastic{
  
 		} catch (SocketTimeoutException exception) {
 //			socket.close();
-			System.out.println("SocketTimeoutException " + serverAddress + ":" + port + ". " + exception.getMessage());
+//			System.out.println("SocketTimeoutException " + serverAddress + ":" + port + ". " + exception.getMessage());
 			return false;
 		} catch (IOException exception) {
 //			socket.close();
