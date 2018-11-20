@@ -39,7 +39,7 @@ public class ProxyServer extends Proxy {
     public static Proxy initializeEDHT(){
         try {
             // Read from the configuration file "config_ring.xml"
-//              String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+//            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
             String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
 
             File inputFile = new File(xmlPath);
@@ -171,16 +171,14 @@ public class ProxyServer extends Proxy {
         String rootPath = System.getProperty("user.dir");
 //        String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "elastic_CCcommands.txt";
         String path = rootPath + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "elastic_CCcommands.txt";
-
+		System.out.println("writing to file");
         try {
             writer = new BufferedWriter(new FileWriter(path), 32768);
             String[] availableCommands = {"add", "remove", "loadbalance"};
             String[] expand_shrink_commands = {"expand", "shrink"};
-            String[] availableIPs = {"192.168.0.211","192.168.0.212","192.168.0.213","192.168.0.214",
-                    "192.168.0.215","192.168.0.216","192.168.0.217","192.168.0.218","192.168.0.219","192.168.0.220",
-                    "192.168.0.221", "192.168.0.222","192.168.0.223","192.168.0.224","192.168.0.225",
-                    "192.168.0.226", "192.168.0.227","192.168.0.228","192.168.0.229","192.168.0.230"};
-            String[] availablePorts = {"8001", "8002", "8003", "8004", "8005"};
+            String[] availableIPs = {"192.168.0.219","192.168.0.221"};
+            String[] availablePorts = {"8101", "8102", "8103", "8104", "8105", "8106", "8107", "8108", "8109", "8110",
+                    "8111", "8112", "8113", "8114", "8115", "8116", "8117", "8118", "8119", "8120"};
             ArrayList<String> availablePNodes = new ArrayList<>();
             for (String ip : availableIPs) {
                 for (String port : availablePorts) {
@@ -519,8 +517,9 @@ public class ProxyServer extends Proxy {
 		ProxyServer proxyServer = new ProxyServer();
         //Initialize the Elastic DHT cluster
 	    Proxy proxy = initializeEDHT();
+		proxyServer.CCcommands(proxy);
 	    proxyServer.initializeDataNode();
-        proxyServer.CCcommands(proxy);
+
 
         int port = 9093;
         ServerSocket ss = new ServerSocket(port);

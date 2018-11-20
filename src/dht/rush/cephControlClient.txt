@@ -1,500 +1,500 @@
-deletenode S1 192.168.0.216 81813
-addnode S5 192.168.0.8 81000 1.0
-addnode S7 192.168.0.8 81001 1.0
-deletenode S3 192.168.0.222 81402
-deletenode S2 192.168.0.218 81089
-changeweight S7 192.168.0.221 81452 1.0
-deletenode S5 192.168.0.219 81080
-addnode S6 192.168.0.8 81002 1.0
-changeweight S1 192.168.0.216 81533 8.0
-addnode S7 192.168.0.8 81003 1.0
-changeweight S5 192.168.0.219 81421 1.0
-changeweight S3 192.168.0.222 81370 9.0
-addnode S6 192.168.0.8 81004 1.0
-changeweight S6 192.168.0.205 81680 5.0
-deletenode S1 192.168.0.216 81819
-addnode S7 192.168.0.8 81005 1.0
-deletenode S6 192.168.0.205 81071
-addnode S6 192.168.0.8 81006 1.0
-addnode S7 192.168.0.8 81007 1.0
-changeweight S4 192.168.0.215 81469 7.0
-addnode S3 192.168.0.8 81008 1.0
-changeweight S3 192.168.0.222 81594 10.0
-deletenode S0 192.168.0.212 81420
-changeweight S6 192.168.0.205 81503 8.0
-addnode S4 192.168.0.8 81009 1.0
-deletenode S0 192.168.0.212 81207
-addnode S2 192.168.0.8 81010 1.0
-changeweight S2 192.168.0.218 81897 7.0
-addnode S5 192.168.0.8 81011 1.0
-changeweight S7 192.168.0.221 81597 2.0
-addnode S6 192.168.0.8 81012 1.0
-deletenode S4 192.168.0.215 81325
-deletenode S1 192.168.0.216 81777
-changeweight S5 192.168.0.219 81579 9.0
-addnode S7 192.168.0.8 81013 1.0
-changeweight S0 192.168.0.212 81518 1.0
-addnode S5 192.168.0.8 81014 1.0
-deletenode S2 192.168.0.218 81123
-changeweight S6 192.168.0.205 81472 2.0
-deletenode S6 192.168.0.205 81335
-addnode S2 192.168.0.8 81015 1.0
-changeweight S6 192.168.0.205 81738 9.0
-deletenode S6 192.168.0.205 81805
-changeweight S4 192.168.0.215 81318 1.0
-addnode S1 192.168.0.8 81016 1.0
-deletenode S6 192.168.0.205 81695
-addnode S2 192.168.0.8 81017 1.0
-deletenode S6 192.168.0.205 81410
-addnode S6 192.168.0.8 81018 1.0
-addnode S0 192.168.0.8 81019 1.0
-deletenode S5 192.168.0.219 81107
-deletenode S3 192.168.0.222 81879
-deletenode S0 192.168.0.212 81528
-changeweight S5 192.168.0.219 81464 9.0
-addnode S4 192.168.0.8 81020 1.0
-deletenode S3 192.168.0.222 81913
-changeweight S2 192.168.0.218 81733 2.0
-deletenode S1 192.168.0.216 81034
-addnode S0 192.168.0.8 81021 1.0
-changeweight S7 192.168.0.221 81913 6.0
-changeweight S7 192.168.0.221 81334 7.0
-changeweight S0 192.168.0.212 81434 4.0
-deletenode S2 192.168.0.218 81609
-addnode S5 192.168.0.8 81022 1.0
-changeweight S3 192.168.0.222 81729 1.0
-deletenode S6 192.168.0.205 81985
-changeweight S4 192.168.0.215 81305 1.0
-addnode S7 192.168.0.8 81023 1.0
-addnode S4 192.168.0.8 81024 1.0
-deletenode S2 192.168.0.218 81394
-deletenode S6 192.168.0.205 81893
-changeweight S6 192.168.0.205 81484 6.0
-changeweight S0 192.168.0.212 81745 6.0
-changeweight S7 192.168.0.221 81106 6.0
-addnode S1 192.168.0.8 81025 1.0
-changeweight S3 192.168.0.222 81100 5.0
-changeweight S5 192.168.0.219 81741 6.0
-addnode S1 192.168.0.8 81026 1.0
-deletenode S7 192.168.0.221 81871
-deletenode S6 192.168.0.205 81969
-deletenode S3 192.168.0.222 81146
-deletenode S2 192.168.0.218 81568
-addnode S7 192.168.0.8 81027 1.0
-deletenode S0 192.168.0.212 81581
-addnode S2 192.168.0.8 81028 1.0
-changeweight S6 192.168.0.205 81964 6.0
-deletenode S5 192.168.0.219 81759
-addnode S2 192.168.0.8 81029 1.0
-deletenode S5 192.168.0.219 81194
-changeweight S3 192.168.0.222 81430 5.0
-deletenode S1 192.168.0.216 81639
-deletenode S6 192.168.0.205 81366
-addnode S0 192.168.0.8 81030 1.0
-deletenode S5 192.168.0.219 81957
-deletenode S2 192.168.0.218 81199
-deletenode S4 192.168.0.215 81526
-changeweight S3 192.168.0.222 81102 7.0
-changeweight S2 192.168.0.8 81010 1.0
-changeweight S0 192.168.0.212 81040 7.0
-deletenode S4 192.168.0.215 81330
-addnode S3 192.168.0.8 81031 1.0
-changeweight S6 192.168.0.205 81858 5.0
-addnode S1 192.168.0.8 81032 1.0
-changeweight S4 192.168.0.215 81431 10.0
-deletenode S7 192.168.0.221 81564
-changeweight S0 192.168.0.212 81292 4.0
-addnode S2 192.168.0.8 81033 1.0
-addnode S3 192.168.0.8 81034 1.0
-deletenode S4 192.168.0.215 81659
-changeweight S4 192.168.0.215 81585 7.0
-addnode S1 192.168.0.8 81035 1.0
-changeweight S3 192.168.0.222 81109 1.0
-addnode S6 192.168.0.8 81036 1.0
-deletenode S4 192.168.0.215 81867
-deletenode S0 192.168.0.212 81925
-addnode S7 192.168.0.8 81037 1.0
-deletenode S1 192.168.0.216 81983
-addnode S1 192.168.0.8 81038 1.0
-deletenode S0 192.168.0.212 81122
-deletenode S2 192.168.0.218 81927
-changeweight S1 192.168.0.216 81474 2.0
-deletenode S5 192.168.0.219 81801
-changeweight S7 192.168.0.221 81157 3.0
-addnode S4 192.168.0.8 81039 1.0
-deletenode S6 192.168.0.205 81567
-addnode S5 192.168.0.8 81040 1.0
-addnode S1 192.168.0.8 81041 1.0
-changeweight S7 192.168.0.221 81932 9.0
-deletenode S0 192.168.0.212 81318
-addnode S3 192.168.0.8 81042 1.0
-addnode S7 192.168.0.8 81043 1.0
-addnode S2 192.168.0.8 81044 1.0
-addnode S1 192.168.0.8 81045 1.0
-addnode S4 192.168.0.8 81046 1.0
-addnode S0 192.168.0.8 81047 1.0
-addnode S4 192.168.0.8 81048 1.0
-deletenode S1 192.168.0.216 81910
-deletenode S1 192.168.0.216 81838
-addnode S3 192.168.0.8 81049 1.0
-deletenode S6 192.168.0.205 81007
-addnode S5 192.168.0.8 81050 1.0
-addnode S3 192.168.0.8 81051 1.0
-deletenode S4 192.168.0.215 81151
-addnode S4 192.168.0.8 81052 1.0
-deletenode S2 192.168.0.218 81920
-deletenode S3 192.168.0.222 81549
-changeweight S4 192.168.0.215 81930 9.0
-addnode S2 192.168.0.8 81053 1.0
-deletenode S4 192.168.0.215 81778
-addnode S6 192.168.0.8 81054 1.0
-changeweight S0 192.168.0.212 81237 1.0
-deletenode S2 192.168.0.218 81679
-addnode S6 192.168.0.8 81055 1.0
-changeweight S2 192.168.0.218 81642 4.0
-changeweight S7 192.168.0.221 81900 4.0
-deletenode S4 192.168.0.215 81766
-changeweight S1 192.168.0.216 81501 2.0
-changeweight S1 192.168.0.216 81410 5.0
-deletenode S4 192.168.0.215 81862
-addnode S6 192.168.0.8 81056 1.0
-addnode S0 192.168.0.8 81057 1.0
-changeweight S4 192.168.0.215 81535 5.0
-changeweight S0 192.168.0.212 81106 8.0
-changeweight S7 192.168.0.221 81591 6.0
-changeweight S6 192.168.0.205 81173 2.0
-deletenode S1 192.168.0.216 81723
-addnode S1 192.168.0.8 81058 1.0
-changeweight S0 192.168.0.212 81147 10.0
-addnode S5 192.168.0.8 81059 1.0
-addnode S0 192.168.0.8 81060 1.0
-addnode S4 192.168.0.8 81061 1.0
-addnode S4 192.168.0.8 81062 1.0
-changeweight S6 192.168.0.205 81320 10.0
-deletenode S6 192.168.0.205 81026
-addnode S0 192.168.0.8 81063 1.0
-addnode S3 192.168.0.8 81064 1.0
-changeweight S1 192.168.0.216 81079 2.0
-deletenode S2 192.168.0.218 81975
-changeweight S1 192.168.0.216 81876 10.0
-deletenode S3 192.168.0.222 81471
-addnode S2 192.168.0.8 81065 1.0
-addnode S3 192.168.0.8 81066 1.0
-changeweight S0 192.168.0.212 81403 10.0
-addnode S7 192.168.0.8 81067 1.0
-changeweight S5 192.168.0.219 81454 5.0
-changeweight S7 192.168.0.221 81841 9.0
-deletenode S4 192.168.0.215 81917
-deletenode S3 192.168.0.222 81574
-changeweight S5 192.168.0.219 81183 3.0
-deletenode S4 192.168.0.215 81152
-changeweight S5 192.168.0.219 81021 4.0
-addnode S3 192.168.0.8 81068 1.0
-deletenode S2 192.168.0.218 81797
-changeweight S4 192.168.0.215 81866 5.0
-addnode S1 192.168.0.8 81069 1.0
-changeweight S6 192.168.0.205 81224 5.0
-addnode S7 192.168.0.8 81070 1.0
-deletenode S6 192.168.0.205 81247
-addnode S7 192.168.0.8 81071 1.0
-changeweight S7 192.168.0.221 81504 6.0
-changeweight S2 192.168.0.218 81541 5.0
-deletenode S2 192.168.0.218 81711
-addnode S4 192.168.0.8 81072 1.0
-addnode S4 192.168.0.8 81073 1.0
-changeweight S6 192.168.0.205 81102 9.0
-deletenode S4 192.168.0.215 81838
-deletenode S4 192.168.0.215 81506
-deletenode S4 192.168.0.215 81858
-deletenode S6 192.168.0.205 81584
-changeweight S5 192.168.0.219 81279 8.0
-deletenode S4 192.168.0.215 81127
-deletenode S0 192.168.0.212 81227
-deletenode S6 192.168.0.205 81613
-addnode S3 192.168.0.8 81074 1.0
-changeweight S7 192.168.0.221 81547 6.0
-deletenode S5 192.168.0.219 81367
-addnode S3 192.168.0.8 81075 1.0
-changeweight S4 192.168.0.215 81274 2.0
-deletenode S3 192.168.0.222 81669
-deletenode S6 192.168.0.205 81258
-addnode S6 192.168.0.8 81076 1.0
-changeweight S6 192.168.0.205 81161 5.0
-deletenode S4 192.168.0.215 81870
-changeweight S7 192.168.0.221 81598 7.0
-changeweight S3 192.168.0.222 81940 1.0
-changeweight S6 192.168.0.205 81241 9.0
-deletenode S6 192.168.0.205 81698
-addnode S6 192.168.0.8 81077 1.0
-addnode S7 192.168.0.8 81078 1.0
-deletenode S3 192.168.0.222 81744
-deletenode S1 192.168.0.216 81316
-deletenode S5 192.168.0.219 81873
-deletenode S7 192.168.0.221 81699
-changeweight S6 192.168.0.205 81765 4.0
-deletenode S1 192.168.0.216 81769
-deletenode S1 192.168.0.216 81375
-deletenode S4 192.168.0.215 81265
-deletenode S3 192.168.0.222 81180
-deletenode S7 192.168.0.221 81227
-changeweight S2 192.168.0.218 81125 2.0
-addnode S2 192.168.0.8 81079 1.0
-addnode S3 192.168.0.8 81080 1.0
-deletenode S7 192.168.0.221 81936
-deletenode S3 192.168.0.222 81635
-changeweight S6 192.168.0.205 81992 1.0
-deletenode S4 192.168.0.215 81411
-addnode S4 192.168.0.8 81081 1.0
-deletenode S1 192.168.0.216 81873
-changeweight S0 192.168.0.212 81222 2.0
-changeweight S1 192.168.0.216 81283 8.0
-addnode S6 192.168.0.8 81082 1.0
-addnode S5 192.168.0.8 81083 1.0
-addnode S7 192.168.0.8 81084 1.0
-addnode S6 192.168.0.8 81085 1.0
-deletenode S1 192.168.0.216 81718
-changeweight S3 192.168.0.222 81174 10.0
-addnode S1 192.168.0.8 81086 1.0
-changeweight S3 192.168.0.222 81541 6.0
-addnode S6 192.168.0.8 81087 1.0
-deletenode S6 192.168.0.205 81697
-changeweight S4 192.168.0.215 81166 5.0
-addnode S5 192.168.0.8 81088 1.0
-deletenode S2 192.168.0.218 81023
-deletenode S1 192.168.0.216 81891
-changeweight S3 192.168.0.222 81629 4.0
-changeweight S0 192.168.0.212 81062 8.0
-deletenode S3 192.168.0.222 81822
-changeweight S1 192.168.0.216 81678 2.0
-addnode S3 192.168.0.8 81089 1.0
-deletenode S0 192.168.0.212 81906
-deletenode S5 192.168.0.219 81701
-addnode S7 192.168.0.8 81090 1.0
-addnode S4 192.168.0.8 81091 1.0
-addnode S0 192.168.0.8 81092 1.0
-changeweight S1 192.168.0.216 81560 7.0
-changeweight S0 192.168.0.212 81924 4.0
-changeweight S5 192.168.0.219 81849 6.0
-deletenode S2 192.168.0.218 81463
-deletenode S4 192.168.0.215 81076
-changeweight S7 192.168.0.221 81406 6.0
-deletenode S3 192.168.0.222 81433
-changeweight S1 192.168.0.216 81977 5.0
-changeweight S0 192.168.0.212 81486 1.0
-changeweight S7 192.168.0.221 81381 4.0
-addnode S1 192.168.0.8 81093 1.0
-addnode S0 192.168.0.8 81094 1.0
-addnode S4 192.168.0.8 81095 1.0
-addnode S6 192.168.0.8 81096 1.0
-addnode S1 192.168.0.8 81097 1.0
-addnode S7 192.168.0.8 81098 1.0
-addnode S3 192.168.0.8 81099 1.0
-addnode S0 192.168.0.8 81100 1.0
-changeweight S0 192.168.0.212 81288 5.0
-changeweight S5 192.168.0.219 81944 1.0
-addnode S1 192.168.0.8 81101 1.0
-changeweight S0 192.168.0.212 81268 9.0
-changeweight S3 192.168.0.222 81023 6.0
-changeweight S7 192.168.0.221 81118 4.0
-addnode S3 192.168.0.8 81102 1.0
-addnode S6 192.168.0.8 81103 1.0
-changeweight S7 192.168.0.221 81916 5.0
-deletenode S0 192.168.0.212 81982
-deletenode S4 192.168.0.215 81803
-changeweight S5 192.168.0.219 81217 4.0
-changeweight S5 192.168.0.219 81846 3.0
-changeweight S4 192.168.0.215 81645 10.0
-changeweight S1 192.168.0.216 81040 4.0
-deletenode S1 192.168.0.216 81883
-addnode S6 192.168.0.8 81104 1.0
-deletenode S1 192.168.0.216 81388
-addnode S6 192.168.0.8 81105 1.0
-deletenode S7 192.168.0.221 81969
-addnode S0 192.168.0.8 81106 1.0
-addnode S6 192.168.0.8 81107 1.0
-changeweight S4 192.168.0.215 81539 3.0
-deletenode S1 192.168.0.216 81283
-changeweight S2 192.168.0.218 81269 7.0
-changeweight S4 192.168.0.215 81040 1.0
-changeweight S6 192.168.0.205 81709 4.0
-changeweight S4 192.168.0.8 81009 2.0
-changeweight S0 192.168.0.212 81868 5.0
-deletenode S6 192.168.0.205 81467
-deletenode S3 192.168.0.222 81603
-changeweight S7 192.168.0.221 81371 2.0
-deletenode S5 192.168.0.219 81789
-deletenode S5 192.168.0.219 81519
-deletenode S3 192.168.0.222 81296
-addnode S7 192.168.0.8 81108 1.0
-deletenode S3 192.168.0.222 81414
-addnode S3 192.168.0.8 81109 1.0
-addnode S7 192.168.0.8 81110 1.0
-changeweight S0 192.168.0.212 81815 3.0
-changeweight S7 192.168.0.221 81413 9.0
-deletenode S5 192.168.0.219 81012
-changeweight S7 192.168.0.221 81251 3.0
-deletenode S1 192.168.0.216 81836
-addnode S0 192.168.0.8 81111 1.0
-addnode S3 192.168.0.8 81112 1.0
-addnode S4 192.168.0.8 81113 1.0
-deletenode S3 192.168.0.222 81237
-addnode S5 192.168.0.8 81114 1.0
-deletenode S2 192.168.0.218 81578
-deletenode S5 192.168.0.219 81033
-addnode S4 192.168.0.8 81115 1.0
-addnode S0 192.168.0.8 81116 1.0
-addnode S1 192.168.0.8 81117 1.0
-changeweight S5 192.168.0.219 81216 8.0
-deletenode S5 192.168.0.219 81317
-deletenode S6 192.168.0.205 81114
-changeweight S1 192.168.0.216 81929 3.0
-changeweight S2 192.168.0.218 81469 7.0
-changeweight S7 192.168.0.221 81919 8.0
-deletenode S4 192.168.0.215 81236
-changeweight S4 192.168.0.215 81760 5.0
-deletenode S0 192.168.0.212 81044
-addnode S7 192.168.0.8 81118 1.0
-deletenode S5 192.168.0.219 81501
-deletenode S5 192.168.0.219 81250
-addnode S3 192.168.0.8 81119 1.0
-deletenode S6 192.168.0.205 81015
-addnode S1 192.168.0.8 81120 1.0
-changeweight S3 192.168.0.222 81482 6.0
-changeweight S1 192.168.0.216 81579 4.0
-deletenode S5 192.168.0.219 81751
-addnode S3 192.168.0.8 81121 1.0
-deletenode S1 192.168.0.216 81566
-deletenode S6 192.168.0.205 81337
-changeweight S0 192.168.0.212 81422 5.0
-changeweight S1 192.168.0.216 81053 7.0
-deletenode S6 192.168.0.205 81966
-addnode S1 192.168.0.8 81122 1.0
-changeweight S7 192.168.0.221 81224 1.0
-deletenode S4 192.168.0.215 81358
-deletenode S7 192.168.0.221 81715
-addnode S1 192.168.0.8 81123 1.0
-deletenode S2 192.168.0.218 81709
-deletenode S7 192.168.0.221 81033
-deletenode S0 192.168.0.212 81772
-changeweight S5 192.168.0.219 81164 2.0
-addnode S4 192.168.0.8 81124 1.0
-changeweight S7 192.168.0.221 81437 2.0
-deletenode S3 192.168.0.222 81937
-changeweight S0 192.168.0.212 81986 10.0
-deletenode S1 192.168.0.216 81952
-addnode S4 192.168.0.8 81125 1.0
-changeweight S4 192.168.0.215 81269 7.0
-deletenode S5 192.168.0.219 81490
-addnode S0 192.168.0.8 81126 1.0
-addnode S6 192.168.0.8 81127 1.0
-addnode S3 192.168.0.8 81128 1.0
-addnode S4 192.168.0.8 81129 1.0
-deletenode S1 192.168.0.216 81921
-deletenode S5 192.168.0.219 81042
-addnode S4 192.168.0.8 81130 1.0
-changeweight S5 192.168.0.219 81088 3.0
-deletenode S7 192.168.0.221 81044
-deletenode S3 192.168.0.222 81016
-deletenode S3 192.168.0.222 81742
-deletenode S3 192.168.0.222 81389
-deletenode S5 192.168.0.219 81703
-deletenode S0 192.168.0.212 81801
-addnode S1 192.168.0.8 81131 1.0
-changeweight S2 192.168.0.218 81652 6.0
-deletenode S2 192.168.0.218 81500
-changeweight S7 192.168.0.221 81507 3.0
-deletenode S1 192.168.0.216 81467
-addnode S4 192.168.0.8 81132 1.0
-addnode S4 192.168.0.8 81133 1.0
-changeweight S0 192.168.0.212 81558 1.0
-deletenode S3 192.168.0.222 81284
-deletenode S1 192.168.0.216 81856
-addnode S5 192.168.0.8 81134 1.0
-addnode S5 192.168.0.8 81135 1.0
-changeweight S6 192.168.0.205 81946 2.0
-changeweight S7 192.168.0.221 81916 2.0
-changeweight S1 192.168.0.8 81101 9.0
-deletenode S4 192.168.0.215 81672
-changeweight S0 192.168.0.212 81426 9.0
-deletenode S1 192.168.0.216 81568
-deletenode S3 192.168.0.222 81524
-changeweight S7 192.168.0.221 81987 10.0
-deletenode S7 192.168.0.221 81192
-addnode S0 192.168.0.8 81136 1.0
-addnode S2 192.168.0.8 81137 1.0
-addnode S5 192.168.0.8 81138 1.0
-deletenode S5 192.168.0.219 81268
-changeweight S5 192.168.0.219 81683 10.0
-deletenode S3 192.168.0.222 81854
-changeweight S2 192.168.0.218 81213 1.0
-deletenode S2 192.168.0.218 81812
-changeweight S1 192.168.0.216 81413 3.0
-addnode S5 192.168.0.8 81139 1.0
-changeweight S4 192.168.0.215 81421 4.0
-addnode S6 192.168.0.8 81140 1.0
-addnode S0 192.168.0.8 81141 1.0
-changeweight S5 192.168.0.219 81008 2.0
-addnode S2 192.168.0.8 81142 1.0
-deletenode S5 192.168.0.219 81132
-changeweight S5 192.168.0.219 81916 5.0
-addnode S6 192.168.0.8 81143 1.0
-addnode S3 192.168.0.8 81144 1.0
-deletenode S3 192.168.0.222 81302
-deletenode S7 192.168.0.221 81219
-addnode S2 192.168.0.8 81145 1.0
-changeweight S7 192.168.0.221 81314 5.0
-deletenode S0 192.168.0.212 81816
-changeweight S2 192.168.0.218 81984 8.0
-addnode S3 192.168.0.8 81146 1.0
-deletenode S1 192.168.0.216 81943
-deletenode S1 192.168.0.216 81208
-changeweight S4 192.168.0.215 81190 9.0
-changeweight S6 192.168.0.205 81060 1.0
-addnode S7 192.168.0.8 81147 1.0
-deletenode S1 192.168.0.216 81642
-addnode S0 192.168.0.8 81148 1.0
-deletenode S0 192.168.0.212 81411
-addnode S7 192.168.0.8 81149 1.0
-deletenode S6 192.168.0.205 81221
-addnode S6 192.168.0.8 81150 1.0
-changeweight S1 192.168.0.216 81088 10.0
-addnode S6 192.168.0.8 81151 1.0
-addnode S7 192.168.0.8 81152 1.0
-deletenode S2 192.168.0.218 81364
-changeweight S4 192.168.0.215 81331 9.0
-deletenode S3 192.168.0.222 81563
-addnode S7 192.168.0.8 81153 1.0
-addnode S1 192.168.0.8 81154 1.0
-deletenode S0 192.168.0.212 81809
-changeweight S3 192.168.0.222 81862 10.0
-changeweight S0 192.168.0.212 81958 10.0
-deletenode S7 192.168.0.221 81942
-addnode S7 192.168.0.8 81155 1.0
-addnode S4 192.168.0.8 81156 1.0
-addnode S6 192.168.0.8 81157 1.0
-changeweight S4 192.168.0.215 81331 3.0
-deletenode S5 192.168.0.219 81243
-deletenode S4 192.168.0.215 81335
-deletenode S0 192.168.0.212 81603
-deletenode S5 192.168.0.219 81665
-changeweight S1 192.168.0.216 81476 5.0
-changeweight S4 192.168.0.215 81310 9.0
-changeweight S4 192.168.0.215 81744 10.0
-addnode S5 192.168.0.8 81158 1.0
-addnode S6 192.168.0.8 81159 1.0
-deletenode S3 192.168.0.222 81801
-addnode S7 192.168.0.8 81160 1.0
-deletenode S2 192.168.0.218 81413
-changeweight S1 192.168.0.216 81478 2.0
-deletenode S4 192.168.0.215 81284
-deletenode S1 192.168.0.216 81832
-changeweight S0 192.168.0.212 81696 1.0
-deletenode S5 192.168.0.219 81284
-changeweight S1 192.168.0.216 81246 7.0
-addnode S6 192.168.0.8 81161 1.0
-changeweight S4 192.168.0.215 81629 9.0
-addnode S0 192.168.0.8 81162 1.0
-deletenode S0 192.168.0.212 81983
-changeweight S6 192.168.0.205 81765 6.0
-deletenode S2 192.168.0.218 81974
-deletenode S0 192.168.0.212 81439
+deletenode S6 192.168.0.205 7675
+deletenode S4 192.168.0.215 7631
+deletenode S5 192.168.0.219 7198
+deletenode S1 192.168.0.216 7347
+changeweight S2 192.168.0.218 7661 3.0
+addnode S6 192.168.0.8 7000 1.0
+addnode S3 192.168.0.8 7001 1.0
+addnode S2 192.168.0.8 7002 1.0
+addnode S0 192.168.0.8 7003 1.0
+deletenode S1 192.168.0.216 7430
+changeweight S3 192.168.0.222 7938 1.0
+addnode S3 192.168.0.8 7004 1.0
+deletenode S1 192.168.0.216 7241
+addnode S3 192.168.0.8 7005 1.0
+deletenode S7 192.168.0.221 7576
+addnode S0 192.168.0.8 7006 1.0
+deletenode S5 192.168.0.219 7102
+addnode S3 192.168.0.8 7007 1.0
+addnode S6 192.168.0.8 7008 1.0
+changeweight S1 192.168.0.216 7719 8.0
+changeweight S0 192.168.0.212 7129 2.0
+deletenode S4 192.168.0.215 7328
+deletenode S1 192.168.0.216 7025
+changeweight S4 192.168.0.215 7212 7.0
+changeweight S4 192.168.0.215 7950 5.0
+deletenode S4 192.168.0.215 7155
+addnode S4 192.168.0.8 7009 1.0
+changeweight S0 192.168.0.212 7902 2.0
+changeweight S7 192.168.0.221 7773 2.0
+addnode S4 192.168.0.8 7010 1.0
+addnode S7 192.168.0.8 7011 1.0
+addnode S7 192.168.0.8 7012 1.0
+addnode S0 192.168.0.8 7013 1.0
+addnode S0 192.168.0.8 7014 1.0
+deletenode S5 192.168.0.219 7344
+deletenode S7 192.168.0.221 7254
+deletenode S2 192.168.0.218 7091
+deletenode S1 192.168.0.216 7702
+addnode S0 192.168.0.8 7015 1.0
+deletenode S3 192.168.0.222 7896
+changeweight S4 192.168.0.215 7340 1.0
+deletenode S0 192.168.0.212 7564
+addnode S6 192.168.0.8 7016 1.0
+addnode S3 192.168.0.8 7017 1.0
+addnode S5 192.168.0.8 7018 1.0
+addnode S1 192.168.0.8 7019 1.0
+deletenode S6 192.168.0.205 7754
+deletenode S2 192.168.0.218 7954
+addnode S6 192.168.0.8 7020 1.0
+changeweight S6 192.168.0.205 7704 8.0
+deletenode S1 192.168.0.216 7787
+addnode S3 192.168.0.8 7021 1.0
+changeweight S2 192.168.0.218 7977 7.0
+deletenode S7 192.168.0.221 7638
+changeweight S4 192.168.0.215 7627 10.0
+addnode S7 192.168.0.8 7022 1.0
+changeweight S7 192.168.0.221 7519 7.0
+changeweight S5 192.168.0.219 7010 5.0
+addnode S7 192.168.0.8 7023 1.0
+addnode S6 192.168.0.8 7024 1.0
+changeweight S3 192.168.0.222 7347 2.0
+addnode S1 192.168.0.8 7025 1.0
+deletenode S4 192.168.0.215 7977
+changeweight S6 192.168.0.205 7711 8.0
+deletenode S0 192.168.0.212 7218
+changeweight S5 192.168.0.219 7446 9.0
+addnode S6 192.168.0.8 7026 1.0
+addnode S2 192.168.0.8 7027 1.0
+deletenode S6 192.168.0.205 7147
+deletenode S4 192.168.0.215 7575
+deletenode S7 192.168.0.221 7398
+changeweight S3 192.168.0.8 7005 8.0
+deletenode S6 192.168.0.205 7385
+deletenode S0 192.168.0.212 7529
+changeweight S5 192.168.0.219 7644 4.0
+addnode S6 192.168.0.8 7028 1.0
+addnode S2 192.168.0.8 7029 1.0
+addnode S1 192.168.0.8 7030 1.0
+addnode S7 192.168.0.8 7031 1.0
+deletenode S7 192.168.0.221 7473
+addnode S4 192.168.0.8 7032 1.0
+deletenode S7 192.168.0.221 7314
+changeweight S4 192.168.0.215 7363 4.0
+addnode S0 192.168.0.8 7033 1.0
+addnode S2 192.168.0.8 7034 1.0
+deletenode S6 192.168.0.205 7495
+addnode S6 192.168.0.8 7035 1.0
+changeweight S5 192.168.0.219 7596 4.0
+addnode S6 192.168.0.8 7036 1.0
+deletenode S4 192.168.0.215 7747
+changeweight S0 192.168.0.212 7987 4.0
+addnode S1 192.168.0.8 7037 1.0
+deletenode S0 192.168.0.212 7241
+deletenode S6 192.168.0.205 7646
+deletenode S3 192.168.0.222 7403
+addnode S3 192.168.0.8 7038 1.0
+changeweight S1 192.168.0.216 7497 8.0
+deletenode S2 192.168.0.218 7434
+changeweight S6 192.168.0.205 7421 1.0
+changeweight S0 192.168.0.212 7845 4.0
+deletenode S0 192.168.0.212 7762
+deletenode S6 192.168.0.205 7625
+changeweight S2 192.168.0.8 7027 3.0
+changeweight S0 192.168.0.212 7345 8.0
+deletenode S5 192.168.0.219 7439
+deletenode S5 192.168.0.219 7051
+addnode S4 192.168.0.8 7039 1.0
+changeweight S6 192.168.0.205 7172 3.0
+addnode S6 192.168.0.8 7040 1.0
+changeweight S1 192.168.0.216 7658 3.0
+deletenode S1 192.168.0.216 7054
+deletenode S7 192.168.0.221 7996
+deletenode S2 192.168.0.218 7268
+deletenode S1 192.168.0.216 7996
+addnode S1 192.168.0.8 7041 1.0
+deletenode S3 192.168.0.222 7769
+addnode S2 192.168.0.8 7042 1.0
+deletenode S2 192.168.0.218 7239
+deletenode S5 192.168.0.219 7137
+addnode S7 192.168.0.8 7043 1.0
+changeweight S1 192.168.0.216 7038 6.0
+addnode S3 192.168.0.8 7044 1.0
+deletenode S6 192.168.0.205 7851
+addnode S1 192.168.0.8 7045 1.0
+changeweight S4 192.168.0.215 7590 2.0
+changeweight S0 192.168.0.212 7466 3.0
+deletenode S2 192.168.0.218 7774
+changeweight S2 192.168.0.218 7799 6.0
+addnode S7 192.168.0.8 7046 1.0
+deletenode S1 192.168.0.216 7259
+addnode S2 192.168.0.8 7047 1.0
+changeweight S4 192.168.0.215 7711 10.0
+addnode S0 192.168.0.8 7048 1.0
+deletenode S0 192.168.0.212 7863
+deletenode S5 192.168.0.219 7190
+changeweight S3 192.168.0.222 7557 6.0
+deletenode S2 192.168.0.218 7149
+addnode S1 192.168.0.8 7049 1.0
+changeweight S6 192.168.0.205 7057 8.0
+changeweight S5 192.168.0.219 7267 9.0
+deletenode S1 192.168.0.216 7247
+deletenode S1 192.168.0.216 7624
+changeweight S3 192.168.0.222 7231 10.0
+changeweight S7 192.168.0.221 7856 6.0
+addnode S5 192.168.0.8 7050 1.0
+addnode S7 192.168.0.8 7051 1.0
+changeweight S0 192.168.0.212 7210 3.0
+changeweight S5 192.168.0.219 7795 5.0
+deletenode S5 192.168.0.219 7455
+changeweight S6 192.168.0.205 7098 10.0
+changeweight S1 192.168.0.216 7003 9.0
+deletenode S4 192.168.0.215 7983
+changeweight S5 192.168.0.219 7865 1.0
+deletenode S1 192.168.0.216 7907
+changeweight S5 192.168.0.219 7694 9.0
+addnode S5 192.168.0.8 7052 1.0
+changeweight S2 192.168.0.218 7317 1.0
+deletenode S4 192.168.0.215 7444
+addnode S1 192.168.0.8 7053 1.0
+deletenode S6 192.168.0.205 7284
+deletenode S7 192.168.0.221 7216
+changeweight S0 192.168.0.212 7422 1.0
+deletenode S0 192.168.0.212 7644
+deletenode S0 192.168.0.212 7293
+deletenode S2 192.168.0.218 7383
+addnode S0 192.168.0.8 7054 1.0
+addnode S3 192.168.0.8 7055 1.0
+addnode S7 192.168.0.8 7056 1.0
+addnode S2 192.168.0.8 7057 1.0
+deletenode S6 192.168.0.205 7972
+changeweight S4 192.168.0.215 7131 3.0
+deletenode S5 192.168.0.219 7511
+changeweight S5 192.168.0.219 7672 8.0
+deletenode S4 192.168.0.215 7865
+deletenode S6 192.168.0.205 7497
+changeweight S0 192.168.0.212 7925 4.0
+changeweight S3 192.168.0.222 7959 1.0
+addnode S4 192.168.0.8 7058 1.0
+addnode S3 192.168.0.8 7059 1.0
+changeweight S4 192.168.0.215 7992 10.0
+addnode S1 192.168.0.8 7060 1.0
+addnode S3 192.168.0.8 7061 1.0
+addnode S1 192.168.0.8 7062 1.0
+addnode S7 192.168.0.8 7063 1.0
+changeweight S0 192.168.0.212 7158 3.0
+addnode S1 192.168.0.8 7064 1.0
+deletenode S4 192.168.0.215 7836
+deletenode S2 192.168.0.218 7765
+deletenode S7 192.168.0.221 7123
+addnode S6 192.168.0.8 7065 1.0
+changeweight S1 192.168.0.216 7565 1.0
+changeweight S2 192.168.0.218 7265 7.0
+deletenode S0 192.168.0.212 7200
+addnode S5 192.168.0.8 7066 1.0
+deletenode S5 192.168.0.219 7059
+deletenode S1 192.168.0.216 7596
+changeweight S5 192.168.0.219 7266 9.0
+deletenode S3 192.168.0.222 7830
+addnode S3 192.168.0.8 7067 1.0
+addnode S1 192.168.0.8 7068 1.0
+addnode S1 192.168.0.8 7069 1.0
+addnode S0 192.168.0.8 7070 1.0
+changeweight S3 192.168.0.222 7290 8.0
+deletenode S5 192.168.0.219 7710
+addnode S5 192.168.0.8 7071 1.0
+changeweight S2 192.168.0.218 7080 7.0
+addnode S0 192.168.0.8 7072 1.0
+addnode S6 192.168.0.8 7073 1.0
+addnode S3 192.168.0.8 7074 1.0
+changeweight S4 192.168.0.215 7961 5.0
+deletenode S1 192.168.0.216 7118
+changeweight S4 192.168.0.215 7094 10.0
+addnode S2 192.168.0.8 7075 1.0
+deletenode S7 192.168.0.221 7594
+deletenode S7 192.168.0.221 7684
+changeweight S1 192.168.0.216 7900 6.0
+deletenode S7 192.168.0.221 7285
+deletenode S7 192.168.0.221 7207
+deletenode S7 192.168.0.221 7331
+deletenode S4 192.168.0.215 7795
+deletenode S3 192.168.0.222 7825
+addnode S0 192.168.0.8 7076 1.0
+changeweight S2 192.168.0.218 7570 9.0
+deletenode S0 192.168.0.212 7474
+changeweight S3 192.168.0.222 7682 7.0
+changeweight S1 192.168.0.8 7037 10.0
+addnode S4 192.168.0.8 7077 1.0
+addnode S0 192.168.0.8 7078 1.0
+addnode S6 192.168.0.8 7079 1.0
+addnode S0 192.168.0.8 7080 1.0
+changeweight S6 192.168.0.205 7401 5.0
+changeweight S2 192.168.0.218 7738 5.0
+addnode S4 192.168.0.8 7081 1.0
+changeweight S5 192.168.0.219 7759 7.0
+deletenode S0 192.168.0.212 7758
+changeweight S7 192.168.0.221 7612 10.0
+changeweight S7 192.168.0.221 7866 5.0
+deletenode S7 192.168.0.221 7156
+deletenode S6 192.168.0.205 7950
+addnode S6 192.168.0.8 7082 1.0
+changeweight S0 192.168.0.212 7179 5.0
+changeweight S0 192.168.0.212 7651 1.0
+deletenode S5 192.168.0.219 7008
+addnode S1 192.168.0.8 7083 1.0
+addnode S7 192.168.0.8 7084 1.0
+addnode S4 192.168.0.8 7085 1.0
+addnode S3 192.168.0.8 7086 1.0
+addnode S1 192.168.0.8 7087 1.0
+deletenode S3 192.168.0.222 7492
+deletenode S0 192.168.0.212 7993
+addnode S3 192.168.0.8 7088 1.0
+addnode S0 192.168.0.8 7089 1.0
+changeweight S5 192.168.0.219 7301 6.0
+deletenode S6 192.168.0.8 7020
+addnode S7 192.168.0.8 7090 1.0
+changeweight S2 192.168.0.218 7065 10.0
+changeweight S3 192.168.0.222 7960 9.0
+deletenode S7 192.168.0.221 7163
+deletenode S3 192.168.0.222 7182
+deletenode S0 192.168.0.212 7879
+deletenode S5 192.168.0.219 7974
+addnode S7 192.168.0.8 7091 1.0
+addnode S7 192.168.0.8 7092 1.0
+deletenode S7 192.168.0.221 7329
+deletenode S2 192.168.0.218 7924
+deletenode S7 192.168.0.221 7899
+deletenode S1 192.168.0.216 7905
+deletenode S2 192.168.0.218 7367
+addnode S2 192.168.0.8 7093 1.0
+addnode S5 192.168.0.8 7094 1.0
+changeweight S4 192.168.0.215 7116 4.0
+deletenode S1 192.168.0.216 7391
+deletenode S3 192.168.0.8 7088
+changeweight S2 192.168.0.218 7441 3.0
+deletenode S0 192.168.0.212 7844
+addnode S1 192.168.0.8 7095 1.0
+changeweight S6 192.168.0.205 7031 2.0
+addnode S7 192.168.0.8 7096 1.0
+deletenode S2 192.168.0.218 7881
+changeweight S7 192.168.0.221 7026 9.0
+addnode S1 192.168.0.8 7097 1.0
+addnode S3 192.168.0.8 7098 1.0
+changeweight S1 192.168.0.216 7047 8.0
+addnode S5 192.168.0.8 7099 1.0
+deletenode S0 192.168.0.212 7330
+changeweight S7 192.168.0.221 7689 7.0
+addnode S6 192.168.0.8 7100 1.0
+deletenode S4 192.168.0.215 7229
+deletenode S7 192.168.0.221 7041
+changeweight S7 192.168.0.221 7424 6.0
+changeweight S7 192.168.0.221 7124 8.0
+addnode S7 192.168.0.8 7101 1.0
+changeweight S7 192.168.0.221 7711 1.0
+addnode S7 192.168.0.8 7102 1.0
+addnode S6 192.168.0.8 7103 1.0
+deletenode S7 192.168.0.221 7504
+deletenode S1 192.168.0.8 7068
+addnode S1 192.168.0.8 7104 1.0
+changeweight S0 192.168.0.212 7599 4.0
+deletenode S1 192.168.0.216 7552
+changeweight S5 192.168.0.219 7201 1.0
+addnode S7 192.168.0.8 7105 1.0
+deletenode S5 192.168.0.219 7464
+changeweight S1 192.168.0.216 7768 4.0
+addnode S7 192.168.0.8 7106 1.0
+changeweight S0 192.168.0.212 7871 3.0
+addnode S1 192.168.0.8 7107 1.0
+deletenode S3 192.168.0.222 7347
+addnode S4 192.168.0.8 7108 1.0
+addnode S7 192.168.0.8 7109 1.0
+addnode S3 192.168.0.8 7110 1.0
+deletenode S6 192.168.0.205 7268
+deletenode S3 192.168.0.222 7991
+deletenode S6 192.168.0.205 7553
+changeweight S4 192.168.0.215 7975 9.0
+deletenode S6 192.168.0.205 7187
+changeweight S0 192.168.0.212 7809 10.0
+addnode S6 192.168.0.8 7111 1.0
+addnode S5 192.168.0.8 7112 1.0
+deletenode S4 192.168.0.215 7834
+addnode S1 192.168.0.8 7113 1.0
+addnode S5 192.168.0.8 7114 1.0
+addnode S7 192.168.0.8 7115 1.0
+deletenode S6 192.168.0.205 7275
+deletenode S1 192.168.0.216 7760
+addnode S1 192.168.0.8 7116 1.0
+changeweight S0 192.168.0.212 7493 7.0
+changeweight S0 192.168.0.212 7603 5.0
+changeweight S0 192.168.0.212 7156 7.0
+changeweight S1 192.168.0.216 7520 8.0
+deletenode S0 192.168.0.212 7162
+changeweight S2 192.168.0.218 7612 3.0
+deletenode S7 192.168.0.221 7598
+addnode S6 192.168.0.8 7117 1.0
+deletenode S2 192.168.0.218 7328
+deletenode S7 192.168.0.221 7746
+addnode S1 192.168.0.8 7118 1.0
+deletenode S6 192.168.0.205 7017
+changeweight S6 192.168.0.205 7613 7.0
+changeweight S1 192.168.0.216 7509 2.0
+changeweight S1 192.168.0.216 7981 9.0
+addnode S7 192.168.0.8 7119 1.0
+addnode S5 192.168.0.8 7120 1.0
+addnode S6 192.168.0.8 7121 1.0
+changeweight S1 192.168.0.216 7027 10.0
+changeweight S5 192.168.0.219 7155 1.0
+addnode S6 192.168.0.8 7122 1.0
+deletenode S1 192.168.0.216 7821
+changeweight S1 192.168.0.216 7373 9.0
+deletenode S3 192.168.0.222 7816
+addnode S2 192.168.0.8 7123 1.0
+changeweight S6 192.168.0.205 7880 10.0
+changeweight S0 192.168.0.212 7051 8.0
+changeweight S6 192.168.0.8 7016 6.0
+addnode S1 192.168.0.8 7124 1.0
+addnode S7 192.168.0.8 7125 1.0
+deletenode S1 192.168.0.216 7475
+addnode S5 192.168.0.8 7126 1.0
+deletenode S0 192.168.0.212 7035
+deletenode S6 192.168.0.205 7614
+addnode S6 192.168.0.8 7127 1.0
+addnode S6 192.168.0.8 7128 1.0
+changeweight S4 192.168.0.215 7659 4.0
+deletenode S4 192.168.0.215 7882
+deletenode S1 192.168.0.216 7864
+addnode S7 192.168.0.8 7129 1.0
+changeweight S6 192.168.0.205 7952 8.0
+deletenode S2 192.168.0.218 7972
+addnode S0 192.168.0.8 7130 1.0
+addnode S0 192.168.0.8 7131 1.0
+deletenode S6 192.168.0.205 7617
+changeweight S0 192.168.0.212 7673 6.0
+changeweight S3 192.168.0.222 7506 9.0
+addnode S6 192.168.0.8 7132 1.0
+addnode S4 192.168.0.8 7133 1.0
+changeweight S4 192.168.0.215 7093 2.0
+changeweight S6 192.168.0.205 7450 10.0
+changeweight S5 192.168.0.219 7144 5.0
+addnode S4 192.168.0.8 7134 1.0
+changeweight S3 192.168.0.222 7989 9.0
+addnode S0 192.168.0.8 7135 1.0
+changeweight S3 192.168.0.222 7468 10.0
+addnode S1 192.168.0.8 7136 1.0
+deletenode S7 192.168.0.221 7845
+deletenode S0 192.168.0.212 7052
+deletenode S7 192.168.0.221 7418
+changeweight S2 192.168.0.218 7814 9.0
+addnode S0 192.168.0.8 7137 1.0
+deletenode S0 192.168.0.212 7928
+deletenode S2 192.168.0.218 7002
+deletenode S1 192.168.0.216 7629
+changeweight S1 192.168.0.216 7717 3.0
+deletenode S6 192.168.0.205 7507
+deletenode S5 192.168.0.219 7150
+changeweight S7 192.168.0.221 7401 3.0
+changeweight S0 192.168.0.212 7096 10.0
+addnode S3 192.168.0.8 7138 1.0
+addnode S6 192.168.0.8 7139 1.0
+addnode S6 192.168.0.8 7140 1.0
+changeweight S0 192.168.0.212 7650 3.0
+addnode S1 192.168.0.8 7141 1.0
+deletenode S0 192.168.0.212 7712
+deletenode S5 192.168.0.219 7247
+addnode S5 192.168.0.8 7142 1.0
+changeweight S4 192.168.0.215 7728 3.0
+changeweight S5 192.168.0.219 7130 4.0
+addnode S6 192.168.0.8 7143 1.0
+deletenode S2 192.168.0.218 7619
+deletenode S2 192.168.0.218 7934
+addnode S4 192.168.0.8 7144 1.0
+deletenode S7 192.168.0.221 7776
+changeweight S4 192.168.0.215 7687 7.0
+addnode S4 192.168.0.8 7145 1.0
+changeweight S6 192.168.0.205 7666 10.0
+deletenode S3 192.168.0.222 7910
+addnode S2 192.168.0.8 7146 1.0
+changeweight S3 192.168.0.222 7172 1.0
+changeweight S5 192.168.0.219 7609 6.0
+changeweight S2 192.168.0.218 7976 3.0
+changeweight S4 192.168.0.215 7525 8.0
+addnode S5 192.168.0.8 7147 1.0
+addnode S5 192.168.0.8 7148 1.0
+changeweight S6 192.168.0.8 7040 2.0
+deletenode S0 192.168.0.212 7284
+changeweight S1 192.168.0.216 7232 4.0
+changeweight S0 192.168.0.212 7115 3.0
+addnode S4 192.168.0.8 7149 1.0
+addnode S2 192.168.0.8 7150 1.0
+addnode S6 192.168.0.8 7151 1.0
+deletenode S4 192.168.0.215 7728
+deletenode S5 192.168.0.219 7588
+deletenode S2 192.168.0.218 7764
+deletenode S7 192.168.0.221 7489
+changeweight S6 192.168.0.205 7803 7.0
+addnode S1 192.168.0.8 7152 1.0
+deletenode S5 192.168.0.219 7392
+deletenode S1 192.168.0.216 7243
+changeweight S5 192.168.0.219 7690 10.0
+addnode S6 192.168.0.8 7153 1.0
+deletenode S2 192.168.0.218 7370
+deletenode S1 192.168.0.216 7189
+changeweight S2 192.168.0.218 7277 10.0
+changeweight S4 192.168.0.215 7532 3.0
+changeweight S2 192.168.0.218 7747 5.0
+changeweight S2 192.168.0.218 7229 7.0
+addnode S2 192.168.0.8 7154 1.0
+deletenode S4 192.168.0.215 7030
+addnode S1 192.168.0.8 7155 1.0
+changeweight S3 192.168.0.222 7997 7.0
+changeweight S3 192.168.0.222 7097 8.0
+changeweight S5 192.168.0.219 7371 5.0
+deletenode S0 192.168.0.212 7589
+addnode S7 192.168.0.8 7156 1.0
+deletenode S3 192.168.0.222 7106
+deletenode S3 192.168.0.222 7705
+addnode S6 192.168.0.8 7157 1.0
+addnode S1 192.168.0.8 7158 1.0
+changeweight S0 192.168.0.212 7994 1.0
+changeweight S4 192.168.0.215 7647 2.0
+addnode S7 192.168.0.8 7159 1.0
+deletenode S6 192.168.0.205 7148
+changeweight S5 192.168.0.219 7332 7.0
+changeweight S6 192.168.0.205 7357 1.0
+deletenode S3 192.168.0.222 7226
+changeweight S6 192.168.0.205 7435 2.0
+changeweight S6 192.168.0.205 7821 9.0
+addnode S0 192.168.0.8 7160 1.0
+changeweight S0 192.168.0.212 7892 9.0
+addnode S0 192.168.0.8 7161 1.0
+addnode S5 192.168.0.8 7162 1.0
+addnode S7 192.168.0.8 7163 1.0
+addnode S3 192.168.0.8 7164 1.0
+changeweight S2 192.168.0.218 7678 2.0
+addnode S2 192.168.0.8 7165 1.0
+deletenode S3 192.168.0.222 7933
+changeweight S3 192.168.0.222 7417 1.0
+addnode S1 192.168.0.8 7166 1.0
+deletenode S2 192.168.0.218 7246
+changeweight S4 192.168.0.215 7683 6.0
+addnode S2 192.168.0.8 7167 1.0
+changeweight S5 192.168.0.219 7736 1.0
+changeweight S4 192.168.0.215 7670 10.0
+deletenode S1 192.168.0.216 7888
+addnode S2 192.168.0.8 7168 1.0
+changeweight S7 192.168.0.221 7236 8.0
+addnode S0 192.168.0.8 7169 1.0
+changeweight S7 192.168.0.221 7155 8.0
+addnode S7 192.168.0.8 7170 1.0
+changeweight S2 192.168.0.218 7183 7.0
+deletenode S3 192.168.0.222 7853
+changeweight S4 192.168.0.215 7702 2.0
+deletenode S7 192.168.0.221 7482
+deletenode S5 192.168.0.219 7839
+deletenode S1 192.168.0.216 7000
+deletenode S7 192.168.0.221 7898
+changeweight S2 192.168.0.218 7388 10.0
+addnode S7 192.168.0.8 7171 1.0
+addnode S6 192.168.0.8 7172 1.0
+addnode S7 192.168.0.8 7173 1.0
+deletenode S7 192.168.0.221 7921

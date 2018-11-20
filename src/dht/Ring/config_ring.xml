@@ -13,24 +13,6 @@
     </port>
     <nodes>
         <node>
-            <ip>192.168.0.201</ip>
-        </node>
-        <node>
-            <ip>192.168.0.202</ip>
-        </node>
-        <node>
-            <ip>192.168.0.203</ip>
-        </node>
-        <node>
-            <ip>192.168.0.204</ip>
-        </node>
-        <node>
-            <ip>192.168.0.205</ip>
-        </node>
-        <node>
-            <ip>192.168.0.206</ip>
-        </node>
-        <node>
             <ip>192.168.0.207</ip>
         </node>
         <node>
@@ -42,6 +24,25 @@
         <node>
             <ip>192.168.0.210</ip>
         </node>
+        <node>
+            <ip>192.168.0.212</ip>
+        </node>
+        <node>
+            <ip>192.168.0.214</ip>
+        </node>
+        <node>
+            <ip>192.168.0.215</ip>
+        </node>
+        <node>
+            <ip>192.168.0.216</ip>
+        </node>
+        <node>
+            <ip>192.168.0.217</ip>
+        </node>
+        <node>
+            <ip>192.168.0.218</ip>
+        </node>
     </nodes>
+
 
 </Ring>

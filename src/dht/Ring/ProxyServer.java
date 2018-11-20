@@ -158,11 +158,9 @@ public class ProxyServer extends PhysicalNode {
 		try {
 			writer = new BufferedWriter(new FileWriter(path), 32768);
 			String[] availableCommands = {"add1", "add2", "remove1", "remove2", "loadbalance"};
-			String[] availableIPs = {"192.168.0.211","192.168.0.212","192.168.0.213","192.168.0.214",
-					"192.168.0.215","192.168.0.216","192.168.0.217","192.168.0.218","192.168.0.219","192.168.0.220",
-					"192.168.0.221", "192.168.0.222","192.168.0.223","192.168.0.224","192.168.0.225",
-					"192.168.0.226", "192.168.0.227","192.168.0.228","192.168.0.229","192.168.0.230"};
-			String[] availablePorts = {"8001", "8002", "8003", "8004", "8005"};
+			String[] availableIPs = {"192.168.0.219","192.168.0.221"};
+			String[] availablePorts = {"8101", "8102", "8103", "8104", "8105", "8106", "8107", "8108", "8109", "8110",
+					"8111", "8112", "8113", "8114", "8115", "8116", "8117", "8118", "8119", "8120"};
 			ArrayList<String> availablePNodes = new ArrayList<>();
 			for (String ip : availableIPs){
 				for (String port : availablePorts){
@@ -563,9 +561,10 @@ public class ProxyServer extends PhysicalNode {
 		
 		//Initialize the ring cluster
 		proxy.initializeRing();
+		proxy.CCcommands();
 		proxy.initializeDataNode();
 		
-		proxy.CCcommands();
+
 		//System.out.println(proxy.loadBalance(-13, 320));
 		DataStore dataStore = new DataStore();
 		int port = 9091;
