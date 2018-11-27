@@ -38,13 +38,52 @@ public class StartRing
             //System.out.println(ip + " " +port);
             for (int j = 0; j < each_machine_physical; j++)
             {
-                String parametors = ip + " " + (port + j);
+                String backup1 = "", backup2 = "";
+                String parametors = ip + " " + (port + j) + " ";
+                if(j < each_machine_physical - 2)
+                {
+                    backup1 = ip + " " + (port + j + 1) + " ";
+                    backup2 = ip + " " + (port + j + 2) + " ";
+                }
+                else if(j == each_machine_physical - 2 && i < physical_machine - 1)
+                {
+                    String next_ip = listOfNodes.get(i + 1).element("ip").getStringValue();
+                    int next_port = Integer.parseInt(listOfNodes.get(i + 1).element("port").getStringValue());
+                    backup1 = ip + " " + (port + j + 1) + " ";
+                    backup2 = next_ip + " " + next_port + " ";
+                }
+                else if(j == each_machine_physical - 1 && i < physical_machine - 1)
+                {
+                    String next_ip = listOfNodes.get(i + 1).element("ip").getStringValue();
+                    int next_port = Integer.parseInt(listOfNodes.get(i + 1).element("port").getStringValue());
+                    backup1 = next_ip + " " + next_port + " ";
+                    backup2 = next_ip + " " + (next_port + 1) + " ";
+                }
+                else if(j == each_machine_physical - 2 && i == physical_machine - 1)
+                {
+                    String next_ip = listOfNodes.get(0).element("ip").getStringValue();
+                    int next_port = Integer.parseInt(listOfNodes.get(0).element("port").getStringValue());
+                    backup1 = ip + " " + (port + j + 1) + " ";
+                    backup2 = next_ip + " " + next_port + " ";
+                }
+                else if(j == each_machine_physical - 1 && i == physical_machine - 1)
+                {
+                    String next_ip = listOfNodes.get(0).element("ip").getStringValue();
+                    int next_port = Integer.parseInt(listOfNodes.get(0).element("port").getStringValue());
+                    backup1 = next_ip + " " +  next_port + " ";
+                    backup2 = next_ip + " " +(next_port + 1) + " ";
+                }
+                else
+                {
+                    System.out.println("Unexpected location!!!");
+                    System.exit(1);
+                }
                 if (i == 0 && j == 0)
-                    command1 = "cd " + path + " && java " + variables + shpath + parametors;
+                    command1 = "cd " + path + " && java " + variables + shpath + parametors + backup1 + backup2;
                 else
                 {
                     String log = ip + "_" + (port + j) + ".log";
-                    String command = " cd " + path + " && java " + variables + shpath + parametors + " > " + log + " 2>&1 & \n";
+                    String command = "cd " + path + " && java " + variables + shpath + parametors + backup1 + backup2 + " > " + log + " 2>&1 & \n";
                     System.out.println(command);
                     writer.write(command);
                 }
