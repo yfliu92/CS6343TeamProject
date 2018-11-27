@@ -16,8 +16,8 @@ public class GenerateControlClientCommandUtil {
     //    tip += "\ndeletenode <subClusterId> <IP> <Port>  //example: deletenode S0 localhost 689";
 //    tip += "\naddnode <subClusterId> <IP> <Port> <weight>  //example: addnode S0 localhost 689 0.5";
     private static String[] commands = new String[]{"addnode", "deletenode", "changeweight"};
-    private static String newNodeIp = "192.168.0.9";
-    private static int portBase = 81000;
+    private static String newNodeIp = "192.168.0.8";
+    private static int portBase = 7000;
     private static int range = 1000;
     private static Set<Integer> portPool = new HashSet<>();
 

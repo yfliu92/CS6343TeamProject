@@ -79,7 +79,11 @@ public class StartRing
                 else
                 {
                     String log = ip + "_" + (port + j) + ".log";
+<<<<<<< HEAD
                     String command = "cd " + path + " && java " + variables + shpath + parametors + backup1 + backup2 + " > " + log + " 2>&1 & \n";
+=======
+                    String command = " cd " + path + " && java " + variables + shpath + parametors + " > " + log + " 2>&1 & \n";
+>>>>>>> 03ec29630f1b175a5a1e99a84038fb2843bf3103
                     System.out.println(command);
                     writer.write(command);
                 }

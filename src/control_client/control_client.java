@@ -241,7 +241,7 @@ public class control_client {
     		return;
     	}
     	
-    	String[] jsonCommands = {"read", "write", "data", "dht", "info", "writebatch", "updatebatch"};
+    	String[] jsonCommands = {"read", "write", "data", "dht", "info", "run", "writebatch", "updatebatch"};
     	for(String jsonCommand: jsonCommands) {
     		if (command.getAction().equals(jsonCommand)) {
     			sendCommandStr_JsonRes(command, dhtType, input, output);
@@ -269,6 +269,7 @@ public class control_client {
 				while((line = reader.readLine()) != null) {
 					Command lineCommand = new Command(line);
 					sendCommandStr(lineCommand, dhtType, input, output);
+//					Thread.sleep(1000);
 				}
 				reader.close();
   			
@@ -368,6 +369,7 @@ public class control_client {
 				String line = null;
 				while((line = reader.readLine()) != null) {
 					processCommandRush(line);
+//					Thread.sleep(1000);
 				}
 				reader.close();
   			
@@ -455,6 +457,16 @@ public class control_client {
                     .add("parameters", params)
                     .build();
 		}
+		else if (command.getAction().equals("run")) {
+            params = Json.createObjectBuilder()
+                    .add("operation", command.getCommandSeries().get(0))
+                    .build();
+
+            jobj = Json.createObjectBuilder()
+                    .add("method", "run")
+                    .add("parameters", params)
+                    .build();
+		}
 		else if (command.getAction().equals("help")) {
 			System.out.println(getHelpText(2));
 			return;
@@ -530,6 +542,7 @@ public class control_client {
     	switch(dhtType) {
 	    	case 1:
 	    		tip = "\nhelp";
+	    		tip += "\nrun datanode";
 	    		tip += "\nloadcommand <path> | example: loadcommand /dht/Ring/ring_CCcommands.txt";
 	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <hash>\nremove <hash>";
 	    		tip += "\nloadbalance <delta> <hash>";
@@ -538,6 +551,7 @@ public class control_client {
 	    		break;
 	    	case 2:
 	    		tip = "\nhelp";
+	    		tip += "\nrun datanode";
 	    		tip += "\nloadcommand <path> | example: loadcommand /dht/rush/cephControlClient.txt";
 	    		tip += "\naddnode <subClusterId> <IP> <Port> <weight> | example: addnode S0 localhost 689 0.5";
 	    		tip += "\ndeletenode <subClusterId> <IP> <Port> | example: deletenode S0 localhost 689";
@@ -549,6 +563,7 @@ public class control_client {
 	    		break;
 	    	case 3:
 	    		tip = "\nhelp";
+	    		tip += "\nrun datanode";
 	    		tip += "\nloadcommand <path> | example: loadcommand /dht/elastic_DHT_centralized/elastic_CCcommands.txt";
 	    		tip += "\nadd <IP> <Port>\nadd <IP> <Port> <start> <end>\nremove <IP> <Port>";
 	    		tip += "\nloadbalance <fromIP> <fromPort> <toIP> <toPort> <numOfBuckets>";
