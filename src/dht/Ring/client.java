@@ -13,20 +13,16 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.Map.Entry;
 
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonValue;
 import javax.json.JsonWriter;
 
 import dht.Ring.LookupTable;
 import dht.Ring.VirtualNode;
-import dht.common.Hashing;
 import dht.common.response.Response;
 import dht.server.Command;
 
@@ -84,7 +80,7 @@ public class client {
     public static void main(String[] args) throws Exception {
         System.out.println("==== Welcome to Client !!! =====");
         
-    	String serverAddress = "localhost";
+        String serverAddress = "localhost";
     	int port = 0; 
     	
     	int dhtType = 1;
