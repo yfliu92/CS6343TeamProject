@@ -205,7 +205,7 @@ class ClientHandler extends Thread
             	}
           
             } catch (Exception e) { 
-            	System.out.println("Disconnected by " + s.getPort() + " ---- " + new Date().toString()); 
+            	System.out.println("Disconnected with " + s.getPort() + " ---- " + new Date().toString()); 
 //            	System.out.println("Connection reset at " + s.getPort() + " ---- " + new Date().toString());
 //                e.printStackTrace(); 
         		break;

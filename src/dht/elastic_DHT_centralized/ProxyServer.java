@@ -156,7 +156,7 @@ public class ProxyServer extends Proxy {
         int result = 0;
         for (int i = 0; i < numOfNodes; i++){
             String ip = listOfNodes.get(i).element("ip").getStringValue();
-            if (i > 0) {break;}
+//            if (i > 0) {break;}
 			for (int j = 0; j < portRange; j++){
 //	    		Thread t = new RunDataNode(ip, startPort + j);
 //	    		t.start();
@@ -258,6 +258,13 @@ public class ProxyServer extends Proxy {
 		return input.toUpperCase();
 	}
     
+	public void pushDHTAll() {
+		System.out.println("Beginning to push DHT to all physical nodes");
+		for(PhysicalNode node: super.getLookupTable().getPhysicalNodesMap().values()) {
+			pushDHT(node.getIp(), node.getPort());
+		}
+	}
+    
 	public boolean pushDHT(String serverAddress, int port) {
 		try {
 			ProxyClient_Elastic client = new ProxyClient_Elastic(this);
@@ -331,9 +338,9 @@ public class ProxyServer extends Proxy {
         return jsonObject;
     }
     
-	public String getResponse(String commandStr, Proxy proxy) {
-		System.out.println(commandStr);
-		Command command = new Command(commandStr);
+	public String getResponse(Command command, Proxy proxy) {
+//		System.out.println(commandStr);
+//		Command command = new Command(commandStr);
 		
 		try {
 			if (command.getAction().equals("read")) {
@@ -363,8 +370,8 @@ public class ProxyServer extends Proxy {
 				int toPort = Integer.valueOf(command.getCommandSeries().get(3));
 				int numBuckets = Integer.valueOf(command.getCommandSeries().get(4));
 				
-				pushDHT(fromIP, fromPort);
-				pushDHT(toIP, toPort);
+//				pushDHT(fromIP, fromPort);
+//				pushDHT(toIP, toPort);
 				
 				return proxy.loadBalance(fromIP, fromPort, toIP, toPort, numBuckets).replaceAll("\n", "  ");
 			}
@@ -376,7 +383,7 @@ public class ProxyServer extends Proxy {
 				
 				String result = start == -1 && end == -1 ? proxy.addNode(ip, port) : proxy.addNode(ip, port, start, end);
 				
-				pushDHT(ip, port);
+//				pushDHT(ip, port);
 				
 				return result.replaceAll("\n", "  ");
 			}
@@ -384,7 +391,7 @@ public class ProxyServer extends Proxy {
 				String IP = command.getCommandSeries().get(0);
 				int port = Integer.valueOf(command.getCommandSeries().get(1));
 				String result = proxy.deleteNode(IP, port);
-				pushDHT(IP, port);
+//				pushDHT(IP, port);
 				return result.replaceAll("\n", "  ");
 //				return "remove";
 			}
@@ -411,6 +418,10 @@ public class ProxyServer extends Proxy {
 						int port = Integer.valueOf(command.getCommandSeries().get(2));
 						pushDHT(ip, port);
 						return new Response(true, "DHT pushed for " + ip + " " + port).serialize();
+					}
+					else if (command.getCommandSeries().size() == 1) {
+//						pushDHTAll();
+						return new Response(true, "DHT push to all nodes is being executed").serialize();
 					}
 					else {
 						return new Response(false, "DHT not pushed").serialize();
@@ -485,13 +496,29 @@ public class ProxyServer extends Proxy {
                     	System.out.println("Request received from " + s.getPort() + ": " + msg + " ---- " + new Date().toString());
                     	System.out.println();
                     	
-                    	String response = proxyServer.getResponse(msg, proxy);
+                    	Command command = new Command(msg);
+                    	
+                    	String response = proxyServer.getResponse(command, proxy);
 
                     	output.println(response);
                     	output.flush();
                     	
                         System.out.println("Response sent to " + s.getPort() + ": " + response + " ---- " + new Date().toString());
                         System.out.println();
+                        
+                        if (!response.startsWith("false|")) {
+                            String[] updateCommands = {"add", "remove", "loadbalance"};
+                            for (String cmd: updateCommands) { 
+                            	if (command.getAction().equals(cmd)) {
+                            		pushDHTAll();
+                            		break;
+                            	}
+                            	else if (command.getAction().equals("dht") && command.getCommandSeries().size() == 1 && command.getCommandSeries().get(0).equals("push")) {
+                             		pushDHTAll();
+                            		break;
+                            	}
+                            }
+                        }
                 	}
               
 	            } catch (IOException e) { 
@@ -786,45 +813,6 @@ class ProxyClient_Elastic{
 			System.out.println("command not supported");
 			return;
 		}
-    	
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        JsonWriter writer = Json.createWriter(baos);
-        writer.writeObject(jobj);
-        writer.close();
-        baos.writeTo(outputStream);
-
-        outputStream.write("\n".getBytes());
-        outputStream.flush();
-
-        JsonObject res = parseRequest(input);
-        if (res != null) {
-            System.out.println();
-        	System.out.println("Response received at " + timeStamp + " ---- " + res.toString());
-            if (res.containsKey("status") && res.containsKey("message")) {
-                System.out.println("REPONSE STATUS: " + res.getString("status") + ", " + "message: " + res.getString("message"));
-            }
-            System.out.println();
-         }
-    }
-    
-    public void processCommandDHTPush() throws Exception {
-    	String timeStamp = new Date().toString();
-    	System.out.println("Sending command" + " ---- " + timeStamp);
-    	System.out.println();
-        
-    	Response response = new Response(true, this.proxy.getLookupTable().toJSON(), "Elastic DHT table");
-        JsonObject params = null;
-        JsonObject jobj = null;
-		  params = Json.createObjectBuilder()
-//		  .add("ip", ip)
-//		  .add("port", port)
-		  .add("result", response.toJSON())
-		  .build();
-		
-		  jobj = Json.createObjectBuilder()
-		  .add("method", "dhtpush")
-		  .add("parameters", params)
-		  .build();
     	
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JsonWriter writer = Json.createWriter(baos);

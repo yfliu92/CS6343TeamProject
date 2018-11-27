@@ -38,7 +38,9 @@ import java.io.FileWriter;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
@@ -394,6 +396,7 @@ public class control_client {
     	System.out.println("Sending command" + " ---- " + timeStamp);
     	System.out.println();
         
+    	JsonObjectBuilder paramsBuilder = null;
         JsonObject params = null;
         JsonObject jobj = null;
 		if(command.getAction().equals("addnode")) {
@@ -468,6 +471,22 @@ public class control_client {
             jobj = Json.createObjectBuilder()
                     .add("method", "run")
                     .add("parameters", params)
+                    .build();
+		}
+		else if (command.getAction().equals("dht")) {
+            paramsBuilder = Json.createObjectBuilder()
+                    .add("operation", command.getCommandSeries().get(0));
+		            if (command.getCommandSeries().size() > 1) {
+		            	JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+		            	for(String item: command.getCommandSeries()) {
+		            		jsonArrayBuilder.add(item);
+		            	}
+		            	paramsBuilder.add("series", jsonArrayBuilder.build());
+		            }
+                    
+            jobj = Json.createObjectBuilder()
+                    .add("method", "dht")
+                    .add("parameters", paramsBuilder.build())
                     .build();
 		}
 		else if (command.getAction().equals("help")) {

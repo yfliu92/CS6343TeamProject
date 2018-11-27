@@ -9,6 +9,7 @@ import dht.rush.utils.StreamUtil;
 import dht.server.Command;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonWriter;
@@ -23,6 +24,8 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 public class CentralServer {
     private Cluster root;
@@ -88,11 +91,8 @@ public class CentralServer {
         if (root == null) {
         	return;
         }
-//        System.out.println("root" + root);
-        
+    
         try {
-//        	System.out.println("dht push root");
-//        	System.out.println(root.toJSON());
         	if (!root.getId().equals("R") && !root.getPort().equals("")) {
         		pushDHT(root.getIp(), Integer.valueOf(root.getPort()));
         		System.out.println("DHT successfully pushed to Data Node " + root.getIp() + ":" + root.getPort());
@@ -190,8 +190,10 @@ public class CentralServer {
         final BufferedReader input;
         final PrintWriter output;
 	    final Socket s;
+	    final CentralServer cs;
 	  
-	    public ClientHandler(Socket s, InputStream inputStream, OutputStream outputStream, BufferedReader input, PrintWriter output) {
+	    public ClientHandler(CentralServer cs, Socket s, InputStream inputStream, OutputStream outputStream, BufferedReader input, PrintWriter output) {
+	    	this.cs = cs;
 	    	this.s = s; 
 	    	this.inputStream = inputStream;
 	        this.outputStream = outputStream;
@@ -226,10 +228,16 @@ public class CentralServer {
                     	System.out.println();
                     	
                       if (requestObject != null) {
-	                      ServerCommand command = dispatchCommand(requestObject);
+	                      ServerCommand command = dispatchCommand(requestObject, this.cs);
 	                      command.setInputStream(inputStream);
 	                      command.setOutputStream(outputStream);
 	                      command.run();
+	                      
+	                      JsonObject params = requestObject.getJsonObject("parameters");
+	                      String operation = params.getString("operation");
+	                      if (operation.equals("push") && params.containsKey("series")) {
+	                    	  this.cs.initializeDataNode(this.cs.root);
+	                      }
 	                  }
                 	}
               
@@ -276,7 +284,7 @@ public class CentralServer {
 		        PrintWriter output = new PrintWriter(outputStream, true);
 
 //                Thread t = server.new ClientHandler(s, inputStream, outputStream, input, output); 
-                Thread t = new ClientHandler(s, inputStream, outputStream, input, output); 
+                Thread t = new ClientHandler(this, s, inputStream, outputStream, input, output); 
 
                 t.start(); 
                   
@@ -333,7 +341,7 @@ public class CentralServer {
 //        }
 //    }
 
-    private ServerCommand dispatchCommand(JsonObject requestObject) throws IOException {
+    private ServerCommand dispatchCommand(JsonObject requestObject, CentralServer server) throws IOException {
         String method = requestObject.getString("method").toLowerCase();
         ServerCommand serverCommand = null;
         JsonObject params = null;
@@ -405,8 +413,15 @@ public class CentralServer {
             	System.out.println("DHT fetch command");
             	serverCommand = new GetDHTCommand();
             	params = requestObject.getJsonObject("parameters");
-            	((GetDHTCommand) serverCommand).setFetchType(params.getString("fetchtype"));
+            	JsonArray jsonCommandSeries = params.getJsonArray("series");
+            	List<String> commandSeries = new LinkedList<String>();
+            	for(int k = 0; k < jsonCommandSeries.size(); k++) {
+            		commandSeries.add(jsonCommandSeries.getString(k));
+            	}
+            	((GetDHTCommand) serverCommand).setOperation(params.getString("operation"));
+            	((GetDHTCommand) serverCommand).setCommandSeries(commandSeries);
             	((GetDHTCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+            	((GetDHTCommand) serverCommand).setCentralServer(server);
         }
         else {
                 System.out.println("Unknown Request " + method.toLowerCase());
