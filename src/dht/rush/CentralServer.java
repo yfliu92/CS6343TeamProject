@@ -127,7 +127,7 @@ public class CentralServer {
 	    	Thread.sleep(1000);
 			if (connected) {
 				
-				System.out.println("Connected to Data Node Server at " + serverAddress + " " + port);
+				System.out.println("Connected to Data Node Server at " + serverAddress + ":" + port);
 				
 				JsonObject jobj = new Response(true, this.clusterStructureMap.toJSON(), "dht push").toJSON();
 				
@@ -153,11 +153,8 @@ public class CentralServer {
 		            System.out.println();
 		         }
 				
-//		        Thread.sleep(3000);
-//				client.processCommand(1, "dht push");
-//				client.processCommand(1, "exit");
-//				client.socket.close();
-//				System.out.println("Disconnected to Data Node Server at " + serverAddress + " " + port);
+		        client.disconnectServer();
+//		        System.out.println("Disconnected with " + serverAddress + ":" + port);
 				
 				return true;
 			}
@@ -463,7 +460,17 @@ class ProxyClient_Rush{
 		}
     }
     
-    
+    public void disconnectServer() {
+    	try {
+    		
+    		this.input.close();
+    		this.output.close();
+    		this.socket.close();
+    	}
+    	catch (Exception e) {
+//    		e.printStackTrace();
+    	}
+    }
     
     public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
     	String timeStamp = new Date().toString();
