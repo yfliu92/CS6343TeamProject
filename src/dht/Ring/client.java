@@ -256,7 +256,7 @@ class RWClient {
 			  .build();
 			
 			  jobj = Json.createObjectBuilder()
-			  .add("method", "addNode")
+			  .add("method", "addnode")
 			  .add("parameters", params)
 			  .build();
 		}
@@ -268,7 +268,7 @@ class RWClient {
 	          .build();
 	
 	          jobj = Json.createObjectBuilder()
-	          .add("method", "deleteNode")
+	          .add("method", "deletenode")
 	          .add("parameters", params)
 	          .build();
 		}
@@ -278,7 +278,7 @@ class RWClient {
                     .build();
 
             jobj = Json.createObjectBuilder()
-                    .add("method", "getNodes")
+                    .add("method", "getnodes")
                     .add("parameters", params)
                     .build();
 		}

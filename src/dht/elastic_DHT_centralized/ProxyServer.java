@@ -31,6 +31,8 @@ public class ProxyServer extends Proxy {
     public static int LOAD_PER_LOAD = 10;
     
     static Document config;
+    static int port;
+    static String IP;
 
     public ProxyServer(){
         super();
@@ -49,10 +51,10 @@ public class ProxyServer extends Proxy {
             // Read the elements in the configuration file
             Element rootElement = config.getRootElement();
             Element proxyNode = rootElement.element("proxy");
-            String proxyIP = proxyNode.element("ip").getStringValue();
-            int proxyPort = Integer.parseInt(proxyNode.element("port").getStringValue());
+            IP = proxyNode.element("ip").getStringValue();
+            port = Integer.parseInt(proxyNode.element("port").getStringValue());
             // Create the proxy node
-            Proxy proxy = new Proxy(proxyIP, proxyPort);
+            Proxy proxy = new Proxy(IP, port);
             // Get other parameters
             REPLICATION_LEVEL = Integer.parseInt(rootElement.element("replication_level").getStringValue());
             INITIAL_HASH_RANGE = Integer.parseInt(rootElement.element("initial_hash_range").getStringValue());
@@ -521,7 +523,10 @@ public class ProxyServer extends Proxy {
 	    proxyServer.initializeDataNode();
 
 
-        int port = 9093;
+//        int port = 9093;
+        int port = proxyServer.port;
+        String serverAddress = proxyServer.IP;
+        
         ServerSocket ss = new ServerSocket(port);
         System.out.println("Elastic DHT server running at " + String.valueOf(port));
 
@@ -740,7 +745,7 @@ class ProxyClient_Elastic{
 			  .build();
 			
 			  jobj = Json.createObjectBuilder()
-			  .add("method", "addNode")
+			  .add("method", "addnode")
 			  .add("parameters", params)
 			  .build();
 		}
@@ -752,7 +757,7 @@ class ProxyClient_Elastic{
 	          .build();
 	
 	          jobj = Json.createObjectBuilder()
-	          .add("method", "deleteNode")
+	          .add("method", "deletenode")
 	          .add("parameters", params)
 	          .build();
 		}
@@ -762,7 +767,7 @@ class ProxyClient_Elastic{
                     .build();
 
             jobj = Json.createObjectBuilder()
-                    .add("method", "getNodes")
+                    .add("method", "getnodes")
                     .add("parameters", params)
                     .build();
 		}

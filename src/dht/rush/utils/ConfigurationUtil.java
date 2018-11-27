@@ -10,20 +10,20 @@ import java.io.File;
 import java.util.*;
 
 public class ConfigurationUtil {
-    public static ClusterStructureMap parseConfig(String path) {
-        SAXReader reader = new SAXReader();
+    public static ClusterStructureMap parseConfig(Document document) {
+//        SAXReader reader = new SAXReader();
         Cluster root;
 
         Map<String, Cluster> clusterList = new HashMap<>();
 
         try {
-            File file = new File(path);
-            Document document = reader.read(file);
+//            File file = new File(path);
+//            Document document = reader.read(file);
             Element rootElement = document.getRootElement();
 
             // Generate all nodes
-            String rootIp = rootElement.element("ip").getStringValue();
-            String rootPort = rootElement.element("port").getStringValue();
+            String rootIp = rootElement.element("proxy").element("ip").getStringValue();
+            String rootPort = rootElement.element("proxy").element("port").getStringValue();
 
             int placementGroupNumber = Integer.parseInt(rootElement.element("placementGroupNumber").getStringValue());
             RushUtil.setNumberOfPlacementGroup(placementGroupNumber);
@@ -99,7 +99,7 @@ public class ConfigurationUtil {
             fakeParentOfRoot.getCachedTreeStructure().setEpoch(0);
 //            root.setCachedTreeStructure(fakeParentOfRoot.getCachedTreeStructure());
             return fakeParentOfRoot.getCachedTreeStructure();
-        } catch (DocumentException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;

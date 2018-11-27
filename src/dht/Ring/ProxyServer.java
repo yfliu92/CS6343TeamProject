@@ -30,6 +30,8 @@ public class ProxyServer extends PhysicalNode {
 
     public static final int WRITE_BATCH_SIZE = 1000;
     Document config;
+    int port;
+    String IP;
 
 	public ProxyServer(){
 		super();
@@ -44,6 +46,8 @@ public class ProxyServer extends PhysicalNode {
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
             config = reader.read(inputFile);
+            port = Integer.parseInt(config.getRootElement().element("proxy").element("port").getStringValue());
+            IP = config.getRootElement().element("proxy").element("ip").getStringValue();
 
             // Read the elements in the configuration file
 			numOfReplicas = Integer.parseInt(config.getRootElement().element("replicationLevel").getStringValue());
@@ -567,7 +571,9 @@ public class ProxyServer extends PhysicalNode {
 
 		//System.out.println(proxy.loadBalance(-13, 320));
 		DataStore dataStore = new DataStore();
-		int port = 9091;
+//		int port = 9091;
+		int port = proxy.port;
+		String serverAddress = proxy.IP;
         ServerSocket ss = new ServerSocket(port); 
         System.out.println("Ring server running at " + String.valueOf(port));
 //        int[] hashes = {38337,72419,61684,51782,61592,63337,81197,72141,17165,12943};
@@ -773,7 +779,7 @@ class ProxyClient_Ring{
 			  .build();
 			
 			  jobj = Json.createObjectBuilder()
-			  .add("method", "addNode")
+			  .add("method", "addnode")
 			  .add("parameters", params)
 			  .build();
 		}
@@ -785,7 +791,7 @@ class ProxyClient_Ring{
 	          .build();
 	
 	          jobj = Json.createObjectBuilder()
-	          .add("method", "deleteNode")
+	          .add("method", "deletenode")
 	          .add("parameters", params)
 	          .build();
 		}
@@ -795,7 +801,7 @@ class ProxyClient_Ring{
                     .build();
 
             jobj = Json.createObjectBuilder()
-                    .add("method", "getNodes")
+                    .add("method", "getnodes")
                     .add("parameters", params)
                     .build();
 		}

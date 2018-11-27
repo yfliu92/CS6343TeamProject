@@ -2,8 +2,8 @@
 
 <EDHT>
     <proxy>
-        <ip>192.168.0.205</ip>
-        <port>8100</port>
+        <ip>localhost</ip>
+        <port>9093</port>
     </proxy>
     <replication_level>3</replication_level>
     <initial_hash_range>100000</initial_hash_range>

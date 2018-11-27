@@ -9,9 +9,13 @@
     <!-- Number of Commands needed to be generated -->
     <commandNumber>500</commandNumber>
     <!-- Central server ip and the root url for HTTP request  -->
-    <ip>localhost</ip>
+    <!-- <ip>localhost</ip> -->
     <!-- All nodes will use this port as default port number -->
-    <port>8100</port>
+    <!-- <port>9092</port> -->
+    <proxy>
+        <ip>localhost</ip>
+        <port>9092</port>
+    </proxy>
 
     <!-- Number of Replicas -->
     <replicationDegree>3</replicationDegree>

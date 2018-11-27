@@ -3,3 +3,5 @@
 /test/8100directory/
 *.iml
 /out/
+*.class
+*.class

@@ -162,7 +162,7 @@ public class DataNode {
             {
                 s = ss.accept(); 
                   
-                System.out.println("A new client is connected : " + s); 
+                System.out.println("A new client is connected to Data Node: " + s); 
                   
             	BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		        PrintWriter output = new PrintWriter(s.getOutputStream(), true);
@@ -285,7 +285,7 @@ class ClientHandler extends Thread
 				}
 			}
 			else {
-				return new Response(false, "Command not supported").serialize();
+				return new Response(false, "Command not supported by Data Node").serialize();
 			}
     	}
     	catch (Exception e) {
@@ -595,7 +595,7 @@ class ClientHandler extends Thread
 //			  .build();
 //			
 //			  jobj = Json.createObjectBuilder()
-//			  .add("method", "addNode")
+//			  .add("method", "addnode")
 //			  .add("parameters", params)
 //			  .build();
 //		}
@@ -607,7 +607,7 @@ class ClientHandler extends Thread
 //	          .build();
 //	
 //	          jobj = Json.createObjectBuilder()
-//	          .add("method", "deleteNode")
+//	          .add("method", "deletenode")
 //	          .add("parameters", params)
 //	          .build();
 //		}
@@ -617,7 +617,7 @@ class ClientHandler extends Thread
 //                    .build();
 //
 //            jobj = Json.createObjectBuilder()
-//                    .add("method", "getNodes")
+//                    .add("method", "getnodes")
 //                    .add("parameters", params)
 //                    .build();
 //		}

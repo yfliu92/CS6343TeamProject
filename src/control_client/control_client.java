@@ -43,6 +43,9 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
 
+import org.dom4j.Document;
+import org.dom4j.io.SAXReader;
+
 import dht.common.Hashing;
 import dht.server.Command;
 
@@ -402,7 +405,7 @@ public class control_client {
 			  .build();
 			
 			  jobj = Json.createObjectBuilder()
-			  .add("method", "addNode")
+			  .add("method", "addnode")
 			  .add("parameters", params)
 			  .build();
 		}
@@ -414,7 +417,7 @@ public class control_client {
 	          .build();
 	
 	          jobj = Json.createObjectBuilder()
-	          .add("method", "deleteNode")
+	          .add("method", "deletenode")
 	          .add("parameters", params)
 	          .build();
 		}
@@ -424,7 +427,7 @@ public class control_client {
                     .build();
 
             jobj = Json.createObjectBuilder()
-                    .add("method", "getNodes")
+                    .add("method", "getnodes")
                     .add("parameters", params)
                     .build();
 		}
@@ -577,8 +580,13 @@ public class control_client {
     public static void main (String args[]) throws Exception{
     	control_client client = new control_client();
 
-    	String serverAddress = "localhost";
-    	int port = 9090; 
+    	String serverAddress = "";
+    	int port = 0; 
+    	
+    	SAXReader reader = new SAXReader();
+    	File inputFile = null;
+    	Document config = null;
+    	String xmlPath = "";
     	
         System.out.println("==== Welcome to Control Client !!! =====");
         System.out.println("==== There are three types of DHT solutions, please select one(1,2,3) =====\n");
@@ -590,19 +598,34 @@ public class control_client {
         String dhtName = "";
         if(dht.equals("1"))
         {
-            port = 9091;
+//            port = 9091;
+            
             dhtName = "Ring";
+    		xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+//          xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+
         }
         if(dht.equals("2"))
         {
-            port = 8100;
+//            port = 9092;
             dhtName = "Rush";
+            xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+//          xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+
         }
         if(dht.equals("3"))
         {
-            port = 9093;
+//            port = 9093;
             dhtName = "Elastic DHT";
+            xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+//          xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+
         }
+        
+	    inputFile = new File(xmlPath);
+	    config = reader.read(inputFile);
+	    port = Integer.parseInt(config.getRootElement().element("proxy").element("port").getStringValue());
+	    serverAddress = config.getRootElement().element("proxy").element("ip").getStringValue();
         
         int dhtType = Integer.valueOf(dht);
         
