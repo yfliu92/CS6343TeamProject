@@ -55,24 +55,30 @@ public class DataNode {
 	public void buildHashBucket() {
 		if (this.lookupTable.getBucketsTable() != null && this.lookupTable.getBucketsTable().size() > 0) {
 			for(HashMap.Entry<Integer, HashMap<String, String>> bucket: lookupTable.getBucketsTable().entrySet()) {
-				System.out.println("map key first level " + bucket.getKey());
 				int hash = Integer.valueOf(bucket.getKey());
 				for(HashMap.Entry<String, String> pair: bucket.getValue().entrySet()) {
-					System.out.println("current pair key " + hash + ", value " + pair.getValue());
-					String[] physicalNodeInfo = pair.getValue().split("-");
+					String[] physicalNodeInfo = pair.getValue().replaceAll("\"", "").split("-");
 					String IP = physicalNodeInfo[0];
 					int port = Integer.valueOf(physicalNodeInfo[1]);
-					
 					if (port == this.port && IP.equals(this.IP)) 
 					{
-//						System.out.println("buildHashBucket");
-//						System.out.println("virtual node info: " + node.toJSON().toString());
-//						System.out.println("start hash " + startHash + ", end hash " + endHash);
 						hashBucket.add(hash);
 					}
 				}
 			}
 		}
+	}
+	
+	public String findNodeInfo(int rawhash) {
+		String info = "";
+		if (this.lookupTable.getBucketsTable() != null && this.lookupTable.getBucketsTable().size() > 0) {
+			HashMap<String, String> physicalNodes = this.lookupTable.getBucketsTable().get(rawhash);
+			for(HashMap.Entry<String, String> pair: physicalNodes.entrySet()) {
+				info += pair.getValue();
+				info += "; ";
+			}
+		}
+		return info;
 	}
 	
 	public void printTableInfo() {
@@ -109,51 +115,7 @@ public class DataNode {
 		return Arrays.toString(this.hashBucket.toArray());
 	}
     
-	public String findNodeInfo(int rawhash) {
-		String info = "";
-//		for(VirtualNode node: this.lookupTable.getTable()) {
-//			System.out.println("node hash " + node.getHash() + " rawhash " + rawhash);
-//			if (node.getHash() >= rawhash) {
-//				info = node.getPhysicalNodeId();
-//				break;
-//			}
-//		}
-		return info;
-	}
-    
     public static void main(String[] args) throws Exception {
-//        System.out.println("==== Welcome to Data Node !!! =====");
-//        
-//    	String serverAddress = "localhost";
-//    	int port = 9093; 
-//    	String dhtName = "Elastic DHT";
-//    	int dhtType = 3;
-//    	
-//    	DataNode dataNode = new DataNode();
-//        
-//    	DataNodeClient client = new DataNodeClient(dataNode);
-//    	boolean connected = client.connectServer(serverAddress, port);
-//		
-//		if (connected) {
-//			System.out.println("Connected to " + dhtName + " Server ");
-//			
-//			client.sendCommandStr_JsonRes(new Command("dht pull"), client.input, client.output);
-//			
-//		}
-//		else {
-//			System.out.println("Unable to connect to " + dhtName + " server!");
-//			return;
-//		}
-//
-//		Console console = System.console();
-//        while(true)
-//        {
-//        	String cmd = console.readLine("Input your command:");
-//            
-//        	client.processCommand(dhtType, cmd);
-//        }
-    	
-    	
         System.out.println("==== Welcome to Elastic DHT Data Node !!! =====");
         
         DataNode dataNode = null;
@@ -361,88 +323,6 @@ class ClientHandler extends Thread
     	}
 
     }
-    
-//	public String getResponse(String commandStr) {
-//		Command command = new Command(commandStr);
-//		try {
-//
-//			if (command.getAction().equals("dht")) {
-//				String operation = command.getCommandSeries().size() > 0 ? command.getCommandSeries().get(0) : "head";
-//				if (operation.equals("head")) {
-//					return new Response(true, String.valueOf(this.dataNode.getLookupTable().getEpoch()), "Current epoch number:").serialize();
-//				}
-//				else if (operation.equals("pull")) {
-////						return super.getLookupTable().serialize();
-//					return new Response(true, this.dataNode.getLookupTable().toJSON(), "Ring DHT table").serialize();
-//				}
-//				else if (operation.equals("push")) {
-////						return super.getLookupTable().serialize();
-//					
-//					return new Response(true, "ready", "Ring DHT table").serialize();
-//				}
-//				else if (operation.equals("print")) {
-//					this.dataNode.getLookupTable().print();
-//					return new Response(true, "DHT printed on server").serialize();
-//				}
-//				else {
-//					return new Response(false, "Command not supported").serialize();
-//				}
-//			
-//			}
-//			else if (command.getAction().equals("read")) {
-//				String dataStr = command.getCommandSeries().get(0);
-//				int rawhash = Hashing.getHashValFromKeyword(dataStr);
-//				try {
-//					rawhash = Integer.valueOf(dataStr);
-//				}
-//				catch (Exception e) {
-//					
-//				}
-//	
-//				int[] virtualnodeids = this.dataNode.getLookupTable().getTable().getVirtualNodeIds(rawhash);
-//				return new Response(true, Arrays.toString(virtualnodeids), "Virtual Node IDs from Data Node").serialize();
-//			}
-//			else if (command.getAction().equals("write")) {
-//				return "Command not supported";
-//			}
-////				else if (command.getAction().equals("read")) {
-////					String dataStr = command.getCommandSeries().get(0);
-//////					return dataStore.readRes(dataStr);
-////					
-////	    			int rawhash = Hashing.getHashValFromKeyword(dataStr);
-////	    			try {
-////	    				rawhash = Integer.valueOf(dataStr);
-////	    			}
-////	    			catch (Exception e) {
-////	    				
-////	    			}
-////
-////	    			int[] virtualnodeids = super.getLookupTable().getTable().getVirtualNodeIds(rawhash);
-////	    			return new Response(true, Arrays.toString(virtualnodeids), "Virtual Node IDs from server").serialize();
-////					
-////				}
-////				else if (command.getAction().equals("write")) {
-////					String dataStr = command.getCommandSeries().get(0);
-////					int rawhash = Hashing.getHashValFromKeyword(dataStr);
-////					int[] virtualnodeids = super.getLookupTable().getTable().getVirtualNodeIds(rawhash);
-////					
-////					return dataStore.writeRes(dataStr, rawhash, virtualnodeids);
-////				}
-//			else if (command.getAction().equals("loadbalance")) {
-//				return "Command not supported";
-//			}
-//			else if (command.getAction().equals("info")) {
-//				return new Response(true, this.dataNode.getLookupTable().toJSON(), "DHT Table from Server").serialize();
-//			}
-//			else {
-//				return "Command not supported";
-//			}
-//		}
-//		catch (Exception ee) {
-//			return "Illegal command " + ee.toString();
-//		}
-//
-//	}
 }
 
 
