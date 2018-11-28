@@ -7,13 +7,16 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 
 import javax.json.*;
 
+import dht.common.Hashing;
 import dht.common.response.Response;
 import dht.rush.clusters.ClusterStructureMap;
+import dht.server.Command;
 
 public class DataNode {
     private ClusterStructureMap clusterStructureMap;
@@ -21,6 +24,7 @@ public class DataNode {
 	
 	String IP;
 	int port;
+	int epoch = 0;
 	
 	public DataNode() {
 		hashBucket = new HashSet<Integer>();
@@ -42,7 +46,31 @@ public class DataNode {
 	
 	public boolean buildTable(JsonObject data) {
 		clusterStructureMap = new ClusterStructureMap();
-		return clusterStructureMap.buildTable(data);
+		boolean result = clusterStructureMap.buildTable(data);
+		buildHashBucket();
+		return result;
+	}
+	
+	public void buildHashBucket() {
+		if (this.clusterStructureMap != null) {
+//			int startHash = 0;
+//			for(VirtualNode node: this.lookupTable.getTable()) {
+//
+//				String[] physicalNodeId = node.getPhysicalNodeId().split("-");
+//				String IP = physicalNodeId[0];
+//				int port = Integer.valueOf(physicalNodeId[1]);
+////				System.out.println("current node IP " + IP + ", port " + port);
+////				System.out.println("this data node IP " + this.IP + ", port " + this.port);
+//				if (port == this.port && IP.equals(this.IP)) {
+//					int endHash = node.getHash();
+////					System.out.println("buildHashBucket");
+////					System.out.println("virtual node info: " + node.toJSON().toString());
+////					System.out.println("start hash " + startHash + ", end hash " + endHash);
+//					addHashBucket(hashBucket, startHash, endHash);
+//				}
+//				startHash = node.getHash();
+//			}
+		}
 	}
 	
 	public void printTableInfo() {
@@ -72,6 +100,26 @@ public class DataNode {
 	public String getDHTEpoch() {
 		String epoch = this.clusterStructureMap != null ? String.valueOf(this.clusterStructureMap.getEpoch()) : "";
 		return epoch;
+	}
+	
+	public int getDataEpoch() {
+		return this.epoch;
+	}
+	
+	public String getHashBucket() {
+		return Arrays.toString(this.hashBucket.toArray());
+	}
+    
+	public String findNodeInfo(int rawhash) {
+		String info = "";
+//		for(VirtualNode node: this.lookupTable.getTable()) {
+//			System.out.println("node hash " + node.getHash() + " rawhash " + rawhash);
+//			if (node.getHash() >= rawhash) {
+//				info = node.getPhysicalNodeId();
+//				break;
+//			}
+//		}
+		return info;
 	}
     
     public static void main(String[] args) throws Exception {
@@ -255,6 +303,7 @@ class ClientHandler extends Thread
     public String getResponse(JsonObject jsonCommand) {  
     	try {
     		String commandStr = jsonCommand.containsKey("message") ? jsonCommand.getString("message") : "";
+    		Command command = new Command(commandStr);
 			if (commandStr.equals("dht push")) {
 				if (dataNode.buildTable(jsonCommand.getJsonObject("jsonResult"))) {
 					return new Response(true, "DHT updated successfully at " + dataNode.IP + ":" + dataNode.port + ", latest epoch number: " + dataNode.getDHTEpoch()).serialize();
@@ -266,13 +315,57 @@ class ClientHandler extends Thread
 			else if (commandStr.equals("dht head")) {
 				return new Response(true, dataNode.getDHTEpoch(), "DHT Epoch from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();
 			}
-			else if (commandStr.equals("info")) {
+			else if (commandStr.equals("dht pull")) {
 				if (dataNode.getLookupTable() != null) {
 					return new Response(true, dataNode.getLookupTable().toJSON(), "DHT Table from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();
 				}
 				else {
 					return new Response(false, "DHT table not initialized").serialize();
 				}
+			}
+			else if (commandStr.equals("info epoch")) {
+				return new Response(true, String.valueOf(dataNode.getDataEpoch()), "Data Epoch from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();
+			}
+			else if (commandStr.equals("info bucket")) {
+				return new Response(true, dataNode.getHashBucket(), "Hash Bucket from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();
+			}
+			else if (command.getAction().equals("read")) {
+				String dataStr = command.getCommandSeries().get(0);
+				int rawhash = Hashing.getHashValFromKeyword(dataStr);
+				try {
+					rawhash = Integer.valueOf(dataStr);
+				}
+				catch (Exception e) {
+					
+				}
+	
+				boolean isFound = dataNode.hashBucket.contains(rawhash) ? true : false;
+				String message = dataStr + " (hash value: " + rawhash + ") read from this Data Node " + dataNode.IP + ":" + dataNode.port;
+				if (!isFound) {
+					message = dataStr + " (hash value: " + rawhash + ") not found in this Data Node " + dataNode.IP + ":" + dataNode.port + ".";
+					message += " It can be found in Data Node " + dataNode.findNodeInfo(rawhash);
+				}
+				return new Response(true, message).serialize();
+			}
+			else if (command.getAction().equals("write")) {
+				String dataStr = command.getCommandSeries().get(0);
+				int rawhash = Hashing.getHashValFromKeyword(dataStr);
+				try {
+					rawhash = Integer.valueOf(dataStr);
+				}
+				catch (Exception e) {
+					
+				}
+				boolean isFound = dataNode.hashBucket.contains(rawhash) ? true : false;
+				String message = dataStr + " (hash value: " + rawhash + ") written to this Data Node " + dataNode.IP + ":" + dataNode.port;
+				if (!isFound) {
+					message = dataStr + " (hash value: " + rawhash + ") not able to be written to this Data Node " + dataNode.IP + ":" + dataNode.port + ".";
+					message += " It can be written to Data Node " + dataNode.findNodeInfo(rawhash);
+				}
+				if (isFound) {
+					dataNode.epoch++;
+				}
+				return new Response(true, message).serialize();
 			}
 			else {
 				return new Response(false, "Command not supported by Data Node").serialize();

@@ -194,20 +194,13 @@ class RWClient {
     }
     
     public void parseResponse(JsonObject res, Command command, BufferedReader input, PrintWriter output) throws Exception {
-    	if (command.getAction().equals("read")) {
-    		if (command.getCommandSeries().size() > 0) {
-
-    			String physicalnodeid_remote = res.getString("result");
-    			System.out.println("Physical Node Ids from Remote DHT: " + physicalnodeid_remote);
-    			return;
+    	if (command.getAction().equals("info")) {
+    		String message = "Data Epoch number: ";
+    		if (res.containsKey("message") ) {
+    			message = res.getString("message");
     		}
-    	}
-    	else if (command.getAction().equals("write")) {
-    		
-    	}
-    	else if (command.getAction().equals("info")) {
     		if (res.containsKey("result")) {
-    			System.out.println("Epoch number: " + res.getString("result"));
+    			System.out.println(message + " --- " + res.getString("result"));
     		}
     	}
     }

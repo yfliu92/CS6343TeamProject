@@ -1,5 +1,6 @@
 package dht.rush.commands;
 
+import dht.rush.CentralServer;
 import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
 import dht.rush.utils.RushUtil;
@@ -18,6 +19,7 @@ public class DeleteNodeCommand extends ServerCommand {
     private Double weight;
     private String subClusterId;
     private ClusterStructureMap clusterStructureMap;
+    private CentralServer cs;
 
     @Override
     public void run() throws IOException {
@@ -75,6 +77,10 @@ public class DeleteNodeCommand extends ServerCommand {
         } else {
             System.out.println("Response Sent");
         }
+        
+        if (status == 1) {
+        	this.cs.initializeDataNode(this.cs.getRoot());
+        }
     }
 
     public Cluster getRoot() {
@@ -123,5 +129,9 @@ public class DeleteNodeCommand extends ServerCommand {
 
     public void setClusterStructureMap(ClusterStructureMap clusterStructureMap) {
         this.clusterStructureMap = clusterStructureMap;
+    }
+    
+    public void setCentralServer(CentralServer cs) {
+        this.cs = cs;
     }
 }

@@ -186,6 +186,11 @@ public class BinarySearchList extends ArrayList<VirtualNode> {
     	return node;
     }
     
+    public String getPhysicalNode(String keyword) {
+    	VirtualNode node = getVirtualNode(keyword);
+    	return node.getPhysicalNodeId();
+    }
+    
     public List<VirtualNode> getSuccessors(int rawHash) {
     	VirtualNode vNode = find(rawHash);
     	int index = vNode.getIndex();

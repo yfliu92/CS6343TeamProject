@@ -147,6 +147,8 @@ public class ProxyServer extends Proxy {
     
 	public int initializeDataNode(Proxy proxy) {
 		Element port = config.getRootElement().element("port");
+		System.out.println(port.element("startPort").getStringValue() + " " + port.element("portRange").getStringValue());
+		
 		int startPort = Integer.parseInt(port.element("startPort").getStringValue());
 		int portRange = Integer.parseInt(port.element("portRange").getStringValue());
 		

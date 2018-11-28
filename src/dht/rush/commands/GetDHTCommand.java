@@ -68,9 +68,12 @@ public class GetDHTCommand extends ServerCommand {
         } else {
             System.out.println("Response Sent");
         }
+        
+        if (operation.equalsIgnoreCase("push") && commandSeries.size() == 1) {
+        	this.cs.initializeDataNode(this.cs.getRoot());
+        }
 
     }
-
 
     public ClusterStructureMap getClusterStructureMap() {
         return clusterStructureMap;

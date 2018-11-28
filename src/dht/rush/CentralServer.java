@@ -38,6 +38,10 @@ public class CentralServer {
     public ClusterStructureMap getClusterMap() {
     	return this.clusterStructureMap;
     }
+    
+    public Cluster getRoot() {
+    	return this.root;
+    }
 
     public static void main(String[] args) {
         CentralServer cs = new CentralServer();
@@ -234,15 +238,15 @@ public class CentralServer {
 	                      command.setOutputStream(outputStream);
 	                      command.run();
 	                      
-	                      JsonObject params = requestObject.getJsonObject("parameters");
-	                      String method = requestObject.getString("method").toLowerCase();
-	                      String operation = params.containsKey("operation") ? params.getString("operation") : "";
-	                      if (method.equals("dht") && operation.equals("push") && !params.containsKey("series")) {
-	                    	  this.cs.initializeDataNode(this.cs.root);
-	                      }
-	                      else if (method.equals("addnode") || method.equals("deletenode") || method.equals("loadbalancing")) {
-	                    	  this.cs.initializeDataNode(this.cs.root);
-	                      }
+//	                      JsonObject params = requestObject.getJsonObject("parameters");
+//	                      String method = requestObject.getString("method").toLowerCase();
+//	                      String operation = params.containsKey("operation") ? params.getString("operation") : "";
+//	                      if (method.equals("dht") && operation.equals("push") && !params.containsKey("series")) {
+//	                    	  this.cs.initializeDataNode(this.cs.root);
+//	                      }
+//	                      else if (method.equals("addnode") || method.equals("deletenode") || method.equals("loadbalancing")) {
+//	                    	  this.cs.initializeDataNode(this.cs.root);
+//	                      }
 	                  }
                 	}
               
@@ -312,6 +316,7 @@ public class CentralServer {
                 ((AddNodeCommand) serverCommand).setPort(params.getString("port"));
                 ((AddNodeCommand) serverCommand).setWeight(Double.parseDouble(params.getString("weight")));
                 ((AddNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((AddNodeCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("deletenode")) {
                 System.out.println("Deleting node command");
@@ -321,6 +326,7 @@ public class CentralServer {
                 ((DeleteNodeCommand) serverCommand).setIp(params.getString("ip"));
                 ((DeleteNodeCommand) serverCommand).setPort(params.getString("port"));
                 ((DeleteNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((DeleteNodeCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("getnodes")) {
                 System.out.println("Getting node command");
@@ -335,6 +341,7 @@ public class CentralServer {
                 params = requestObject.getJsonObject("parameters");
                 ((LoadBalancingCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
                 ((LoadBalancingCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((LoadBalancingCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("write")) {
                 System.out.println("Start to write a file into the cluster");
@@ -342,6 +349,7 @@ public class CentralServer {
                 params = requestObject.getJsonObject("parameters");
                 ((WriteCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 ((WriteCommand) serverCommand).setFileName(params.getString("fileName"));
+                ((WriteCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("read")) {
                 System.out.println("Start to return a physical node for the file");
@@ -364,6 +372,7 @@ public class CentralServer {
                 ((ChangeWeightCommand) serverCommand).setPort(params.getString("port"));
                 ((ChangeWeightCommand) serverCommand).setWeight(Double.parseDouble(params.getString("weight")));
                 ((ChangeWeightCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((ChangeWeightCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("dht")) {
             	System.out.println("DHT fetch command");

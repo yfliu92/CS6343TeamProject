@@ -423,12 +423,6 @@ public class ProxyServer extends PhysicalNode {
 //				String result = hash == -1 ? super.addNode(ip, port) : super.addNode(ip, port, hash);
 				String result = hashes.length == 0 ? super.addNode(ip, port) : super.addNode(ip, port, hashes);
 				
-//				for(int i = 0; i < numHashes; i++) {
-//					pushDHT(ip, hashes[i]);
-//				}
-				
-//				System.out.println("hashes" + Arrays.toString(hashes));
-				
 				return result.replaceAll("\n", "  ");
 			}
 			else if (command.getAction().equals("remove")) {
@@ -629,69 +623,6 @@ public class ProxyServer extends PhysicalNode {
             } 
         } 
     }
-    
-//	public static void main(String[] args) throws IOException {
-//	// TODO Auto-generated method stub
-//	ProxyServer proxy = new ProxyServer();
-//	//Initialize the ring cluster
-//	proxy.initializeRing();
-//	
-//	DataStore dataStore = new DataStore();
-////	System.out.println(dataStore.writeRandomRes(WRITE_BATCH_SIZE, proxy));
-////	System.out.println(dataStore.updateRandomRes(WRITE_BATCH_SIZE * 3, proxy));
-//	
-//	int port = 9091;
-//	System.out.println("Ring server running at " + String.valueOf(port));
-//    ServerSocket listener = new ServerSocket(port);
-//    
-//    try {
-//        while (true) {
-//        	Socket socket = listener.accept();
-//        	System.out.println("Connection accepted" + " ---- " + new Date().toString());
-//            try {
-//            	BufferedReader input = new BufferedReader(
-//                        new InputStreamReader(socket.getInputStream()));
-//                PrintWriter output =
-//                        new PrintWriter(socket.getOutputStream(), true);
-//            	String msg;
-//            	while(true) {
-//            		try {
-//                		msg = input.readLine();
-//                    	if (msg != null) {
-//                        	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
-//                        	System.out.println();
-//
-//                            String response = proxy.getResponse(msg, dataStore);
-//                            
-//                            output.println(response);
-//                            System.out.println("Response sent: " + response + " ---- " + new Date().toString());
-//                            System.out.println();
-//                    	}
-//                    	else {
-//                    		System.out.println("Connection end " + " ---- " + new Date().toString());
-//                    		System.out.println();
-//                    		break;
-//                    	}
-//            		}
-//            		catch (Exception ee) {
-//                		System.out.println("Connection reset " + " ---- " + new Date().toString());
-//                		System.out.println();
-//                		break;
-//            		}
-//
-//            	}
-//
-//            } finally {
-//                socket.close();
-//            }
-//        }
-//    }
-//    finally {
-//        listener.close();
-//    }
-//	
-//}
-
 }
 
 class ProxyClient_Ring{
@@ -704,11 +635,6 @@ class ProxyClient_Ring{
     ProxyServer proxy;
 	public ProxyClient_Ring(ProxyServer proxy) { 
 		this.proxy = proxy;
-//		this.address = address;
-//		this.port = port;
-//    	this.socket = s; 
-//    	this.input = input;
-//        this.output = output;
 	}
 	
     public boolean connectServer(String serverAddress, int port) {
