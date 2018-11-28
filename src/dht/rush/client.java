@@ -77,9 +77,11 @@ public class client {
     	
     	int dhtType = 2;
     	
-    	if (args.length == 3) {
+    	if (args.length >= 2) {
     		serverAddress = args[0];
     		port = Integer.valueOf(args[1]);
+    	}
+    	if (args.length == 3) {
     		dhtType = Integer.valueOf(args[2]);
     	}
     	String dhtName = dhtType == 1 ? "DHT Ring" : dhtType == 2 ? "DHT Ceph" : dhtType == 3 ? "Elastic DHT" : "";

@@ -21,17 +21,12 @@ public class GetDHTCommand extends ServerCommand {
         JsonWriter writer = Json.createWriter(baos);
         JsonObjectBuilder paramsBuilder =  Json.createObjectBuilder();
         
-//        JsonObject ret = Json.createObjectBuilder().build();
         JsonObject params = null;
         if (operation.equalsIgnoreCase("pull")) {
-//        	ret = clusterStructureMap.toJSON();
-//        	paramsBuilder.add("jsonResult", ret);
         	params = new Response(true, clusterStructureMap.toJSON(), "Ring DHT table").toJSON();
         }
         else if (operation.equalsIgnoreCase("head")) {
-//        	ret = clusterStructureMap.info();
         	params = new Response(true, String.valueOf(clusterStructureMap.getEpoch()), "Current epoch number:").toJSON();
-//        	paramsBuilder.add("jsonResult", ret);
         }
         else if (operation.equalsIgnoreCase("print")) {
         	clusterStructureMap.print();

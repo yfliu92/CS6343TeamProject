@@ -145,7 +145,7 @@ public class ProxyServer extends Proxy {
 
     }
     
-	public int initializeDataNode() {
+	public int initializeDataNode(Proxy proxy) {
 		Element port = config.getRootElement().element("port");
 		int startPort = Integer.parseInt(port.element("startPort").getStringValue());
 		int portRange = Integer.parseInt(port.element("portRange").getStringValue());
@@ -160,7 +160,7 @@ public class ProxyServer extends Proxy {
 			for (int j = 0; j < portRange; j++){
 //	    		Thread t = new RunDataNode(ip, startPort + j);
 //	    		t.start();
-				pushDHT(ip, startPort + j);
+				pushDHT(ip, startPort + j, proxy);
 
 			}
         }
@@ -258,14 +258,14 @@ public class ProxyServer extends Proxy {
 		return input.toUpperCase();
 	}
     
-	public void pushDHTAll() {
+	public void pushDHTAll(Proxy proxy) {
 		System.out.println("Beginning to push DHT to all physical nodes");
-		for(PhysicalNode node: super.getLookupTable().getPhysicalNodesMap().values()) {
-			pushDHT(node.getIp(), node.getPort());
+		for(PhysicalNode node: proxy.getLookupTable().getPhysicalNodesMap().values()) {
+			pushDHT(node.getIp(), node.getPort(), proxy);
 		}
 	}
     
-	public boolean pushDHT(String serverAddress, int port) {
+	public boolean pushDHT(String serverAddress, int port, Proxy proxy) {
 		try {
 			ProxyClient_Elastic client = new ProxyClient_Elastic(this);
 	    	boolean connected = client.connectServer(serverAddress, port);
@@ -284,7 +284,7 @@ public class ProxyServer extends Proxy {
 				
 				System.out.println("Connected to Data Node Server at " + serverAddress + ":" + port);
 				
-				JsonObject jobj = new Response(true, super.getLookupTable().toJSON(), "dht push").toJSON();
+				JsonObject jobj = new Response(true, proxy.getLookupTable().toJSON(), "dht push").toJSON();
 				
 	        	client.output.println(jobj);
 	        	client.output.flush();
@@ -383,15 +383,12 @@ public class ProxyServer extends Proxy {
 				
 				String result = start == -1 && end == -1 ? proxy.addNode(ip, port) : proxy.addNode(ip, port, start, end);
 				
-//				pushDHT(ip, port);
-				
 				return result.replaceAll("\n", "  ");
 			}
 			else if (command.getAction().equals("remove")) {
 				String IP = command.getCommandSeries().get(0);
 				int port = Integer.valueOf(command.getCommandSeries().get(1));
 				String result = proxy.deleteNode(IP, port);
-//				pushDHT(IP, port);
 				return result.replaceAll("\n", "  ");
 //				return "remove";
 			}
@@ -405,7 +402,6 @@ public class ProxyServer extends Proxy {
 					return new Response(true, String.valueOf(proxy.getLookupTable().getEpoch()), "Current epoch number:").serialize();
 				}
 				else if (operation.equals("pull")) {
-//					return super.getLookupTable().serialize();
 					return new Response(true, proxy.getLookupTable().toJSON(), "Elastic DHT table").serialize();
 				}
 				else if (operation.equals("print")) {
@@ -416,11 +412,10 @@ public class ProxyServer extends Proxy {
 					if (command.getCommandSeries().size() == 3) {
 						String ip = command.getCommandSeries().get(1);
 						int port = Integer.valueOf(command.getCommandSeries().get(2));
-						pushDHT(ip, port);
+						pushDHT(ip, port, proxy);
 						return new Response(true, "DHT pushed for " + ip + " " + port).serialize();
 					}
 					else if (command.getCommandSeries().size() == 1) {
-//						pushDHTAll();
 						return new Response(true, "DHT push to all nodes is being executed").serialize();
 					}
 					else {
@@ -437,7 +432,7 @@ public class ProxyServer extends Proxy {
 			else if (command.getAction().equals("run")) {
 				String operation = command.getCommandSeries().size() > 0 ? command.getCommandSeries().get(0) : "";
 				if (operation.equals("datanode")) {
-					int result = initializeDataNode();
+					int result = initializeDataNode(proxy);
 					return new Response(true, String.valueOf(result), "A total of " + result + " data nodes are running").serialize();
 				}
 				else {
@@ -510,11 +505,11 @@ public class ProxyServer extends Proxy {
                             String[] updateCommands = {"add", "remove", "loadbalance"};
                             for (String cmd: updateCommands) { 
                             	if (command.getAction().equals(cmd)) {
-                            		pushDHTAll();
+                            		this.proxyServer.pushDHTAll(proxy);
                             		break;
                             	}
                             	else if (command.getAction().equals("dht") && command.getCommandSeries().size() == 1 && command.getCommandSeries().get(0).equals("push")) {
-                             		pushDHTAll();
+                            		this.proxyServer.pushDHTAll(proxy);
                             		break;
                             	}
                             }
@@ -544,7 +539,7 @@ public class ProxyServer extends Proxy {
         //Initialize the Elastic DHT cluster
 	    Proxy proxy = initializeEDHT();
 		proxyServer.CCcommands(proxy);
-	    proxyServer.initializeDataNode();
+	    proxyServer.initializeDataNode(proxy);
 
 
 //        int port = 9093;

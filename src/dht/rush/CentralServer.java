@@ -23,6 +23,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,10 +65,10 @@ public class CentralServer {
         
         cs.initializeDataNode(cs.root);
         
-        int port = cs.port;
-        String serverAddress = cs.IP;
+//        int port = cs.port;
+//        String serverAddress = cs.IP;
         try {
-            cs.startup();
+            cs.startup(cs);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -234,8 +235,12 @@ public class CentralServer {
 	                      command.run();
 	                      
 	                      JsonObject params = requestObject.getJsonObject("parameters");
-	                      String operation = params.getString("operation");
-	                      if (operation.equals("push") && params.containsKey("series")) {
+	                      String method = requestObject.getString("method").toLowerCase();
+	                      String operation = params.containsKey("operation") ? params.getString("operation") : "";
+	                      if (method.equals("dht") && operation.equals("push") && !params.containsKey("series")) {
+	                    	  this.cs.initializeDataNode(this.cs.root);
+	                      }
+	                      else if (method.equals("addnode") || method.equals("deletenode") || method.equals("loadbalancing")) {
 	                    	  this.cs.initializeDataNode(this.cs.root);
 	                      }
 	                  }
@@ -259,11 +264,7 @@ public class CentralServer {
 	    } 
 	}
 	
-	public void startup() throws IOException {
-//		CentralServer server = new CentralServer();
-//		proxy.initializeDataNode();
-//	    int port = 8100;
-//		int port = proxyServer.port;
+	public void startup(CentralServer cs) throws IOException {
         ServerSocket ss = new ServerSocket(this.port); 
         
         System.out.println("Rush proxy server running at " + String.valueOf(port));
@@ -284,7 +285,7 @@ public class CentralServer {
 		        PrintWriter output = new PrintWriter(outputStream, true);
 
 //                Thread t = server.new ClientHandler(s, inputStream, outputStream, input, output); 
-                Thread t = new ClientHandler(this, s, inputStream, outputStream, input, output); 
+                Thread t = new ClientHandler(cs, s, inputStream, outputStream, input, output); 
 
                 t.start(); 
                   
@@ -295,51 +296,6 @@ public class CentralServer {
             } 
         } 
 	}
-
-
-//    public void startup() throws IOException {
-//        int port = 8100;
-//        ServerSocket serverSocket = new ServerSocket(port);
-//        InputStream inputStream = null;
-//        OutputStream outputStream = null;
-//        BufferedReader in = null;
-//        PrintWriter out = null;
-//
-//        System.out.println("Rush server running at " + port);
-//        while (true) {
-//            try {
-//                Socket clientSocket = serverSocket.accept();
-//                System.out.println("Connection accepted" + " ---- " + new Date().toString());
-//
-//                inputStream = clientSocket.getInputStream();
-//                outputStream = clientSocket.getOutputStream();
-//
-//                in = new BufferedReader(new InputStreamReader(inputStream));
-//                out = new PrintWriter(outputStream, true);
-//                String str;
-//                JsonObject requestObject = null;
-//                while (true && in != null) {
-//                    str = in.readLine();
-//                    if (str != null) {
-//                        requestObject = StreamUtil.parseRequest(str);
-//                        if (requestObject != null) {
-//                            ServerCommand command = dispatchCommand(requestObject);
-//                            command.setInputStream(inputStream);
-//                            command.setOutputStream(outputStream);
-//                            command.run();
-//                        }
-//                    } else {
-//                        System.out.println("Connection end " + " ---- " + new Date().toString());
-//                        break;
-//                    }
-//                }
-//            } catch (Exception e) {
-//                System.out.println("Connection exception");
-//                StreamUtil.closeSocket(inputStream);
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
     private ServerCommand dispatchCommand(JsonObject requestObject, CentralServer server) throws IOException {
         String method = requestObject.getString("method").toLowerCase();
@@ -415,9 +371,14 @@ public class CentralServer {
             	params = requestObject.getJsonObject("parameters");
             	JsonArray jsonCommandSeries = params.getJsonArray("series");
             	List<String> commandSeries = new LinkedList<String>();
-            	for(int k = 0; k < jsonCommandSeries.size(); k++) {
-            		commandSeries.add(jsonCommandSeries.getString(k));
+            	if (jsonCommandSeries != null) {
+                	for(int k = 0; k < jsonCommandSeries.size(); k++) {
+                		commandSeries.add(jsonCommandSeries.getString(k).toString());
+                	}
             	}
+            	
+            	System.out.println(Arrays.toString(commandSeries.toArray()));
+
             	((GetDHTCommand) serverCommand).setOperation(params.getString("operation"));
             	((GetDHTCommand) serverCommand).setCommandSeries(commandSeries);
             	((GetDHTCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
@@ -441,11 +402,6 @@ class ProxyClient_Rush{
     CentralServer proxy;
 	public ProxyClient_Rush(CentralServer proxy) { 
 		this.proxy = proxy;
-//		this.address = address;
-//		this.port = port;
-//    	this.socket = s; 
-//    	this.input = input;
-//        this.output = output;
 	}
 	
     public boolean connectServer(String serverAddress, int port) {
@@ -460,7 +416,6 @@ class ProxyClient_Rush{
 			this.input = new BufferedReader(new InputStreamReader(this.inputStream));
 
 	        System.out.println("Connected to server " + serverAddress + ":" + port + ", with local port " + this.socket.getLocalPort());
-//			socket.close();
 			return true;
  
 		} catch (SocketTimeoutException exception) {
