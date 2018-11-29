@@ -23,7 +23,9 @@ import java.util.Map;
 import java.util.Random;
 
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonWriter;
 
@@ -320,12 +322,37 @@ class RWClient {
         System.out.println("Response received: " + response + " ---- " + new Date().toString());
     }
     
-    public void sendCommandJson(Command command, BufferedReader input, PrintWriter output) throws Exception {
+    public void sendCommandJson(Command command, BufferedReader input, PrintWriter output, boolean isProxy) throws Exception {
+    	if (parseLocalRequest(command)) {
+    		return;
+    	}
     	
-    	String timeStamp = new Date().toString();
+    	JsonObject jobj = null;
+    	if (isProxy && command.getAction().equals("dht")) {
+                JsonObjectBuilder paramsBuilder = Json.createObjectBuilder()
+                        .add("operation", command.getCommandSeries().get(0));
+    		            if (command.getCommandSeries().size() > 1) {
+    		            	JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+    		            	for(String item: command.getCommandSeries()) {
+    		            		jsonArrayBuilder.add(item);
+    		            	}
+    		            	paramsBuilder.add("series", jsonArrayBuilder.build());
+    		            }
+                        
+                jobj = Json.createObjectBuilder()
+                        .add("method", "dht")
+                        .add("parameters", paramsBuilder.build())
+                        .build();
+    	}
+    	else {
+    		jobj = new Response(true, command.getRawCommand(), command.getRawCommand()).toJSON();
+    	}
+    	
+       	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
+    	System.out.println(jobj.toString());
     	
-    	output.println(new Response(true, command.getRawCommand(), command.getRawCommand()).serialize());
+    	output.println(jobj.toString());
     	output.flush();
         
         JsonObject res = parseRequest(input);
@@ -396,7 +423,7 @@ class RWClient {
 							int port = Integer.valueOf(node.split("-")[1]);
 							boolean connected = connectServer(ip, port, this.myclient, false);
 							if (connected) {
-								sendCommandJson(command, this.input, this.output);
+								sendCommandJson(command, this.input, this.output, false);
 //								disconnectServer();
 							}
 							
@@ -429,7 +456,7 @@ class RWClient {
 						int port = Integer.valueOf(node.split("-")[1]);
 						boolean connected = connectServer(ip, port, this.myclient, false);
 						if (connected) {
-							sendCommandJson(command, this.input, this.output);
+							sendCommandJson(command, this.input, this.output, false);
 //							disconnectServer();
 						}
 						
@@ -570,10 +597,11 @@ class RWClient {
         else
         {
         	if (isProxy) {
-        		sendCommandStr_JsonRes(command, input, output);
+//        		sendCommandStr_JsonRes(command, input, output);
+        		sendCommandJson(command, input, output, true);
         	}
         	else {
-        		sendCommandJson(command, input, output);
+        		sendCommandJson(command, input, output, false);
         	}
         }
     }
