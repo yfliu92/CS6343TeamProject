@@ -60,7 +60,7 @@ public class DataStore {
 		int num = 0;
 		while(num < batchsize) {
 			String datumStr = Hashing.getRanStr(0);
-			int rawhash = Hashing.getHashValFromKeyword(datumStr);
+			int rawhash = Hashing.getHashValFromKeyword(datumStr, ProxyServer.hashRange);
 			int virtualnode = physicalNode.getLookupTable().getTable().getVirtualNode(datumStr).getHash();
 			
 			List<VirtualNode> virtualnodes = physicalNode.getLookupTable().getTable().getSuccessors(datumStr);
@@ -86,7 +86,7 @@ public class DataStore {
 		while(num < updateNum) {
 			
 			String datumStr = String.valueOf(keys[ran.nextInt(size)]);
-			int rawhash = Hashing.getHashValFromKeyword(datumStr);
+			int rawhash = Hashing.getHashValFromKeyword(datumStr, ProxyServer.hashRange);
 			int virtualnode = physicalNode.getLookupTable().getTable().getVirtualNode(datumStr).getHash();
 			write(datumStr, rawhash, new int[] {virtualnode});
 			num++;

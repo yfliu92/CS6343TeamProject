@@ -8,12 +8,19 @@ public class Hashing {
 	
 	public static int getHashValFromIP(String IP) {
 		String md5IP = IP;
-		return getHashValFromKeyword(md5IP);
+		return getHashValFromKeyword(md5IP, MAX_HASH);
 	}
 	
-	public static int getHashValFromKeyword(String keyword) {
+//	public static int getHashValFromKeyword(String keyword) {
+//		int hashVal = keyword.hashCode();
+//		hashVal = hashVal % MAX_HASH;
+//		
+//		return Math.abs(hashVal);
+//	}
+	
+	public static int getHashValFromKeyword(String keyword, int maxHash) {
 		int hashVal = keyword.hashCode();
-		hashVal = hashVal % MAX_HASH;
+		hashVal = hashVal % maxHash;
 		
 		return Math.abs(hashVal);
 	}
@@ -27,7 +34,7 @@ public class Hashing {
 	}
 	
 	public static int getVMIdFromKeyword(String keyword, int numVMs) {
-		return getVMIdFromHashVal(getHashValFromKeyword(keyword), numVMs);
+		return getVMIdFromHashVal(getHashValFromKeyword(keyword, MAX_HASH), numVMs);
 	}
 	
 	public static String getRanStr(int maxlength) {

@@ -5,7 +5,7 @@ import java.util.*;
 import dht.common.Hashing;
 
 public class BinarySearchList extends ArrayList<VirtualNode> {
-	boolean[] occupied = new boolean[Hashing.MAX_HASH];
+	boolean[] occupied = new boolean[ProxyServer.hashRange];
     
     public boolean checkExist(int hash) {
     	VirtualNode vNode = new VirtualNode(hash);
@@ -20,13 +20,13 @@ public class BinarySearchList extends ArrayList<VirtualNode> {
     
     public int getRanHash() {
     	Random ran = new Random();
-    	int hash = ran.nextInt(Hashing.MAX_HASH);
+    	int hash = ran.nextInt(ProxyServer.hashRange);
     	int count = 0;
     	while(checkExist(hash)) {
-    		hash = ran.nextInt(Hashing.MAX_HASH);
+    		hash = ran.nextInt(ProxyServer.hashRange);
     		count++;
     		
-    		if (count > Hashing.MAX_HASH / 10) {
+    		if (count > ProxyServer.hashRange / 10) {
     			break;
     		}
     	}
@@ -181,7 +181,7 @@ public class BinarySearchList extends ArrayList<VirtualNode> {
     }
     
     public VirtualNode getVirtualNode(String keyword) {
-    	int rawHash = Hashing.getHashValFromKeyword(keyword);
+    	int rawHash = Hashing.getHashValFromKeyword(keyword, ProxyServer.hashRange);
     	VirtualNode node = find(rawHash);
     	return node;
     }

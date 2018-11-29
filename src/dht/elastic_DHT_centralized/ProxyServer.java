@@ -59,7 +59,7 @@ public class ProxyServer extends Proxy {
         
 		for (int j = 0; j < portRange; j++){
 			int portNum = startPort + j;
-	    	Thread t = new RunDataNode_Elastic(thisIP, portNum);
+	    	Thread t = new RunDataNode_Elastic(thisIP, portNum, ProxyServer.INITIAL_HASH_RANGE);
 	    	t.start();
 		}
 	}
@@ -300,7 +300,7 @@ public class ProxyServer extends Proxy {
 	    	
 	    	Thread t = null;
 	    	if (!connected) {
-	    		t = new RunDataNode_Elastic(serverAddress, port);
+	    		t = new RunDataNode_Elastic(serverAddress, port, ProxyServer.INITIAL_HASH_RANGE);
 	    		t.start();
 	    		
 	    		Thread.sleep(1000);
@@ -375,7 +375,7 @@ public class ProxyServer extends Proxy {
 				String dataStr = command.getCommandSeries().get(0);
 //				return dataStore.readRes(dataStr);
 				
-    			int rawhash = Hashing.getHashValFromKeyword(dataStr);
+    			int rawhash = Hashing.getHashValFromKeyword(dataStr, ProxyServer.INITIAL_HASH_RANGE);
     			try {
     				rawhash = Integer.valueOf(dataStr);
     			}
@@ -890,21 +890,23 @@ class ProxyClient_Elastic{
 class RunDataNode_Elastic extends Thread {
 	final String ip;
 	final int port;
-	public RunDataNode_Elastic(String ip, int port) {
+	final int hashRange;
+	public RunDataNode_Elastic(String ip, int port, int hashRange) {
 		this.ip = ip;
 		this.port = port;
+		this.hashRange = hashRange;
 	}
 	
 	@Override
 	public void run() {
-		runDataNode(this.ip, this.port);
+		runDataNode(this.ip, this.port, this.hashRange);
 	}
 	
-	public boolean runDataNode(String ip, int port) {
+	public boolean runDataNode(String ip, int port, int hashRange) {
 		boolean success = false;
         try {
         	String dataPortNum = String.valueOf(port);
-			Process p = Runtime.getRuntime().exec("java -classpath .:../lib/* dht/elastic_DHT_centralized/DataNode " + ip + " " + dataPortNum);
+			Process p = Runtime.getRuntime().exec("java -classpath .:../lib/* dht/elastic_DHT_centralized/DataNode " + ip + " " + dataPortNum + " " + hashRange);
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(p.getInputStream()));
 			String line = null;

@@ -26,15 +26,17 @@ public class DataNode {
 	
 	String IP;
 	int port;
+	int hashRange;
 	
 	public DataNode() {
 		hashBucket = new HashSet<Integer>();
 	}
 	
-	public DataNode(String IP, int port) {
+	public DataNode(String IP, int port, int hashRange) {
 		hashBucket = new HashSet<Integer>();
 		this.IP = IP;
 		this.port = port;
+		this.hashRange = hashRange;
 	}
 	
 	public void printTable() {
@@ -140,12 +142,12 @@ public class DataNode {
         System.out.println("==== Welcome to DHT Ring Data Node !!! =====");
         
         DataNode dataNode = null;
-        if (args.length == 2) {
+        if (args.length == 3) {
         	try {
-        		dataNode = new DataNode(args[0], Integer.valueOf(args[1]));
+        		dataNode = new DataNode(args[0], Integer.valueOf(args[1]), Integer.valueOf(args[2]));
         	}
         	catch (Exception e) {
-        		System.out.println("input parameters <IP> <port> to start data node");
+        		System.out.println("input parameters <IP> <port> <hashRange> to start data node");
         		return;
         	}
         }
@@ -304,7 +306,7 @@ class ClientHandler extends Thread
 			}
 			else if (command.getAction().equals("read")) {
 				String dataStr = command.getCommandSeries().get(0);
-				int rawhash = Hashing.getHashValFromKeyword(dataStr);
+				int rawhash = Hashing.getHashValFromKeyword(dataStr, dataNode.hashRange);
 				try {
 					rawhash = Integer.valueOf(dataStr);
 				}
@@ -322,7 +324,7 @@ class ClientHandler extends Thread
 			}
 			else if (command.getAction().equals("write")) {
 				String dataStr = command.getCommandSeries().get(0);
-				int rawhash = Hashing.getHashValFromKeyword(dataStr);
+				int rawhash = Hashing.getHashValFromKeyword(dataStr, dataNode.hashRange);
 				try {
 					rawhash = Integer.valueOf(dataStr);
 				}

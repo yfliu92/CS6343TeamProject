@@ -36,6 +36,7 @@ public class CentralServer {
     Document config;
     int port;
     String IP;
+    public static int hashRange;
     
     public ClusterStructureMap getClusterMap() {
     	return this.clusterStructureMap;
@@ -67,7 +68,7 @@ public class CentralServer {
 		for (int j = 0; j < portRange; j++){
 			int portNum = startPort + j;
 			System.out.println(portNum);
-	    	Thread t = new RunDataNode_Rush(thisIP, portNum);
+	    	Thread t = new RunDataNode_Rush(thisIP, portNum, hashRange);
 	    	t.start();
 		}
 	}
@@ -138,6 +139,7 @@ public class CentralServer {
             config = reader.read(inputFile);
             port = Integer.parseInt(config.getRootElement().element("proxy").element("port").getStringValue());
             IP = config.getRootElement().element("proxy").element("ip").getStringValue();
+            hashRange = Integer.valueOf(config.getRootElement().element("placementGroupNumber").getStringValue());
         }catch(Exception e) {
         	System.out.println("Failed to initialize");
             e.printStackTrace();
@@ -174,7 +176,7 @@ public class CentralServer {
 	    	
 	    	Thread t = null;
 	    	if (!connected) {
-	    		t = new RunDataNode_Rush(serverAddress, port);
+	    		t = new RunDataNode_Rush(serverAddress, port, CentralServer.hashRange);
 	    		t.start();
 	    		
 	    		Thread.sleep(1000);
@@ -736,21 +738,23 @@ class ProxyClient_Rush{
 class RunDataNode_Rush extends Thread {
 	final String ip;
 	final int port;
-	public RunDataNode_Rush(String ip, int port) {
+	final int hashRange;
+	public RunDataNode_Rush(String ip, int port, int hashRange) {
 		this.ip = ip;
 		this.port = port;
+		this.hashRange = hashRange;
 	}
 	
 	@Override
 	public void run() {
-		runDataNode(this.ip, this.port);
+		runDataNode(this.ip, this.port, this.hashRange);
 	}
 	
-	public boolean runDataNode(String ip, int port) {
+	public boolean runDataNode(String ip, int port, int hashRange) {
 		boolean success = false;
         try {
         	String dataPortNum = String.valueOf(port);
-			Process p = Runtime.getRuntime().exec("java -classpath .:../lib/* dht/rush/DataNode " + ip + " " + dataPortNum);
+			Process p = Runtime.getRuntime().exec("java -classpath .:../lib/* dht/rush/DataNode " + ip + " " + dataPortNum + " " + hashRange);
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(p.getInputStream()));
 			String line = null;

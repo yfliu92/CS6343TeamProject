@@ -57,7 +57,7 @@ public class ProxyServer extends PhysicalNode {
         
 		for (int j = 0; j < portRange; j++){
 			int portNum = startPort + j;
-	    	Thread t = new RunDataNode_Ring(thisIP, portNum);
+	    	Thread t = new RunDataNode_Ring(thisIP, portNum, ProxyServer.hashRange);
 	    	t.start();
 		}
 	}
@@ -327,7 +327,7 @@ public class ProxyServer extends PhysicalNode {
 	    	
 	    	Thread t = null;
 	    	if (!connected) {
-	    		t = new RunDataNode_Ring(serverAddress, port);
+	    		t = new RunDataNode_Ring(serverAddress, port, ProxyServer.hashRange);
 	    		t.start();
 	    		
 	    		Thread.sleep(1000);
@@ -399,7 +399,7 @@ public class ProxyServer extends PhysicalNode {
 				String dataStr = command.getCommandSeries().get(0);
 //				return dataStore.readRes(dataStr);
 				
-    			int rawhash = Hashing.getHashValFromKeyword(dataStr);
+    			int rawhash = Hashing.getHashValFromKeyword(dataStr, ProxyServer.hashRange);
     			try {
     				rawhash = Integer.valueOf(dataStr);
     			}
@@ -413,7 +413,7 @@ public class ProxyServer extends PhysicalNode {
 			}
 			else if (command.getAction().equals("write")) {
 				String dataStr = command.getCommandSeries().get(0);
-				int rawhash = Hashing.getHashValFromKeyword(dataStr);
+				int rawhash = Hashing.getHashValFromKeyword(dataStr, ProxyServer.hashRange);
 				int[] virtualnodeids = super.getLookupTable().getTable().getVirtualNodeIds(rawhash);
 				
 				return dataStore.writeRes(dataStr, rawhash, virtualnodeids);
@@ -919,21 +919,23 @@ class ProxyClient_Ring{
 class RunDataNode_Ring extends Thread {
 	final String ip;
 	final int port;
-	public RunDataNode_Ring(String ip, int port) {
+	final int hashRange;
+	public RunDataNode_Ring(String ip, int port, int hashRange) {
 		this.ip = ip;
 		this.port = port;
+		this.hashRange = hashRange;
 	}
 	
 	@Override
 	public void run() {
-		runDataNode(this.ip, this.port);
+		runDataNode(this.ip, this.port, this.hashRange);
 	}
 	
-	public boolean runDataNode(String ip, int port) {
+	public boolean runDataNode(String ip, int port, int hashRange) {
 		boolean success = false;
         try {
         	String dataPortNum = String.valueOf(port);
-			Process p = Runtime.getRuntime().exec("java -classpath .:../lib/* dht/Ring/DataNode " + ip + " " + dataPortNum);
+			Process p = Runtime.getRuntime().exec("java -classpath .:../lib/* dht/Ring/DataNode " + ip + " " + dataPortNum + " " + hashRange);
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(p.getInputStream()));
 			String line = null;
