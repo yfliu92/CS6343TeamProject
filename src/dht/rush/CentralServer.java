@@ -15,6 +15,8 @@ import javax.json.JsonReader;
 import javax.json.JsonWriter;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import java.io.*;
@@ -42,8 +44,58 @@ public class CentralServer {
     public Cluster getRoot() {
     	return this.root;
     }
+    
+	public static void runDataNodeBatch(String thisIP) {
+		String rootPath = System.getProperty("user.dir");
+        String xmlPath = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+//      String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+        File inputFile = new File(xmlPath);
+        SAXReader reader = new SAXReader();
+        
+        Document config = null;
+        try {
+        	config = reader.read(inputFile);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        Element rootElement = config.getRootElement();
+        int startPort = Integer.parseInt(rootElement.element("subClusters").element("subCluster").element("port").getStringValue());
+        int portRange = Integer.parseInt(rootElement.element("offset").getStringValue());
+        
+		for (int j = 0; j < portRange; j++){
+			int portNum = startPort + j;
+			System.out.println(portNum);
+	    	Thread t = new RunDataNode_Rush(thisIP, portNum);
+	    	t.start();
+		}
+	}
 
     public static void main(String[] args) {
+    	
+    	if (args.length > 0) {
+    		if (args.length == 3 || args.length == 2) {
+    			String ip = args.length == 3 ? args[2] : "localhost";
+    			if (args[0].equals("run") && args[1].equals("datanode")) {
+    	    		runDataNodeBatch(ip);
+    	    		System.out.println("All data nodes on the machine are running...");
+    			}
+    			else {
+        			System.out.println("Input commands:");
+        			System.out.println("run datanode <IP>");
+        			System.out.println("run datanode");
+    			}
+    		}
+    		else {
+    			System.out.println("Input commands:");
+    			System.out.println("run datanode <IP>");
+    			System.out.println("run datanode");
+    		}
+
+    		return;
+    	}
+    	
         CentralServer cs = new CentralServer();
         String rootPath = System.getProperty("user.dir");
 //        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";

@@ -48,6 +48,7 @@ public class DataNode {
 	
 	public boolean buildTable(JsonObject data) {
 		clusterStructureMap = new ClusterStructureMap();
+		hashBucket = new HashSet<Integer>();
 		boolean result = clusterStructureMap.buildTable(data);
 		buildHashBucket(clusterStructureMap);
 		return result;

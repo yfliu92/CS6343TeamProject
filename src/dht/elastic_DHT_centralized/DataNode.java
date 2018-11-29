@@ -47,6 +47,7 @@ public class DataNode {
 	
 	public boolean buildTable(JsonObject data) {
 		lookupTable = new LookupTable();
+		hashBucket = new HashSet<Integer>();
 		boolean result = lookupTable.buildTable(data);
 		buildHashBucket();
 		return result;

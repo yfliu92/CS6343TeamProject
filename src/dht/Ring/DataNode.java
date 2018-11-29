@@ -47,6 +47,7 @@ public class DataNode {
 	
 	public boolean buildTable(JsonObject data) {
 		lookupTable = new LookupTable();
+		hashBucket = new HashSet<Integer>();
 		if (data.containsKey("epoch")) {
 			this.lookupTable.setEpoch(Long.valueOf(data.get("epoch").toString()));
 		}

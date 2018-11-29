@@ -36,6 +36,31 @@ public class ProxyServer extends PhysicalNode {
 	public ProxyServer(){
 		super();
 	}
+	
+	public static void runDataNodeBatch(String thisIP) {
+		String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+//      String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+        File inputFile = new File(xmlPath);
+        SAXReader reader = new SAXReader();
+        
+        Document config = null;
+        try {
+        	config = reader.read(inputFile);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+		Element port = config.getRootElement().element("port");
+		int startPort = Integer.parseInt(port.element("startPort").getStringValue());
+		int portRange = Integer.parseInt(port.element("portRange").getStringValue());
+        
+		for (int j = 0; j < portRange; j++){
+			int portNum = startPort + j;
+	    	Thread t = new RunDataNode_Ring(thisIP, portNum);
+	    	t.start();
+		}
+	}
 
 	public void initializeRing(){
         try {
@@ -580,6 +605,29 @@ public class ProxyServer extends PhysicalNode {
 	}
 	
     public static void main(String[] args) throws IOException { 
+    	
+    	if (args.length > 0) {
+    		if (args.length == 3 || args.length == 2) {
+    			String ip = args.length == 3 ? args[2] : "localhost";
+    			if (args[0].equals("run") && args[1].equals("datanode")) {
+    	    		runDataNodeBatch(ip);
+    	    		System.out.println("All data nodes on the machine are running...");
+    			}
+    			else {
+        			System.out.println("Input commands:");
+        			System.out.println("run datanode <IP>");
+        			System.out.println("run datanode");
+    			}
+    		}
+    		else {
+    			System.out.println("Input commands:");
+    			System.out.println("run datanode <IP>");
+    			System.out.println("run datanode");
+    		}
+
+    		return;
+    	}
+    	
 		ProxyServer proxy = new ProxyServer();
 		
 		//Initialize the ring cluster
