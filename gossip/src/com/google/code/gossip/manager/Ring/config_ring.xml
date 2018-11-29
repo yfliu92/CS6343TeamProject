@@ -2,31 +2,14 @@
 
 <Ring>
     <replicationLevel>3</replicationLevel>
-    <physical>100</physical>
-    <client>200</client>
+    <physical>10</physical>
+    <client>10</client>
     <virtual>1000000</virtual>
     <!-- The number of virtual nodes mapped to each physical node -->
     <total_CCcommands>500</total_CCcommands>
-    <balance>1000</balance>
     <nodes>
         <node>
-            <ip>192.168.0.200</ip>
-            <port>10001</port>
-        </node>
-        <node>
-            <ip>192.168.0.201</ip>
-            <port>10001</port>
-        </node>
-        <node>
-            <ip>192.168.0.202</ip>
-            <port>10001</port>
-        </node>
-        <node>
-            <ip>192.168.0.205</ip>
-            <port>10001</port>
-        </node>
-        <node>
-            <ip>192.168.0.207</ip>
+            <ip>192.168.1.14</ip>
             <port>10001</port>
         </node>
     </nodes>

@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Timestamp;
 import java.util.*;
+import javax.json.*;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -36,7 +37,7 @@ public class ProxyServer extends PhysicalNode {
 			numOfReplicas = Integer.parseInt(document.getRootElement().element("replicationLevel").getStringValue());
 			phy_nodes_num = Integer.parseInt(document.getRootElement().element("physical").getStringValue());
 			vir_nodes_num = Integer.parseInt(document.getRootElement().element("virtual").getStringValue());
-            balance_level = Integer.parseInt(document.getRootElement().element("balance").getStringValue());
+            balance_level = (int)(vir_nodes_num / phy_nodes_num / 10);
             Hashing.MAX_HASH = vir_nodes_num;
             Element nodes = document.getRootElement().element("nodes");
             List<Element> listOfNodes = nodes.elements();
@@ -259,8 +260,12 @@ public class ProxyServer extends PhysicalNode {
 			}
 			else if (command.getAction().equals("info")) {
 //				return new Response(true, super.listNodes()).serialize();
-				return new Response(true, super.physicalNodes.toJSON(), "DHT Table from Server").serialize();
+				return new Response(true, super.physicalNodes.toJSON(), "DHT Table from Server", physicalNodes.epoch).serialize();
 			}
+			else if (command.getAction().equals("update")) {
+                String result = super.updateNode(commandStr.split(" ",2)[1]);
+                return result;
+            }
 			else if (command.getAction().equals("dht")) {
 				String operation = command.getCommandSeries().size() > 0 ? command.getCommandSeries().get(0) : "head";
 				if (operation.equals("head")) {
@@ -276,7 +281,6 @@ public class ProxyServer extends PhysicalNode {
 				else {
 					return new Response(false, "Command not supported").serialize();
 				}
-			
 			}
 			else {
 				return "Command not supported";

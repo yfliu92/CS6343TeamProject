@@ -55,8 +55,8 @@ abstract public class ActiveGossipThread implements Runnable {
                 else if(cmd.startsWith("send"))
                 {
                     String text = cmd.split(" ",2)[1];
-                    sendmeMessage(_gossipManager.getMyself(),text);
-                    sendMessage(_gossipManager.getMyself(), _gossipManager.getMemberList(),text);
+                    //sendmeMessage(_gossipManager.getMyself(),text);
+                    sendMessage(_gossipManager.getMyself(), text);
                 }
                 else if(cmd.startsWith("readfile"))
                 {
@@ -78,8 +78,8 @@ abstract public class ActiveGossipThread implements Runnable {
                     for(String tmp : cmds)
                     {   
                         System.out.println(tmp);
-                        sendmeMessage(_gossipManager.getMyself(),tmp);
-                        sendMessage(_gossipManager.getMyself(), _gossipManager.getMemberList(),tmp);
+                        //sendmeMessage(_gossipManager.getMyself(),tmp);
+                        sendMessage(_gossipManager.getMyself(),tmp);
                         Thread.sleep(1000);
                     }   
                 }
@@ -103,7 +103,7 @@ abstract public class ActiveGossipThread implements Runnable {
 	 * incremented our own heartbeat.
 	 */
 	abstract protected void sendMembershipList(LocalGossipMember me, ArrayList<LocalGossipMember> memberList);
-	abstract protected void sendMessage(LocalGossipMember me, ArrayList<LocalGossipMember> memberList,String text);
+	abstract protected void sendMessage(LocalGossipMember me, String text);
 	abstract protected void sendmeMessage(LocalGossipMember me, String text);
 
 	/**

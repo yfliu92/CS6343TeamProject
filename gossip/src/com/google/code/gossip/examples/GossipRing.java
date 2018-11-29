@@ -21,28 +21,40 @@ public class GossipRing extends Thread {
 	private static final int NUMBER_OF_CLIENTS = 3;
     private int port;
     private String ip;
+    private int port1;
+    private String ip1;
+    private int port2;
+    private String ip2;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-        if(args.length < 2)
+        if(args.length < 6)
         {   
-            System.out.println("java GossipRing [ip] [port]");
+            System.out.println("java GossipRing [ip] [port] [brother_ip1] [brother_port1] [brother_ip2] [brother_port2]");
             System.exit(0);
         }
         String ip = args[0];
         int port = Integer.parseInt(args[1]);
-		new GossipRing(ip, port);
+        String ip1 = args[2];
+        int port1 = Integer.parseInt(args[3]);
+        String ip2 = args[4];
+        int port2 = Integer.parseInt(args[5]);
+		new GossipRing(ip, port, ip1, port1, ip2, port2);
 	}
 	
 	/**
 	 * Constructor.
 	 * This will start the this thread.
 	 */
-	public GossipRing(String ip, int port) {
+	public GossipRing(String ip, int port, String ip1, int port1, String ip2, int port2) {
         this.ip = ip;
         this.port = port;
+        this.ip1 = ip1;
+        this.port1 = port1;
+        this.ip2 = ip2;
+        this.port2 = port2;
 		start();
 	}
 
@@ -55,8 +67,8 @@ public class GossipRing extends Thread {
 			// Get my ip address.
 			GossipMember startupMember = new RemoteGossipMember(ip, port);
 			ArrayList<GossipMember> teamMembers = new ArrayList<GossipMember>();
-			teamMembers.add(new RemoteGossipMember(ip, port + 1));
-			teamMembers.add(new RemoteGossipMember(ip, port + 2));
+			teamMembers.add(new RemoteGossipMember(ip1, port1));
+			teamMembers.add(new RemoteGossipMember(ip2, port2));
 			
 			// Lets start the gossip clients.
 			// Start the clients, waiting cleaning-interval + 1 second between them which will show the dead list handling.

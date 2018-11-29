@@ -1,20 +1,24 @@
 package com.google.code.gossip.manager.Ring;
 
 import java.util.*;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonArrayBuilder;
+import javax.json.*;
+import java.io.*;
 
 import com.google.code.gossip.manager.Ring.Hashing;
 
 public class BinarySearchList extends ArrayList<PhysicalNode> {
     private ProxyServer proxy;
+    public int epoch;
+
+    public BinarySearchList(int epoch)
+    {
+        this.epoch = epoch;
+    }
 
     public BinarySearchList(ProxyServer proxy)
     {
         this.proxy = proxy;
+        epoch = 0;
     }
 
     public boolean checkExist(int hash) {
@@ -210,6 +214,7 @@ public class BinarySearchList extends ArrayList<PhysicalNode> {
 
     public String addNode(PhysicalNode node)
     {
+        this.epoch +=1;
         StringBuilder result = new StringBuilder();
         int prev_node = this.find(node);
         //System.out.println("prev_node:" + prev_node);
@@ -226,9 +231,61 @@ public class BinarySearchList extends ArrayList<PhysicalNode> {
         }
         return result.toString();
     }
+
+    public String updateNode(String info)
+    {
+        String str;
+        JsonObject jsonObject = null;
+        //System.out.println(info);
+        JsonReader jsonReader = Json.createReader(new StringReader(info));
+        jsonObject = jsonReader.readObject();
+        int epoch = jsonObject.getInt("epoch");
+        if(this.epoch >= epoch)
+        {
+            return "Newest DHT Table, No need to update.";
+        }
+        String table = jsonObject.getJsonObject("jsonResult").get("table").toString();
+        System.out.println(table);
+        jsonReader = Json.createReader(new StringReader(table));
+        JsonArray jsonArray = jsonReader.readArray();
+        int n = jsonArray.size();
+        int m = this.size();
+        if(n == m)
+        {}
+        else if(n > m)
+        {
+            for(int i = 0; i < n - m; i++)
+                this.add(new PhysicalNode());
+        }
+        else if(n < m)
+        {
+            for(int i = 0; i < m - n; i++)
+                this.remove(0);
+        }
+        else
+        {
+            System.out.println("Unexpected situation: different BinarySearchList list size" + n + m);
+        }
+        for (int i = 0; i < n; i++) {
+            JsonObject memberJSONObject = jsonArray.getJsonObject(i);
+            // Now the array should contain 3 objects (hostname, port and heartbeat).
+            if (memberJSONObject.size() == 5) {
+                String id = memberJSONObject.getString("id");
+                int start_vir = memberJSONObject.getInt("start_vir");
+                int end_vir = memberJSONObject.getInt("end_vir");
+                int back_start_vir = memberJSONObject.getInt("backup_start_vir");
+                int back_end_vir = memberJSONObject.getInt("backup_end_vir");
+                this.get(i).setInfo(id, start_vir, end_vir, back_start_vir, back_end_vir);
+            } else {
+                System.out.println("The received member object does not contain 3 objects:\n" + memberJSONObject.toString());
+            }
+        }
+        return "Update DHT Table successed";
+    }
     
     public String deleteNode(PhysicalNode node)
     {
+        this.epoch +=1;
         StringBuilder result = new StringBuilder();
         int cur_node = this.find(node);
         int prev_node = pre(cur_node);
@@ -248,6 +305,7 @@ public class BinarySearchList extends ArrayList<PhysicalNode> {
 
     public String loadBalance(int hash)
     {
+        this.epoch +=1;
         StringBuilder result = new StringBuilder();
         int cur_node = hash;
         int prev_node = pre(cur_node);

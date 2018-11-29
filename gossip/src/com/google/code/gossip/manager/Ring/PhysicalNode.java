@@ -97,6 +97,18 @@ public class PhysicalNode implements Comparable<PhysicalNode>{
         this.back_end_vir = back_end_vir;
     }
 
+    public void setInfo(String id, int start_vir, int end_vir, int back_start_vir, int back_end_vir)
+    {
+        this.id = id;
+        this.status = STATUS_ACTIVE;
+        this.end_vir = end_vir;
+        this.start_vir = start_vir;
+        this.back_start_vir = back_start_vir;
+        this.back_end_vir = back_end_vir;
+        this.address = id.split("-")[0]; 
+        this.port = Integer.parseInt(id.split("-")[1]);
+    }
+
     public String getId() {
         return id;
     }
@@ -291,6 +303,12 @@ public class PhysicalNode implements Comparable<PhysicalNode>{
         return result;
     }
 
+    public String updateNode(String info)
+    {
+        String result = physicalNodes.updateNode(info);
+        return result;
+    }
+
     // Delete virtual node by its hash value
     public String deleteNode(int index)
     {
@@ -324,8 +342,8 @@ public class PhysicalNode implements Comparable<PhysicalNode>{
                 .add("id",this.id)
                 .add("start_vir",this.start_vir)
                 .add("end_vir",this.end_vir)
-                .add("backup start_vir", this.back_start_vir)
-                .add("backup end_vir", this.back_end_vir)
+                .add("backup_start_vir", this.back_start_vir)
+                .add("backup_end_vir", this.back_end_vir)
                 .build();
         return jsonObj;
     }

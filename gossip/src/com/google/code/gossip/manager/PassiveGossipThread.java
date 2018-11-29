@@ -8,6 +8,7 @@ import java.lang.String;
 import java.io.*;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,6 +39,8 @@ abstract public class PassiveGossipThread implements Runnable {
 
     private ServerSocket _ss;
 
+    private ExecutorService executorService;
+
 	public PassiveGossipThread(GossipManager gossipManager) {
 		_gossipManager = gossipManager;
 		
@@ -49,6 +52,7 @@ abstract public class PassiveGossipThread implements Runnable {
 			GossipService.info("Gossip service successfully initialized on port " + _gossipManager.getMyself().getPort());
 			GossipService.debug("I am " + _gossipManager.getMyself());
             _ss = new ServerSocket(_gossipManager.getMyself().getPort());
+            executorService = Executors.newFixedThreadPool(1000);
         } catch (SocketException ex) {
 			// The port is probably already in use.
 			_server = null;
@@ -73,7 +77,27 @@ abstract public class PassiveGossipThread implements Runnable {
         DataStore dataStore = new DataStore();
 		while(_keepRunning.get()) {
 		    try {
-                Socket s = _ss.accept();
+                Socket socket = _ss.accept();
+                executorService.execute(new Handler(socket, proxy, dataStore));
+		    } catch (IOException e) {
+			    e.printStackTrace();
+			    _keepRunning.set(false);
+		    }
+		}
+	}
+
+    class Handler implements Runnable
+    {
+        private Socket s;
+        ProxyServer proxy;
+        DataStore dataStore;
+        public Handler(Socket socket, ProxyServer proxy, DataStore dataStore) {
+            this.s = socket;
+            this.proxy = proxy;
+            this.dataStore = dataStore;
+        }
+        public void run() {
+			try {
                 GossipService.debug("A new client is connected : " + s);
                 BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
                 PrintWriter output = new PrintWriter(s.getOutputStream(), true);
@@ -89,14 +113,12 @@ abstract public class PassiveGossipThread implements Runnable {
 					String receivedMessage = msg;
 					//GossipService.debug("Received message (" + packet_length + " bytes): " + receivedMessage);
                     GossipService.debug("Handle received message: " + receivedMessage);
-					try {
+					ArrayList<GossipMember> remoteGossipMembers = new ArrayList<GossipMember>();
 						
-						ArrayList<GossipMember> remoteGossipMembers = new ArrayList<GossipMember>();
-						
-						RemoteGossipMember senderMember = null;
-                        String[] tmp_split = receivedMessage.split(";");
-						if(tmp_split[0].startsWith("Sync:"))
-                        {
+					RemoteGossipMember senderMember = null;
+                    String[] tmp_split = receivedMessage.split(";");
+					if(tmp_split[0].startsWith("Sync:"))
+                    {
 						GossipService.debug("Received member list:");
 						// Convert the received JSON message to a JSON array.
                         int sync_variable = Integer.parseInt(tmp_split[0].split(":")[1]);
@@ -130,37 +152,49 @@ abstract public class PassiveGossipThread implements Runnable {
                             _gossipManager.getMyself()._sync_variable = sync_variable;
                             reSendMembershipList(_gossipManager.getMyself(), senderMember, _gossipManager.getMemberList());
                         }
-                        }
-                        else if(tmp_split[0].startsWith("Resend:"))
+                    }
+                    //read or write
+                    else if(tmp_split[0].startsWith("Resend:"))
+                    {
+                        if(tmp_split.length > 1)
                         {
-                            if(tmp_split.length > 1)
-                            {
-                                Thread t = proxy.new ClientHandler(s, tmp_split[1], output, proxy, dataStore);
-                                t.start();
-                            }
+                            String response = proxy.getResponse(tmp_split[1], dataStore);
+                            GossipService.debug(response);
+                            output.println(response);
+                            output.flush();
+                        }
+                    }
+                    //modify DHT table
+                    else
+                    {
+                        String response = proxy.getResponse(receivedMessage, dataStore);
+                        output.println(response);
+                        System.out.println(response);
+                        output.flush();
+                        String cmd = receivedMessage.split(" ")[0];
+                        if(cmd.equals("add") || cmd.equals("remove") || cmd.equals("balance"))
+                        {
+                            String information = proxy.getResponse("info", dataStore);
+                            information = "update " + information;
+                            reSendMessage(_gossipManager.getMyself(), _gossipManager.getMemberList(), information);
                         }
                         else
                         {
-                            Thread t = proxy.new ClientHandler(s, tmp_split[0], output, proxy, dataStore);
-                            t.start();
-                            reSendMessage(_gossipManager.getMyself(), _gossipManager.getMemberList(), tmp_split[0]);
+                            reSendMessage(_gossipManager.getMyself(), _gossipManager.getMemberList(), receivedMessage);
                         }
-					} catch (JSONException e) {
-                        e.printStackTrace();
-						GossipService.error("The received message is not well-formed JSON. The following message has been dropped:\n" + receivedMessage);
-					}
-                    catch (Exception e){
-                        s.close(); 
-                        e.printStackTrace();
                     }
                 }
-                s.close();
-		    } catch (IOException e) {
-			    e.printStackTrace();
-			    _keepRunning.set(false);
-		    }
-		}
-	}
+                if(s != null)
+                    s.close(); 
+			} catch (JSONException e) {
+                e.printStackTrace();
+	    		GossipService.error("The received message is not well-formed JSON.\n");
+			}
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
 	
 	/**
 	 * Abstract method for merging the local and remote list.
@@ -194,7 +228,6 @@ abstract public class PassiveGossipThread implements Runnable {
                     PrintWriter output = new PrintWriter(outputStream, true);
                     output.println(sending_message);
                     output.flush();
-                    socket.close();
                 }
             } catch (IOException e1) {
                 GossipService.debug("Connection Failed");
@@ -247,7 +280,6 @@ abstract public class PassiveGossipThread implements Runnable {
                     PrintWriter output = new PrintWriter(outputStream, true);
                     output.println(sending_message);
                     output.flush();
-					socket.close();
 			        } catch (IOException e1) {
                         GossipService.debug("Connection Failed.");
 				        //e1.printStackTrace();
