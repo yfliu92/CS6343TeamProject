@@ -10,7 +10,6 @@
 package control_client;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,22 +18,16 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.io.Console;
 import java.util.Vector;
 import java.util.Map.Entry;
 import java.lang.String;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -46,9 +39,9 @@ import javax.json.JsonValue;
 import javax.json.JsonWriter;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 
-import dht.common.Hashing;
 import dht.server.Command;
 
 interface dht_table
@@ -596,7 +589,7 @@ public class control_client {
     	return tip;
     }
     
-    public static void main (String args[]) throws Exception{
+    public static void main (String args[]) {
     	control_client client = new control_client();
 
     	String serverAddress = "";
@@ -642,7 +635,12 @@ public class control_client {
         }
         
 	    inputFile = new File(xmlPath);
-	    config = reader.read(inputFile);
+	    try {
+			config = reader.read(inputFile);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	    port = Integer.parseInt(config.getRootElement().element("proxy").element("port").getStringValue());
 	    serverAddress = config.getRootElement().element("proxy").element("ip").getStringValue();
         
@@ -669,7 +667,12 @@ public class control_client {
 //            String cmd = cmds.remove(0);
         	String cmd = console.readLine("Input your command:");
             
-            client.processCommand(dhtType, cmd);
+            try {
+				client.processCommand(dhtType, cmd);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+//				e.printStackTrace();
+			}
         }
     }
 }

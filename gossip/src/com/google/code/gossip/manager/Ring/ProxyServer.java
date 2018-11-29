@@ -332,8 +332,8 @@ public class ProxyServer extends PhysicalNode {
                 	}
               
 	            } catch (IOException e) { 
-	            	System.out.println("Connection reset at " + s.getPort() + " ---- " + new Date().toString());
-	                e.printStackTrace(); 
+	            	// System.out.println("Connection reset at " + s.getPort() + " ---- " + new Date().toString());
+	                // e.printStackTrace(); 
 	            } 
 	    } 
 	}
