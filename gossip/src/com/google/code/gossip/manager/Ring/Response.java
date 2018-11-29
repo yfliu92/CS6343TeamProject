@@ -11,6 +11,7 @@ public class Response {
 	Boolean status;
 	String message = null;
 	String result = null;
+	int epoch = -1;
 	JsonObject jsonResult = null;
 	
 	public Response(boolean issuccess, String result) {
@@ -35,6 +36,13 @@ public class Response {
 		this.result = result;
 	}
 	
+	public Response(boolean issuccess, JsonObject jsonResult, String message, int epoch) {
+		this.status = issuccess;
+		this.message = message;
+        this.epoch = epoch;
+		this.jsonResult = jsonResult;
+	}
+
 	public JsonObject toJSON() {
 		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
 		jsonBuilder.add("status",this.status);
@@ -43,6 +51,9 @@ public class Response {
 		}
 		if (this.result != null) {
 			jsonBuilder.add("result",this.result);
+		}
+		if (this.epoch != -1) {
+			jsonBuilder.add("epoch",this.epoch);
 		}
 		if (this.jsonResult != null) {
 			jsonBuilder.add("jsonResult",this.jsonResult);

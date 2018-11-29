@@ -15,11 +15,16 @@ import java.io.FileReader;
 import java.net.*;
 import java.io.*;
 import javax.json.*;
+import java.util.*;
 
 import javax.swing.JOptionPane;
 import java.util.HashMap;
+import com.google.code.gossip.manager.Ring.BinarySearchList;
+import com.google.code.gossip.manager.Ring.Hashing;
 
 public class client {
+    public static BinarySearchList physicalNodes;
+
     String getFileServerFromCentral(Socket centralServer, String filename)
     {
         try(PrintWriter out = new PrintWriter(centralServer.getOutputStream(), true))
@@ -49,13 +54,11 @@ public class client {
         String ip = args[0];
         int port = Integer.parseInt(args[1]);
         String filename = args[2];
-        //cache map from filename to server(ip+port), much to less
-        HashMap<String, String> cache1 = new HashMap<String, String>();
-        //cache map from server to socket, one to one
-        HashMap<String, Socket> cache2 = new HashMap<String, Socket>();
+        
+        BinarySearchList physicalNodes = new BinarySearchList(-1);
 
         //Socket centralServer = new Socket("localhost", 9090);
-        Vector<String> cmds = new Vector<String>();
+        ArrayList<String> cmds = new ArrayList<String>();
         File file = new File(filename);
         BufferedReader reader = null;
         try
@@ -65,7 +68,7 @@ public class client {
                     while ((tempString = reader.readLine()) != null)
                     {
                         System.out.println(tempString);
-                        cmds.addElement(tempString);
+                        cmds.add(tempString);
                     }
         }
         catch(IOException e)
@@ -84,54 +87,63 @@ public class client {
                         }
                     }
         }
-        BufferedReader input;
-        PrintWriter output;
-        Socket socket;
+        Socket socket = new Socket();
+        HashMap<SocketAddress, Socket> map = new HashMap<SocketAddress, Socket>();
         try {
+        while(true)
+        {
             SocketAddress socketAddress = new InetSocketAddress(ip, port);
-            socket = new Socket();
             socket.connect(socketAddress, 1000);
             InputStream inputStream = socket.getInputStream();
             OutputStream outputStream = socket.getOutputStream();
-            input = new BufferedReader(new InputStreamReader(inputStream));
-            output = new PrintWriter(outputStream, true);
-            for(String cmd : cmds)
+            BufferedReader input = new BufferedReader(new InputStreamReader(inputStream));
+            PrintWriter output = new PrintWriter(outputStream, true);
+            String sending_message = "Resend:0;info";
+            //read DHT table
+            output.println(sending_message);
+            output.flush();
+            String response = input.readLine();
+            System.out.println("Response received: " + response + " ---- " + new Date().toString());
+            physicalNodes.updateNode(response);
+            Thread.sleep(3000);
+            while(cmds.size() != 0)
             {
-                String file_name = cmd.split(" ")[1];
-                if(!cache1.containsKey(file_name))
+                Socket socket2 = null;
+                String rw_filename = cmds.get(0).split(" ")[1];
+                int hash = Hashing.getHashValFromKeyword(rw_filename);
+                int index = physicalNodes.find(hash);
+                SocketAddress socketAddress2 = new InetSocketAddress(physicalNodes.get(index).getAddress(), physicalNodes.get(index).getPort());
+                System.out.println(socketAddress2);
+                if(!map.containsKey(socketAddress2))
                 {
-                    String sending_message = "Resend:0;find " + file_name;
-                    System.out.println("Sending command" + " ---- " + sending_message + " ---- ");
-                    output.println(sending_message);
-                    output.flush();
-                    String response = input.readLine();
-                    System.out.println("Response received: " + response + " ---- " + new Date().toString());
-                    JsonReader jsonReader = Json.createReader(new StringReader(response));
-                    JsonObject jsonObject = jsonReader.readObject();
-                    String serverAddress = jsonObject.getJsonObject("jsonResult").get("id").toString().replace("\"", "");
-                    //String serverAddress = getFileServerFromCentral(centralServer, filename);
-                    //String serverAddress = getFileServerFromDistribute();
-                    cache1.put(file_name, serverAddress);
-                    if(!cache2.containsKey(serverAddress))
-                    {
-                        String info[] = serverAddress.split("-");
-                        Socket s_tmp = new Socket(info[0], Integer.parseInt(info[1]));
-                        cache2.put(serverAddress, s_tmp);
-                    }
+                    socket2 = new Socket();
+                    socket2.connect(socketAddress2, 1000);
+                    map.put(socketAddress2, socket2);
                 }
-                Socket s2 = cache2.get(cache1.get(file_name));
-                PrintWriter out2 = new PrintWriter(s2.getOutputStream(), true);
-                out2.println(cmd);
-                BufferedReader input2 = new BufferedReader(new InputStreamReader(s2.getInputStream()));
-                String answer = input2.readLine();
-                String timeReceived = new Date().toString();
-                System.out.println(timeReceived + " -- response Received: " + answer);
+                InputStream inputStream2 = map.get(socketAddress2).getInputStream();
+                OutputStream outputStream2 = map.get(socketAddress2).getOutputStream();
+                BufferedReader input2 = new BufferedReader(new InputStreamReader(inputStream2));
+                PrintWriter output2 = new PrintWriter(outputStream2, true);
+                String sending_message2 = "Resend:0;" + cmds.get(0);
+                System.out.println("Sending command" + " ---- " + sending_message2 + " ---- ");
+                output2.println(sending_message2);
+                output2.flush();
+                String response2 = input2.readLine();
+                System.out.println("Response received: " + response2 + " ---- " + new Date().toString());
+                if(response2.contains("failure"))
+                {
+                    break;
+                }
+                cmds.remove(0);
                 Thread.sleep(1000);
             }
-            socket.close();
+            if(cmds.size() == 0)
+                break;
+        }
+        socket.close();
         } catch (IOException e1) {
                     System.out.println("Connection Failed.");
-                        //e1.printStackTrace();
+                    e1.printStackTrace();
         }
         catch(Exception e){
                         e.printStackTrace();
