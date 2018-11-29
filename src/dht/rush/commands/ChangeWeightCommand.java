@@ -1,5 +1,6 @@
 package dht.rush.commands;
 
+import dht.rush.CentralServer;
 import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
 import dht.rush.utils.RushUtil;
@@ -18,6 +19,7 @@ public class ChangeWeightCommand extends ServerCommand {
     private Double weight;
     private String subClusterId;
     private ClusterStructureMap clusterStructureMap;
+    private CentralServer cs;
 
     @Override
     public void run() throws IOException {
@@ -69,6 +71,10 @@ public class ChangeWeightCommand extends ServerCommand {
             System.out.println("REPONSE STATUS: " + params.getString("status") + ", " + "message: " + params.getString("message"));
         } else {
             System.out.println("Response Sent");
+        }
+        
+        if (status == 1) {
+        	this.cs.initializeDataNode(this.cs.getRoot());
         }
     }
 
@@ -122,5 +128,9 @@ public class ChangeWeightCommand extends ServerCommand {
 
     public void setWeight(double weight) {
         this.weight = weight;
+    }
+    
+    public void setCentralServer(CentralServer cs) {
+        this.cs = cs;
     }
 }

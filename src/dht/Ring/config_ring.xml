@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Ring>
-    // Number of replicas
+    <!-- Number of replicas -->
     <replicationLevel>3</replicationLevel>
     <hashRange>100000</hashRange>
     <!-- The number of virtual nodes mapped to each physical node -->
     <vm_to_pm_ratio>10</vm_to_pm_ratio>
     <total_CCcommands>100</total_CCcommands>
+    <proxy>
+        <ip>localhost</ip>
+        <port>9091</port>
+    </proxy>
     <port>
     <startPort>8100</startPort>
     <portRange>100</portRange>

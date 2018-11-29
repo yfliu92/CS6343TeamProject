@@ -1,5 +1,6 @@
 package dht.rush.commands;
 
+import dht.rush.CentralServer;
 import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
 
@@ -15,6 +16,7 @@ import java.util.Map;
 public class WriteCommand extends ServerCommand {
     private String fileName;
     private ClusterStructureMap clusterStructureMap;
+    private CentralServer cs;
 
     @Override
     public void run() throws IOException {
@@ -43,6 +45,8 @@ public class WriteCommand extends ServerCommand {
         } else {
             System.out.println("Response Sent");
         }
+        
+        this.cs.initializeDataNode(this.cs.getRoot());
     }
 
     public String getFileName() {
@@ -59,5 +63,9 @@ public class WriteCommand extends ServerCommand {
 
     public void setClusterStructureMap(ClusterStructureMap clusterStructureMap) {
         this.clusterStructureMap = clusterStructureMap;
+    }
+    
+    public void setCentralServer(CentralServer cs) {
+        this.cs = cs;
     }
 }

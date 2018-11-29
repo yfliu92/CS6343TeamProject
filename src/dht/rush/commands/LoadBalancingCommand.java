@@ -1,5 +1,6 @@
 package dht.rush.commands;
 
+import dht.rush.CentralServer;
 import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
 import dht.rush.utils.RushUtil;
@@ -15,6 +16,7 @@ public class LoadBalancingCommand extends ServerCommand {
     private Cluster root;
     private String subClusterId;
     private ClusterStructureMap clusterStructureMap;
+    private CentralServer cs;
 
     @Override
     public void run() throws IOException {
@@ -57,6 +59,10 @@ public class LoadBalancingCommand extends ServerCommand {
         } else {
             System.out.println("Response Sent");
         }
+        
+        if (status == 1) {
+        	this.cs.initializeDataNode(this.cs.getRoot());
+        }
     }
 
     public Cluster getRoot() {
@@ -81,5 +87,9 @@ public class LoadBalancingCommand extends ServerCommand {
 
     public void setClusterStructureMap(ClusterStructureMap clusterStructureMap) {
         this.clusterStructureMap = clusterStructureMap;
+    }
+    
+    public void setCentralServer(CentralServer cs) {
+        this.cs = cs;
     }
 }

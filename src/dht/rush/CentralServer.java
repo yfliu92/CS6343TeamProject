@@ -5,16 +5,19 @@ import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
 import dht.rush.commands.*;
 import dht.rush.utils.ConfigurationUtil;
-import dht.rush.utils.GenerateControlClientCommandUtil;
 import dht.rush.utils.StreamUtil;
 import dht.server.Command;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonWriter;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -22,24 +25,85 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 public class CentralServer {
     private Cluster root;
     private ClusterStructureMap clusterStructureMap;
+    Document config;
+    int port;
+    String IP;
     
     public ClusterStructureMap getClusterMap() {
     	return this.clusterStructureMap;
     }
+    
+    public Cluster getRoot() {
+    	return this.root;
+    }
+    
+	public static void runDataNodeBatch(String thisIP) {
+		String rootPath = System.getProperty("user.dir");
+        String xmlPath = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+//      String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+        File inputFile = new File(xmlPath);
+        SAXReader reader = new SAXReader();
+        
+        Document config = null;
+        try {
+        	config = reader.read(inputFile);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        Element rootElement = config.getRootElement();
+        int startPort = Integer.parseInt(rootElement.element("subClusters").element("subCluster").element("port").getStringValue());
+        int portRange = Integer.parseInt(rootElement.element("offset").getStringValue());
+        
+		for (int j = 0; j < portRange; j++){
+			int portNum = startPort + j;
+			System.out.println(portNum);
+	    	Thread t = new RunDataNode_Rush(thisIP, portNum);
+	    	t.start();
+		}
+	}
 
     public static void main(String[] args) {
+    	
+    	if (args.length > 0) {
+    		if (args.length == 3 || args.length == 2) {
+    			String ip = args.length == 3 ? args[2] : "localhost";
+    			if (args[0].equals("run") && args[1].equals("datanode")) {
+    	    		runDataNodeBatch(ip);
+    	    		System.out.println("All data nodes on the machine are running...");
+    			}
+    			else {
+        			System.out.println("Input commands:");
+        			System.out.println("run datanode <IP>");
+        			System.out.println("run datanode");
+    			}
+    		}
+    		else {
+    			System.out.println("Input commands:");
+    			System.out.println("run datanode <IP>");
+    			System.out.println("run datanode");
+    		}
+
+    		return;
+    	}
+    	
         CentralServer cs = new CentralServer();
         String rootPath = System.getProperty("user.dir");
 //        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
 
         String xmlPath = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
-        cs.clusterStructureMap = ConfigurationUtil.parseConfig(xmlPath);
+        
+        cs.initializeRush(xmlPath);
+        cs.clusterStructureMap = ConfigurationUtil.parseConfig(cs.config);
 
         if (cs.clusterStructureMap == null) {
             System.out.println("Central Server initialization failed");
@@ -56,9 +120,26 @@ public class CentralServer {
 //        System.out.println(cs.clusterStructureMap.toJSON().toString());
         
         cs.initializeDataNode(cs.root);
+        
+//        int port = cs.port;
+//        String serverAddress = cs.IP;
         try {
-            cs.startup();
+            cs.startup(cs);
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void initializeRush(String xmlPath){
+    	try {
+            System.out.println(xmlPath);
+            File inputFile = new File(xmlPath);
+            SAXReader reader = new SAXReader();
+            config = reader.read(inputFile);
+            port = Integer.parseInt(config.getRootElement().element("proxy").element("port").getStringValue());
+            IP = config.getRootElement().element("proxy").element("ip").getStringValue();
+        }catch(Exception e) {
+        	System.out.println("Failed to initialize");
             e.printStackTrace();
         }
     }
@@ -67,13 +148,16 @@ public class CentralServer {
         if (root == null) {
         	return;
         }
-//        System.out.println("root" + root);
-        
+    
         try {
-        	pushDHT(root.getIp(), Integer.valueOf(root.getPort()));
+        	if (!root.getId().equals("R") && !root.getPort().equals("")) {
+        		pushDHT(root.getIp(), Integer.valueOf(root.getPort()));
+        		System.out.println("DHT successfully pushed to Data Node " + root.getIp() + ":" + root.getPort());
+        	}
         }
         catch (Exception e){
-        	
+        	System.out.println("DHT failed to push to Data Node " + root.getIp() + ":" + root.getPort());
+//        	System.out.println(root.toJSON());
         }
         
         if (root.getSubClusters() != null && root.getSubClusters().size() > 0) {
@@ -100,7 +184,7 @@ public class CentralServer {
 	    	Thread.sleep(1000);
 			if (connected) {
 				
-				System.out.println("Connected to Data Node Server at " + serverAddress + " " + port);
+				System.out.println("Connected to Data Node Server at " + serverAddress + ":" + port);
 				
 				JsonObject jobj = new Response(true, this.clusterStructureMap.toJSON(), "dht push").toJSON();
 				
@@ -126,11 +210,8 @@ public class CentralServer {
 		            System.out.println();
 		         }
 				
-//		        Thread.sleep(3000);
-//				client.processCommand(1, "dht push");
-//				client.processCommand(1, "exit");
-//				client.socket.close();
-//				System.out.println("Disconnected to Data Node Server at " + serverAddress + " " + port);
+		        client.disconnectServer();
+//		        System.out.println("Disconnected with " + serverAddress + ":" + port);
 				
 				return true;
 			}
@@ -166,8 +247,10 @@ public class CentralServer {
         final BufferedReader input;
         final PrintWriter output;
 	    final Socket s;
+	    final CentralServer cs;
 	  
-	    public ClientHandler(Socket s, InputStream inputStream, OutputStream outputStream, BufferedReader input, PrintWriter output) {
+	    public ClientHandler(CentralServer cs, Socket s, InputStream inputStream, OutputStream outputStream, BufferedReader input, PrintWriter output) {
+	    	this.cs = cs;
 	    	this.s = s; 
 	    	this.inputStream = inputStream;
 	        this.outputStream = outputStream;
@@ -198,20 +281,33 @@ public class CentralServer {
 	                }
 	                else { // msg != null
 	                	JsonObject requestObject = StreamUtil.parseRequest(msg);
-                    	System.out.println("Request received from " + s.getPort() + ": " + msg + " ---- " + new Date().toString());
+
+						String requestStr = msg.length() > 200 ? msg.substring(0, 200) + "...": msg; 
+
+                    	System.out.println("Request received from " + s.getPort() + ": " + requestStr + " ---- " + new Date().toString());
                     	System.out.println();
                     	
                       if (requestObject != null) {
-	                      ServerCommand command = dispatchCommand(requestObject);
+	                      ServerCommand command = dispatchCommand(requestObject, this.cs);
 	                      command.setInputStream(inputStream);
 	                      command.setOutputStream(outputStream);
 	                      command.run();
+	                      
+//	                      JsonObject params = requestObject.getJsonObject("parameters");
+//	                      String method = requestObject.getString("method").toLowerCase();
+//	                      String operation = params.containsKey("operation") ? params.getString("operation") : "";
+//	                      if (method.equals("dht") && operation.equals("push") && !params.containsKey("series")) {
+//	                    	  this.cs.initializeDataNode(this.cs.root);
+//	                      }
+//	                      else if (method.equals("addnode") || method.equals("deletenode") || method.equals("loadbalancing")) {
+//	                    	  this.cs.initializeDataNode(this.cs.root);
+//	                      }
 	                  }
                 	}
               
 	            } catch (IOException e) { 
-	            	System.out.println("Connection reset at " + s.getPort() + " ---- " + new Date().toString());
-	                e.printStackTrace(); 
+	            	// System.out.println("Connection reset at " + s.getPort() + " ---- " + new Date().toString());
+	                // e.printStackTrace(); 
             		break;
 	            } 
 	        } 
@@ -227,13 +323,10 @@ public class CentralServer {
 	    } 
 	}
 	
-	public void startup() throws IOException {
-//		CentralServer server = new CentralServer();
-//		proxy.initializeDataNode();
-	    int port = 8100;
-        ServerSocket ss = new ServerSocket(port); 
+	public void startup(CentralServer cs) throws IOException {
+        ServerSocket ss = new ServerSocket(this.port); 
         
-        System.out.println("Rush server running at " + String.valueOf(port));
+        System.out.println("Rush proxy server running at " + String.valueOf(port));
           
         while (true)  
         { 
@@ -243,7 +336,7 @@ public class CentralServer {
             {
                 s = ss.accept(); 
                   
-                System.out.println("A new client is connected : " + s); 
+                System.out.println("A new client is connected to Proxy Server: " + s); 
                   
                 InputStream inputStream = s.getInputStream();
                 OutputStream outputStream = s.getOutputStream();
@@ -251,7 +344,7 @@ public class CentralServer {
 		        PrintWriter output = new PrintWriter(outputStream, true);
 
 //                Thread t = server.new ClientHandler(s, inputStream, outputStream, input, output); 
-                Thread t = new ClientHandler(s, inputStream, outputStream, input, output); 
+                Thread t = new ClientHandler(cs, s, inputStream, outputStream, input, output); 
 
                 t.start(); 
                   
@@ -263,55 +356,12 @@ public class CentralServer {
         } 
 	}
 
-
-//    public void startup() throws IOException {
-//        int port = 8100;
-//        ServerSocket serverSocket = new ServerSocket(port);
-//        InputStream inputStream = null;
-//        OutputStream outputStream = null;
-//        BufferedReader in = null;
-//        PrintWriter out = null;
-//
-//        System.out.println("Rush server running at " + port);
-//        while (true) {
-//            try {
-//                Socket clientSocket = serverSocket.accept();
-//                System.out.println("Connection accepted" + " ---- " + new Date().toString());
-//
-//                inputStream = clientSocket.getInputStream();
-//                outputStream = clientSocket.getOutputStream();
-//
-//                in = new BufferedReader(new InputStreamReader(inputStream));
-//                out = new PrintWriter(outputStream, true);
-//                String str;
-//                JsonObject requestObject = null;
-//                while (true && in != null) {
-//                    str = in.readLine();
-//                    if (str != null) {
-//                        requestObject = StreamUtil.parseRequest(str);
-//                        if (requestObject != null) {
-//                            ServerCommand command = dispatchCommand(requestObject);
-//                            command.setInputStream(inputStream);
-//                            command.setOutputStream(outputStream);
-//                            command.run();
-//                        }
-//                    } else {
-//                        System.out.println("Connection end " + " ---- " + new Date().toString());
-//                        break;
-//                    }
-//                }
-//            } catch (Exception e) {
-//                System.out.println("Connection exception");
-//                StreamUtil.closeSocket(inputStream);
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
-    private ServerCommand dispatchCommand(JsonObject requestObject) throws IOException {
+    private ServerCommand dispatchCommand(JsonObject requestObject, CentralServer server) throws IOException {
         String method = requestObject.getString("method").toLowerCase();
         ServerCommand serverCommand = null;
         JsonObject params = null;
+        
+        System.out.println("dispatch command: " + method);
         if (method.toLowerCase().equals("addnode")) {
                 System.out.println("Adding node command");
                 serverCommand = new AddNodeCommand();
@@ -321,6 +371,7 @@ public class CentralServer {
                 ((AddNodeCommand) serverCommand).setPort(params.getString("port"));
                 ((AddNodeCommand) serverCommand).setWeight(Double.parseDouble(params.getString("weight")));
                 ((AddNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((AddNodeCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("deletenode")) {
                 System.out.println("Deleting node command");
@@ -330,6 +381,7 @@ public class CentralServer {
                 ((DeleteNodeCommand) serverCommand).setIp(params.getString("ip"));
                 ((DeleteNodeCommand) serverCommand).setPort(params.getString("port"));
                 ((DeleteNodeCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((DeleteNodeCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("getnodes")) {
                 System.out.println("Getting node command");
@@ -344,6 +396,7 @@ public class CentralServer {
                 params = requestObject.getJsonObject("parameters");
                 ((LoadBalancingCommand) serverCommand).setSubClusterId(params.getString("subClusterId"));
                 ((LoadBalancingCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((LoadBalancingCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("write")) {
                 System.out.println("Start to write a file into the cluster");
@@ -351,6 +404,7 @@ public class CentralServer {
                 params = requestObject.getJsonObject("parameters");
                 ((WriteCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
                 ((WriteCommand) serverCommand).setFileName(params.getString("fileName"));
+                ((WriteCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("read")) {
                 System.out.println("Start to return a physical node for the file");
@@ -373,13 +427,26 @@ public class CentralServer {
                 ((ChangeWeightCommand) serverCommand).setPort(params.getString("port"));
                 ((ChangeWeightCommand) serverCommand).setWeight(Double.parseDouble(params.getString("weight")));
                 ((ChangeWeightCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+                ((ChangeWeightCommand) serverCommand).setCentralServer(server);
         }
         else if (method.toLowerCase().equals("dht")) {
             	System.out.println("DHT fetch command");
             	serverCommand = new GetDHTCommand();
             	params = requestObject.getJsonObject("parameters");
-            	((GetDHTCommand) serverCommand).setFetchType(params.getString("fetchtype"));
+            	JsonArray jsonCommandSeries = params.getJsonArray("series");
+            	List<String> commandSeries = new LinkedList<String>();
+            	if (jsonCommandSeries != null) {
+                	for(int k = 0; k < jsonCommandSeries.size(); k++) {
+                		commandSeries.add(jsonCommandSeries.getString(k).toString());
+                	}
+            	}
+            	
+            	System.out.println(Arrays.toString(commandSeries.toArray()));
+
+            	((GetDHTCommand) serverCommand).setOperation(params.getString("operation"));
+            	((GetDHTCommand) serverCommand).setCommandSeries(commandSeries);
             	((GetDHTCommand) serverCommand).setClusterStructureMap(this.clusterStructureMap);
+            	((GetDHTCommand) serverCommand).setCentralServer(server);
         }
         else {
                 System.out.println("Unknown Request " + method.toLowerCase());
@@ -399,11 +466,6 @@ class ProxyClient_Rush{
     CentralServer proxy;
 	public ProxyClient_Rush(CentralServer proxy) { 
 		this.proxy = proxy;
-//		this.address = address;
-//		this.port = port;
-//    	this.socket = s; 
-//    	this.input = input;
-//        this.output = output;
 	}
 	
     public boolean connectServer(String serverAddress, int port) {
@@ -418,7 +480,6 @@ class ProxyClient_Rush{
 			this.input = new BufferedReader(new InputStreamReader(this.inputStream));
 
 	        System.out.println("Connected to server " + serverAddress + ":" + port + ", with local port " + this.socket.getLocalPort());
-//			socket.close();
 			return true;
  
 		} catch (SocketTimeoutException exception) {
@@ -433,7 +494,17 @@ class ProxyClient_Rush{
 		}
     }
     
-    
+    public void disconnectServer() {
+    	try {
+    		
+    		this.input.close();
+    		this.output.close();
+    		this.socket.close();
+    	}
+    	catch (Exception e) {
+//    		e.printStackTrace();
+    	}
+    }
     
     public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
     	String timeStamp = new Date().toString();
@@ -495,7 +566,7 @@ class ProxyClient_Rush{
 			  .build();
 			
 			  jobj = Json.createObjectBuilder()
-			  .add("method", "addNode")
+			  .add("method", "addnode")
 			  .add("parameters", params)
 			  .build();
 		}
@@ -507,7 +578,7 @@ class ProxyClient_Rush{
 	          .build();
 	
 	          jobj = Json.createObjectBuilder()
-	          .add("method", "deleteNode")
+	          .add("method", "deletenode")
 	          .add("parameters", params)
 	          .build();
 		}
@@ -517,7 +588,7 @@ class ProxyClient_Rush{
                     .build();
 
             jobj = Json.createObjectBuilder()
-                    .add("method", "getNodes")
+                    .add("method", "getnodes")
                     .add("parameters", params)
                     .build();
 		}
@@ -687,7 +758,7 @@ class RunDataNode_Rush extends Thread {
 			    System.out.println(line);
 			}
 			
-			System.out.println("Data Node " + p + " " + (p.isAlive() ? "running " + " at " + ip + ":" + dataPortNum : "not running"));
+			System.out.println("Data Node " + p + " " + (p.isAlive() ? "running " + "at " + ip + ":" + dataPortNum : "at " + ip + ":" + dataPortNum + " not running"));
 			
 			try {
 				p.waitFor();

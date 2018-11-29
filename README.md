@@ -26,7 +26,8 @@ java -classpath .:../lib/\* dht/Ring/client
 
 
 ## compile and run control client
-javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar control_client/control_client.java dht/server/Command.java
+--javac -cp /Users/jj/Downloads/javax.json-api-1.0.jar control_client/control_client.java dht/server/Command.java
+
 javac -classpath ../lib/\* control_client/*.java dht/server/Command.java dht/common/Hashing.java
 java -classpath .:../lib/\* control_client/control_client
 java -classpath .:../lib/\* control_client/client
@@ -38,13 +39,18 @@ java -classpath .:../lib/\* control_client/client
 javac -classpath ../lib/\* dht/rush/*.java dht/rush/clusters/*.java dht/rush/commands/*.java dht/common/response/*.java storage_server/Datum.java dht/common/Hashing.java dht/rush/utils/*.java dht/server/Command.java -Xlint:unchecked
 java -classpath .:../lib/\* dht/rush/CentralServer
 java -classpath .:../lib/\* dht/rush/test
+java -classpath .:../lib/\* dht/rush/DataNode
+java -classpath .:../lib/\* dht/rush/client
 
 
 ## compile and run Elastic DHT server
 javac -classpath ../lib/\* dht/elastic_DHT_centralized/*.java dht/server/Command.java dht/common/Hashing.java dht/common/response/Response.java
 java -classpath .:../lib/\* dht/elastic_DHT_centralized/ProxyServer
+java -classpath .:../lib/\* dht/elastic_DHT_centralized/DataNode
+java -classpath .:../lib/\* dht/elastic_DHT_centralized/client
 
-## compile and run Data Node and test client
+
+## run Data Node and normal client
 ## Data node should already be compiled with each proxy server
 --javac -classpath ../lib/\* control_client/*.java dht/server/Command.java dht/Ring/*.java dht/common/Hashing.java dht/common/response/*.java storage_server/Datum.java
 --java -classpath .:../lib/\* control_client/DataNode

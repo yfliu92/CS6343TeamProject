@@ -13,18 +13,13 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.Map.Entry;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonValue;
 import javax.json.JsonWriter;
 
-import dht.common.Hashing;
 import dht.common.response.Response;
 import dht.server.Command;
 
@@ -73,14 +68,16 @@ public class client {
     public static void main(String[] args) throws Exception {
         System.out.println("==== Welcome to Client !!! =====");
         
-    	String serverAddress = "localhost";
+        String serverAddress = "localhost";
     	int port = 0; 
     	
     	int dhtType = 3;
     	
-    	if (args.length == 3) {
+    	if (args.length >= 2) {
     		serverAddress = args[0];
     		port = Integer.valueOf(args[1]);
+    	}
+    	if (args.length == 3) {
     		dhtType = Integer.valueOf(args[2]);
     	}
     	String dhtName = dhtType == 1 ? "DHT Ring" : dhtType == 2 ? "DHT Ceph" : dhtType == 3 ? "Elastic DHT" : "";
@@ -197,20 +194,13 @@ class RWClient {
     }
     
     public void parseResponse(JsonObject res, Command command, BufferedReader input, PrintWriter output) throws Exception {
-    	if (command.getAction().equals("read")) {
-    		if (command.getCommandSeries().size() > 0) {
-
-    			String physicalnodeid_remote = res.getString("result");
-    			System.out.println("Physical Node Ids from Remote DHT: " + physicalnodeid_remote);
-    			return;
+    	if (command.getAction().equals("info")) {
+    		String message = "Data Epoch number: ";
+    		if (res.containsKey("message") ) {
+    			message = res.getString("message");
     		}
-    	}
-    	else if (command.getAction().equals("write")) {
-    		
-    	}
-    	else if (command.getAction().equals("info")) {
     		if (res.containsKey("result")) {
-    			System.out.println("Epoch number: " + res.getString("result"));
+    			System.out.println(message + " --- " + res.getString("result"));
     		}
     	}
     }
@@ -245,7 +235,7 @@ class RWClient {
 			  .build();
 			
 			  jobj = Json.createObjectBuilder()
-			  .add("method", "addNode")
+			  .add("method", "addnode")
 			  .add("parameters", params)
 			  .build();
 		}
@@ -257,7 +247,7 @@ class RWClient {
 	          .build();
 	
 	          jobj = Json.createObjectBuilder()
-	          .add("method", "deleteNode")
+	          .add("method", "deletenode")
 	          .add("parameters", params)
 	          .build();
 		}
@@ -267,7 +257,7 @@ class RWClient {
                     .build();
 
             jobj = Json.createObjectBuilder()
-                    .add("method", "getNodes")
+                    .add("method", "getnodes")
                     .add("parameters", params)
                     .build();
 		}

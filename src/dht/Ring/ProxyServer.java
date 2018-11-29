@@ -30,9 +30,36 @@ public class ProxyServer extends PhysicalNode {
 
     public static final int WRITE_BATCH_SIZE = 1000;
     Document config;
+    int port;
+    String IP;
 
 	public ProxyServer(){
 		super();
+	}
+	
+	public static void runDataNodeBatch(String thisIP) {
+		String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+//      String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+        File inputFile = new File(xmlPath);
+        SAXReader reader = new SAXReader();
+        
+        Document config = null;
+        try {
+        	config = reader.read(inputFile);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+		Element port = config.getRootElement().element("port");
+		int startPort = Integer.parseInt(port.element("startPort").getStringValue());
+		int portRange = Integer.parseInt(port.element("portRange").getStringValue());
+        
+		for (int j = 0; j < portRange; j++){
+			int portNum = startPort + j;
+	    	Thread t = new RunDataNode_Ring(thisIP, portNum);
+	    	t.start();
+		}
 	}
 
 	public void initializeRing(){
@@ -44,6 +71,8 @@ public class ProxyServer extends PhysicalNode {
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
             config = reader.read(inputFile);
+            port = Integer.parseInt(config.getRootElement().element("proxy").element("port").getStringValue());
+            IP = config.getRootElement().element("proxy").element("ip").getStringValue();
 
             // Read the elements in the configuration file
 			numOfReplicas = Integer.parseInt(config.getRootElement().element("replicationLevel").getStringValue());
@@ -136,7 +165,7 @@ public class ProxyServer extends PhysicalNode {
         int result = 0;
         for (int i = 0; i < numOfNodes; i++){
             String ip = listOfNodes.get(i).element("ip").getStringValue();
-            if (i > 0) {break;}
+//            if (i > 0) {break;}
 			for (int j = 0; j < portRange; j++){
 //	    		Thread t = new RunDataNode(ip, startPort + j);
 //	    		t.start();
@@ -284,7 +313,12 @@ public class ProxyServer extends PhysicalNode {
 
 	}
 	
-
+	public void pushDHTAll() {
+		System.out.println("Beginning to push DHT to all physical nodes");
+		for(PhysicalNode node: super.getLookupTable().getPhysicalNodeMap().values()) {
+			pushDHT(node.getAddress(), node.getPort());
+		}
+	}
 	
 	public boolean pushDHT(String serverAddress, int port) {
 		try {
@@ -303,7 +337,7 @@ public class ProxyServer extends PhysicalNode {
 	    	Thread.sleep(1000);
 			if (connected) {
 				
-				System.out.println("Connected to Data Node Server at " + serverAddress + " " + port);
+				System.out.println("Connected to Data Node Server at " + serverAddress + ":" + port);
 				
 				JsonObject jobj = new Response(true, super.getLookupTable().toJSON(), "dht push").toJSON();
 				
@@ -328,12 +362,9 @@ public class ProxyServer extends PhysicalNode {
 		            }
 		            System.out.println();
 		         }
-				
-//		        Thread.sleep(3000);
-//				client.processCommand(1, "dht push");
-//				client.processCommand(1, "exit");
-//				client.socket.close();
-//				System.out.println("Disconnected to Data Node Server at " + serverAddress + " " + port);
+		        
+		        client.disconnectServer();
+//		        System.out.println("Disconnected with " + serverAddress + ":" + port);
 				
 				return true;
 			}
@@ -362,8 +393,7 @@ public class ProxyServer extends PhysicalNode {
         return jsonObject;
     }
 	
-	public String getResponse(String commandStr, DataStore dataStore) {
-		Command command = new Command(commandStr);
+	public String getResponse(Command command, DataStore dataStore) {
 		try {
 			if (command.getAction().equals("read")) {
 				String dataStr = command.getCommandSeries().get(0);
@@ -418,11 +448,6 @@ public class ProxyServer extends PhysicalNode {
 //				String result = hash == -1 ? super.addNode(ip, port) : super.addNode(ip, port, hash);
 				String result = hashes.length == 0 ? super.addNode(ip, port) : super.addNode(ip, port, hashes);
 				
-				for(int i = 0; i < numHashes; i++) {
-					pushDHT(ip, hashes[i]);
-				}
-				System.out.println("hashes" + Arrays.toString(hashes));
-				
 				return result.replaceAll("\n", "  ");
 			}
 			else if (command.getAction().equals("remove")) {
@@ -457,6 +482,9 @@ public class ProxyServer extends PhysicalNode {
 						int port = Integer.valueOf(command.getCommandSeries().get(2));
 						pushDHT(ip, port);
 						return new Response(true, "DHT pushed for " + ip + " " + port).serialize();
+					}
+					else if (command.getCommandSeries().size() == 1) {
+						return new Response(true, "DHT push to all nodes is being executed").serialize();
 					}
 					else {
 						return new Response(false, "DHT not pushed").serialize();
@@ -526,21 +554,41 @@ public class ProxyServer extends PhysicalNode {
 	                    break; 
 	                }
 	                else { // msg != null
-                    	System.out.println("Request received from " + s.getPort() + ": " + msg + " ---- " + new Date().toString());
+						String requestStr = msg.length() > 200 ? msg.substring(0, 200) + "...": msg; 
+
+                    	System.out.println("Request received from " + s.getPort() + ": " + requestStr + " ---- " + new Date().toString());
                     	System.out.println();
                     	
-                    	String response = proxy.getResponse(msg, dataStore);
+                    	Command command = new Command(msg);
+                    	
+                    	String response = proxy.getResponse(command, dataStore);
 
                     	output.println(response);
                     	output.flush();
+
+						String responseStr = response.length() > 200 ? response.substring(0, 200) + "...": response; 
                     	
-                        System.out.println("Response sent to " + s.getPort() + ": " + response + " ---- " + new Date().toString());
+                        System.out.println("Response sent to " + s.getPort() + ": " + responseStr + " ---- " + new Date().toString());
                         System.out.println();
+                        
+                        if (!response.startsWith("false|")) {
+                            String[] updateCommands = {"add", "remove", "loadbalance"};
+                            for (String cmd: updateCommands) { 
+                            	if (command.getAction().equals(cmd)) {
+                            		pushDHTAll();
+                            		break;
+                            	}
+                            	else if (command.getAction().equals("dht") && command.getCommandSeries().size() == 1 && command.getCommandSeries().get(0).equals("push")) {
+                             		pushDHTAll();
+                            		break;
+                            	}
+                            }
+                        }
                 	}
               
 	            } catch (IOException e) { 
-	            	System.out.println("Connection reset at " + s.getPort() + " ---- " + new Date().toString());
-	                e.printStackTrace(); 
+	            	// System.out.println("Connection reset at " + s.getPort() + " ---- " + new Date().toString());
+	                // e.printStackTrace(); 
             		break;
 	            } 
 	        } 
@@ -557,6 +605,29 @@ public class ProxyServer extends PhysicalNode {
 	}
 	
     public static void main(String[] args) throws IOException { 
+    	
+    	if (args.length > 0) {
+    		if (args.length == 3 || args.length == 2) {
+    			String ip = args.length == 3 ? args[2] : "localhost";
+    			if (args[0].equals("run") && args[1].equals("datanode")) {
+    	    		runDataNodeBatch(ip);
+    	    		System.out.println("All data nodes on the machine are running...");
+    			}
+    			else {
+        			System.out.println("Input commands:");
+        			System.out.println("run datanode <IP>");
+        			System.out.println("run datanode");
+    			}
+    		}
+    		else {
+    			System.out.println("Input commands:");
+    			System.out.println("run datanode <IP>");
+    			System.out.println("run datanode");
+    		}
+
+    		return;
+    	}
+    	
 		ProxyServer proxy = new ProxyServer();
 		
 		//Initialize the ring cluster
@@ -567,7 +638,9 @@ public class ProxyServer extends PhysicalNode {
 
 		//System.out.println(proxy.loadBalance(-13, 320));
 		DataStore dataStore = new DataStore();
-		int port = 9091;
+//		int port = 9091;
+		int port = proxy.port;
+		String serverAddress = proxy.IP;
         ServerSocket ss = new ServerSocket(port); 
         System.out.println("Ring server running at " + String.valueOf(port));
 //        int[] hashes = {38337,72419,61684,51782,61592,63337,81197,72141,17165,12943};
@@ -602,69 +675,6 @@ public class ProxyServer extends PhysicalNode {
             } 
         } 
     }
-    
-//	public static void main(String[] args) throws IOException {
-//	// TODO Auto-generated method stub
-//	ProxyServer proxy = new ProxyServer();
-//	//Initialize the ring cluster
-//	proxy.initializeRing();
-//	
-//	DataStore dataStore = new DataStore();
-////	System.out.println(dataStore.writeRandomRes(WRITE_BATCH_SIZE, proxy));
-////	System.out.println(dataStore.updateRandomRes(WRITE_BATCH_SIZE * 3, proxy));
-//	
-//	int port = 9091;
-//	System.out.println("Ring server running at " + String.valueOf(port));
-//    ServerSocket listener = new ServerSocket(port);
-//    
-//    try {
-//        while (true) {
-//        	Socket socket = listener.accept();
-//        	System.out.println("Connection accepted" + " ---- " + new Date().toString());
-//            try {
-//            	BufferedReader input = new BufferedReader(
-//                        new InputStreamReader(socket.getInputStream()));
-//                PrintWriter output =
-//                        new PrintWriter(socket.getOutputStream(), true);
-//            	String msg;
-//            	while(true) {
-//            		try {
-//                		msg = input.readLine();
-//                    	if (msg != null) {
-//                        	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
-//                        	System.out.println();
-//
-//                            String response = proxy.getResponse(msg, dataStore);
-//                            
-//                            output.println(response);
-//                            System.out.println("Response sent: " + response + " ---- " + new Date().toString());
-//                            System.out.println();
-//                    	}
-//                    	else {
-//                    		System.out.println("Connection end " + " ---- " + new Date().toString());
-//                    		System.out.println();
-//                    		break;
-//                    	}
-//            		}
-//            		catch (Exception ee) {
-//                		System.out.println("Connection reset " + " ---- " + new Date().toString());
-//                		System.out.println();
-//                		break;
-//            		}
-//
-//            	}
-//
-//            } finally {
-//                socket.close();
-//            }
-//        }
-//    }
-//    finally {
-//        listener.close();
-//    }
-//	
-//}
-
 }
 
 class ProxyClient_Ring{
@@ -677,11 +687,6 @@ class ProxyClient_Ring{
     ProxyServer proxy;
 	public ProxyClient_Ring(ProxyServer proxy) { 
 		this.proxy = proxy;
-//		this.address = address;
-//		this.port = port;
-//    	this.socket = s; 
-//    	this.input = input;
-//        this.output = output;
 	}
 	
     public boolean connectServer(String serverAddress, int port) {
@@ -711,6 +716,17 @@ class ProxyClient_Ring{
 		}
     }
     
+    public void disconnectServer() {
+    	try {
+    		
+    		this.input.close();
+    		this.output.close();
+    		this.socket.close();
+    	}
+    	catch (Exception e) {
+//    		e.printStackTrace();
+    	}
+    }
     
     
     public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
@@ -773,7 +789,7 @@ class ProxyClient_Ring{
 			  .build();
 			
 			  jobj = Json.createObjectBuilder()
-			  .add("method", "addNode")
+			  .add("method", "addnode")
 			  .add("parameters", params)
 			  .build();
 		}
@@ -785,7 +801,7 @@ class ProxyClient_Ring{
 	          .build();
 	
 	          jobj = Json.createObjectBuilder()
-	          .add("method", "deleteNode")
+	          .add("method", "deletenode")
 	          .add("parameters", params)
 	          .build();
 		}
@@ -795,7 +811,7 @@ class ProxyClient_Ring{
                     .build();
 
             jobj = Json.createObjectBuilder()
-                    .add("method", "getNodes")
+                    .add("method", "getnodes")
                     .add("parameters", params)
                     .build();
 		}
@@ -807,45 +823,6 @@ class ProxyClient_Ring{
 			System.out.println("command not supported");
 			return;
 		}
-    	
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        JsonWriter writer = Json.createWriter(baos);
-        writer.writeObject(jobj);
-        writer.close();
-        baos.writeTo(outputStream);
-
-        outputStream.write("\n".getBytes());
-        outputStream.flush();
-
-        JsonObject res = parseRequest(input);
-        if (res != null) {
-            System.out.println();
-        	System.out.println("Response received at " + timeStamp + " ---- " + res.toString());
-            if (res.containsKey("status") && res.containsKey("message")) {
-                System.out.println("REPONSE STATUS: " + res.getString("status") + ", " + "message: " + res.getString("message"));
-            }
-            System.out.println();
-         }
-    }
-    
-    public void processCommandDHTPush() throws Exception {
-    	String timeStamp = new Date().toString();
-    	System.out.println("Sending command" + " ---- " + timeStamp);
-    	System.out.println();
-        
-    	Response response = new Response(true, this.proxy.getLookupTable().toJSON(), "Ring DHT table");
-        JsonObject params = null;
-        JsonObject jobj = null;
-		  params = Json.createObjectBuilder()
-//		  .add("ip", ip)
-//		  .add("port", port)
-		  .add("result", response.toJSON())
-		  .build();
-		
-		  jobj = Json.createObjectBuilder()
-		  .add("method", "dhtpush")
-		  .add("parameters", params)
-		  .build();
     	
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         JsonWriter writer = Json.createWriter(baos);

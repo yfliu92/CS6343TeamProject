@@ -10,7 +10,6 @@
 package control_client;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,31 +18,30 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.io.Console;
 import java.util.Vector;
 import java.util.Map.Entry;
 import java.lang.String;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
 
-import dht.common.Hashing;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+
 import dht.server.Command;
 
 interface dht_table
@@ -391,6 +389,7 @@ public class control_client {
     	System.out.println("Sending command" + " ---- " + timeStamp);
     	System.out.println();
         
+    	JsonObjectBuilder paramsBuilder = null;
         JsonObject params = null;
         JsonObject jobj = null;
 		if(command.getAction().equals("addnode")) {
@@ -402,7 +401,7 @@ public class control_client {
 			  .build();
 			
 			  jobj = Json.createObjectBuilder()
-			  .add("method", "addNode")
+			  .add("method", "addnode")
 			  .add("parameters", params)
 			  .build();
 		}
@@ -414,7 +413,7 @@ public class control_client {
 	          .build();
 	
 	          jobj = Json.createObjectBuilder()
-	          .add("method", "deleteNode")
+	          .add("method", "deletenode")
 	          .add("parameters", params)
 	          .build();
 		}
@@ -424,7 +423,7 @@ public class control_client {
                     .build();
 
             jobj = Json.createObjectBuilder()
-                    .add("method", "getNodes")
+                    .add("method", "getnodes")
                     .add("parameters", params)
                     .build();
 		}
@@ -465,6 +464,22 @@ public class control_client {
             jobj = Json.createObjectBuilder()
                     .add("method", "run")
                     .add("parameters", params)
+                    .build();
+		}
+		else if (command.getAction().equals("dht")) {
+            paramsBuilder = Json.createObjectBuilder()
+                    .add("operation", command.getCommandSeries().get(0));
+		            if (command.getCommandSeries().size() > 1) {
+		            	JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+		            	for(String item: command.getCommandSeries()) {
+		            		jsonArrayBuilder.add(item);
+		            	}
+		            	paramsBuilder.add("series", jsonArrayBuilder.build());
+		            }
+                    
+            jobj = Json.createObjectBuilder()
+                    .add("method", "dht")
+                    .add("parameters", paramsBuilder.build())
                     .build();
 		}
 		else if (command.getAction().equals("help")) {
@@ -574,11 +589,16 @@ public class control_client {
     	return tip;
     }
     
-    public static void main (String args[]) throws Exception{
+    public static void main (String args[]) {
     	control_client client = new control_client();
 
-    	String serverAddress = "localhost";
-    	int port = 9090; 
+    	String serverAddress = "";
+    	int port = 0; 
+    	
+    	SAXReader reader = new SAXReader();
+    	File inputFile = null;
+    	Document config = null;
+    	String xmlPath = "";
     	
         System.out.println("==== Welcome to Control Client !!! =====");
         System.out.println("==== There are three types of DHT solutions, please select one(1,2,3) =====\n");
@@ -590,19 +610,39 @@ public class control_client {
         String dhtName = "";
         if(dht.equals("1"))
         {
-            port = 9091;
+//            port = 9091;
+            
             dhtName = "Ring";
+    		xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+//          xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+
         }
         if(dht.equals("2"))
         {
-            port = 8100;
+//            port = 9092;
             dhtName = "Rush";
+            xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+//          xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+
         }
         if(dht.equals("3"))
         {
-            port = 9093;
+//            port = 9093;
             dhtName = "Elastic DHT";
+            xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+//          xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+
         }
+        
+	    inputFile = new File(xmlPath);
+	    try {
+			config = reader.read(inputFile);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    port = Integer.parseInt(config.getRootElement().element("proxy").element("port").getStringValue());
+	    serverAddress = config.getRootElement().element("proxy").element("ip").getStringValue();
         
         int dhtType = Integer.valueOf(dht);
         
@@ -627,7 +667,12 @@ public class control_client {
 //            String cmd = cmds.remove(0);
         	String cmd = console.readLine("Input your command:");
             
-            client.processCommand(dhtType, cmd);
+            try {
+				client.processCommand(dhtType, cmd);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+//				e.printStackTrace();
+			}
         }
     }
 }
