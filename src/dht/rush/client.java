@@ -350,7 +350,7 @@ class RWClient {
     	
        	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
-    	System.out.println(jobj.toString());
+//    	System.out.println(jobj.toString());
     	
     	output.println(jobj.toString());
     	output.flush();
