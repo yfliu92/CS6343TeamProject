@@ -129,7 +129,7 @@ public class DataNode {
 	public String findNodeInfo(int rawhash) {
 		String info = "";
 		for(VirtualNode node: this.lookupTable.getTable()) {
-			System.out.println("node hash " + node.getHash() + " rawhash " + rawhash);
+//			System.out.println("node hash " + node.getHash() + " rawhash " + rawhash);
 			if (node.getHash() >= rawhash) {
 				info = node.getPhysicalNodeId();
 				break;

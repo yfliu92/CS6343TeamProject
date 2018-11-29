@@ -3,6 +3,7 @@ package dht.Ring;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Console;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,7 +14,12 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -21,13 +27,22 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonWriter;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+
 import dht.Ring.LookupTable;
 import dht.Ring.VirtualNode;
+import dht.common.Hashing;
 import dht.common.response.Response;
 import dht.server.Command;
 
 public class client {
 	private LookupTable lookupTable;
+	public static int hashRange;
+	private String proxyIP;
+	private int proxyPort;
 	
 	public void printTable() {
 		if (lookupTable == null) {
@@ -77,42 +92,152 @@ public class client {
 		return epoch;
 	}
 	
+	public List<String> findNodeInfo(int rawhash) {
+		List<String> info = new ArrayList<String>();
+		
+		if (this.lookupTable != null && this.lookupTable.getTable() != null && this.lookupTable.getTable().size() > 0) {
+			for(VirtualNode node: this.lookupTable.getTable()) {
+//				System.out.println("node hash " + node.getHash() + " rawhash " + rawhash);
+				if (node.getHash() >= rawhash) {
+					info.add(node.getPhysicalNodeId());
+					break;
+				}
+			}
+		}
+
+		return info;
+	}
+	
+	public void initialize() {
+		String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+//      String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+        File inputFile = new File(xmlPath);
+        SAXReader reader = new SAXReader();
+        
+        Document config = null;
+        try {
+        	config = reader.read(inputFile);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        this.hashRange = Integer.parseInt(config.getRootElement().element("hashRange").getStringValue());
+        this.proxyIP = config.getRootElement().element("proxy").element("ip").getStringValue();
+        this.proxyPort = Integer.parseInt(config.getRootElement().element("proxy").element("port").getStringValue());
+        
+	}
+	
     public static void main(String[] args) throws Exception {
         System.out.println("==== Welcome to Client !!! =====");
         
-        String serverAddress = "localhost";
-    	int port = 0; 
-    	
-    	int dhtType = 1;
-    	
-    	if (args.length >= 2) {
-    		serverAddress = args[0];
-    		port = Integer.valueOf(args[1]);
-    	}
-    	if (args.length == 3) {
-    		dhtType = Integer.valueOf(args[2]);
-    	}
-    	String dhtName = dhtType == 1 ? "DHT Ring" : dhtType == 2 ? "DHT Ceph" : dhtType == 3 ? "Elastic DHT" : "";
-    	dhtName += " Data Node";
-
-    	RWClient client = new RWClient();
-    	boolean connected = client.connectServer(serverAddress, port);
-		
-		if (connected) {
-			System.out.println("Connected to " + dhtName + " Server ");
-		}
-		else {
-			System.out.println("Unable to connect to " + dhtName + " server!");
-			return;
-		}
-
-		Console console = System.console();
-        while(true)
-        {
-        	String cmd = console.readLine("Input your command:");
-            
-        	client.processCommand(dhtType, cmd);
+//        String serverAddress = "localhost";
+//    	int port = 0; 
+//    	
+//    	int dhtType = 1;
+//    	
+//    	if (args.length >= 2) {
+//    		serverAddress = args[0];
+//    		port = Integer.valueOf(args[1]);
+//    	}
+//    	if (args.length == 3) {
+//    		dhtType = Integer.valueOf(args[2]);
+//    	}
+//    	String dhtName = dhtType == 1 ? "DHT Ring" : dhtType == 2 ? "DHT Ceph" : dhtType == 3 ? "Elastic DHT" : "";
+//    	dhtName += " Data Node";
+//
+//    	RWClient client = new RWClient();
+//    	boolean connected = client.connectServer(serverAddress, port);
+//		
+//		if (connected) {
+//			System.out.println("Connected to " + dhtName + " Server ");
+//		}
+//		else {
+//			System.out.println("Unable to connect to " + dhtName + " server!");
+//			return;
+//		}
+//
+//		Console console = System.console();
+//        while(true)
+//        {
+//        	String cmd = console.readLine("Input your command:");
+//            
+//        	client.processCommand(dhtType, cmd);
+//        }
+        int dhtType = 1;
+        String dhtName = dhtType == 1 ? "DHT Ring" : dhtType == 2 ? "DHT Ceph" : dhtType == 3 ? "Elastic DHT" : "";
+        client myclient = new client();
+        myclient.initialize();
+        
+        if (args.length == 0) {
+        	RWClient rwclient = new RWClient();
+        	boolean connected = rwclient.connectServer(myclient.proxyIP, myclient.proxyPort, myclient, true);
+    		
+    		if (connected) {
+    			System.out.println("Connected to " + dhtName + " Proxy Server ");
+    			try {
+					rwclient.processCommand(dhtType, "dht pull");
+					rwclient.disconnectServer();
+					System.out.println("Disconnected to " + dhtName + " Proxy Server ");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+//					e.printStackTrace();
+				}
+    			
+    			
+    		}
+    		else {
+    			System.out.println("Unable to connect to " + dhtName + " Proxy Server!");
+    			return;
+    		}
+    		
+    		Console console = System.console();
+            while(true)
+            {
+            	String cmd = console.readLine("Input your command:");
+                
+            	try {
+					rwclient.processCommand(dhtType, cmd);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+//					e.printStackTrace();
+				}
+            }
         }
+        else {
+          String serverAddress = "localhost";
+        	int port = 0; 
+        	
+        	if (args.length >= 2) {
+        		serverAddress = args[0];
+        		port = Integer.valueOf(args[1]);
+        	}
+        	
+        	RWClient rwclient = new RWClient();
+        	boolean connected = rwclient.connectServer(serverAddress, port, myclient, false);
+    		
+    		if (connected) {
+    			System.out.println("Connected to " + dhtName + " Data Node");
+    		}
+    		else {
+    			System.out.println("Unable to connect to " + dhtName + " Data Node!");
+    			return;
+    		}
+    		
+    		Console console = System.console();
+            while(true)
+            {
+            	String cmd = console.readLine("Input your command:");
+                
+            	try {
+					rwclient.processCommand(dhtType, cmd);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+//					e.printStackTrace();
+				}
+            }
+        }
+        
     }
 
 }
@@ -124,8 +249,10 @@ class RWClient {
     OutputStream outputStream;
 	SocketAddress socketAddress;
 	Socket socket;
+	boolean isProxy;
+	client myclient;
 	
-    public boolean connectServer(String serverAddress, int port) {
+    public boolean connectServer(String serverAddress, int port, client myclient, boolean isProxy) {
     	int timeout = 2000;
 		try {
 			socketAddress = new InetSocketAddress(serverAddress, port);
@@ -135,6 +262,8 @@ class RWClient {
 			outputStream = socket.getOutputStream();
 			output = new PrintWriter(outputStream, true);
 			input = new BufferedReader(new InputStreamReader(inputStream));
+			this.isProxy = isProxy;
+			this.myclient = myclient;
 
 	        System.out.println("Connected to server " + serverAddress + ":" + port + ", with local port " + socket.getLocalPort());
 //			socket.close();
@@ -150,6 +279,18 @@ class RWClient {
 					"IOException - Unable to connect to " + serverAddress + ":" + port + ". " + exception.getMessage());
 			return false;
 		}
+    }
+    
+    public void disconnectServer() {
+    	try {
+    		
+    		this.input.close();
+    		this.output.close();
+    		this.socket.close();
+    	}
+    	catch (Exception e) {
+//    		e.printStackTrace();
+    	}
     }
     
     public void sendCommandStr(Command command, BufferedReader input, PrintWriter output) throws Exception {
@@ -188,6 +329,9 @@ class RWClient {
     }
     
     public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
+    	if (parseLocalRequest(command)) {
+    		return;
+    	}
     	
     	String timeStamp = new Date().toString();
     	System.out.println("Sending command" + " ---- " + timeStamp);
@@ -205,6 +349,94 @@ class RWClient {
          }
     }
     
+    public boolean parseLocalRequest(Command command) {
+    	boolean processed = false;
+    	if (command.getAction().equals("dht")) {
+    		if (command.getCommandSeries().size() > 0 && command.getCommandSeries().get(0).equals("info")) {
+    			System.out.println("Epoch Number of Local DHT is " + this.myclient.getDHTEpoch());
+    			processed = true;
+    		}
+    		else if (command.getCommandSeries().size() > 0 && command.getCommandSeries().get(0).equals("print")) {
+    			this.myclient.printTable();
+    			processed = true;
+    		}
+    	}
+    	else if ((command.getAction().equals("read") ||command.getAction().equals("write")) && command.getCommandSeries().size() > 0) {
+			String dataStr = command.getCommandSeries().get(0);
+			
+			if (dataStr.equals("auto")) {
+				int count = 0;
+				while(count < 100) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					Random ran = new Random();
+					int ranhash = ran.nextInt(this.myclient.hashRange);
+					List<String> nodeinfo = this.myclient.findNodeInfo(ranhash);
+					String message = dataStr + " (hash value: " + ranhash + ") can be found in Data Node " + Arrays.toString(nodeinfo.toArray());
+					System.out.println(message);
+					
+					for(String node: nodeinfo) {
+						try {
+							String ip = node.split("-")[0];
+							int port = Integer.valueOf(node.split("-")[1]);
+							boolean connected = connectServer(ip, port, this.myclient, false);
+							if (connected) {
+								sendCommandJson(command, this.input, this.output);
+//								disconnectServer();
+							}
+							
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					
+					count++;
+				}
+			}
+			else {
+				int rawhash = Hashing.getHashValFromKeyword(dataStr, this.myclient.hashRange);
+				try {
+					if (rawhash < this.myclient.hashRange) {
+						rawhash = Integer.valueOf(dataStr);
+					}
+				}
+				catch (Exception e) {
+					
+				}
+				List<String> nodeinfo = this.myclient.findNodeInfo(rawhash);
+				String message = dataStr + " (hash value: " + rawhash + ") can be found in Data Node " + Arrays.toString(nodeinfo.toArray());
+				System.out.println(message);
+				
+				for(String node: nodeinfo) {
+					try {
+						String ip = node.split("-")[0];
+						int port = Integer.valueOf(node.split("-")[1]);
+						boolean connected = connectServer(ip, port, this.myclient, false);
+						if (connected) {
+							sendCommandJson(command, this.input, this.output);
+//							disconnectServer();
+						}
+						
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			
+
+			
+			processed = true;
+    		
+    	}
+    	return processed;
+    }
+    
     public void parseResponse(JsonObject res, Command command, BufferedReader input, PrintWriter output) throws Exception {
     	if (command.getAction().equals("info")) {
     		String message = "Data Epoch number: ";
@@ -216,7 +448,10 @@ class RWClient {
     		}
     	}
     	else if (command.getAction().equals("dht")) {
-    		
+    		if (command.getCommandSeries().size() > 0 && command.getCommandSeries().get(0).equals("pull")) {
+    			this.myclient.buildTable(res.getJsonObject("jsonResult"));
+    			System.out.println("Local DHT built, with epoch number " + this.myclient.getDHTEpoch());
+    		}
     	}
     }
 	
@@ -317,7 +552,12 @@ class RWClient {
         }
         else
         {
-        	sendCommandJson(command, input, output);
+        	if (isProxy) {
+        		sendCommandStr_JsonRes(command, input, output);
+        	}
+        	else {
+        		sendCommandJson(command, input, output);
+        	}
         }
     }
     
