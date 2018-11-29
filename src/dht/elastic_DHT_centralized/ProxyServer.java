@@ -490,7 +490,9 @@ public class ProxyServer extends Proxy {
 	                    break; 
 	                }
 	                else { // msg != null
-                    	System.out.println("Request received from " + s.getPort() + ": " + msg + " ---- " + new Date().toString());
+						String requestStr = msg.length() > 200 ? msg.substring(0, 200) + "...": msg; 
+
+                    	System.out.println("Request received from " + s.getPort() + ": " + requestStr + " ---- " + new Date().toString());
                     	System.out.println();
                     	
                     	Command command = new Command(msg);
@@ -499,8 +501,10 @@ public class ProxyServer extends Proxy {
 
                     	output.println(response);
                     	output.flush();
+
+						String responseStr = response.length() > 200 ? response.substring(0, 200) + "...": response; 
                     	
-                        System.out.println("Response sent to " + s.getPort() + ": " + response + " ---- " + new Date().toString());
+                        System.out.println("Response sent to " + s.getPort() + ": " + responseStr + " ---- " + new Date().toString());
                         System.out.println();
                         
                         if (!response.startsWith("false|")) {
@@ -594,70 +598,6 @@ public class ProxyServer extends Proxy {
             } 
         } 
     }
-    
-//    public static void main(String[] args) throws IOException {
-//        ProxyServer proxyServer = new ProxyServer();
-//        //Initialize the Elastic DHT cluster
-//        Proxy proxy = initializeEDHT();
-//        System.out.println(proxy.addNode("192.168.0.211", 8100, 900, 910));
-////        System.out.println(proxy.deleteNode("192.168.0.201", 8100));
-////        System.out.println(proxy.loadBalance("192.168.0.204", 8100, "192.168.0.210", 8100, 12));
-//
-//        int port = 9093;
-//    	System.out.println("Elastic DHT server running at " + String.valueOf(port));
-//        ServerSocket listener = new ServerSocket(port);
-//
-//        try {
-//            while (true) {
-//            	Socket socket = null;
-//                try {
-//                	socket = listener.accept();
-//                	System.out.println("Connection accepted: " + socket + " ---- " + new Date().toString());
-//                	
-//                	BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//    		        PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-//                	
-//                    Thread t = proxyServer.new ClientHandler(socket, input, output, proxyServer); 
-//
-//                    t.start(); 
-//                	
-////                	BufferedReader in = new BufferedReader(
-////                            new InputStreamReader(socket.getInputStream()));
-////                    PrintWriter out =
-////                            new PrintWriter(socket.getOutputStream(), true);
-////                	String msg;
-////                	while(true) {
-////                		try {
-////                    		msg = in.readLine();
-////                        	if (msg != null) {
-////                            	System.out.println("Request received: " + msg + " ---- " + new Date().toString());
-////
-////                                String response = proxyServer.getResponse(msg, proxy);
-////                                out.println(response);
-////                                System.out.println("Response sent: " + response);
-////                        	}
-////                        	else {
-////                        		System.out.println("Connection end " + " ---- " + new Date().toString());
-////                        		break;
-////                        	}
-////                		}
-////                		catch (Exception ee) {
-////                    		System.out.println("Connection reset " + " ---- " + new Date().toString());
-////                    		break;
-////                		}
-////
-////                	}
-//
-//                } finally {
-//                    socket.close();
-//                }
-//            }
-//        }
-//        finally {
-//            listener.close();
-//        }
-//        
-//    }
 }
 
 class ProxyClient_Elastic{
@@ -670,11 +610,6 @@ class ProxyClient_Elastic{
     ProxyServer proxy;
 	public ProxyClient_Elastic(ProxyServer proxy) { 
 		this.proxy = proxy;
-//		this.address = address;
-//		this.port = port;
-//    	this.socket = s; 
-//    	this.input = input;
-//        this.output = output;
 	}
 	
     public boolean connectServer(String serverAddress, int port) {

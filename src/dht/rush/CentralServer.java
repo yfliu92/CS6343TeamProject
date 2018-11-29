@@ -229,7 +229,10 @@ public class CentralServer {
 	                }
 	                else { // msg != null
 	                	JsonObject requestObject = StreamUtil.parseRequest(msg);
-                    	System.out.println("Request received from " + s.getPort() + ": " + msg + " ---- " + new Date().toString());
+
+						String requestStr = msg.length() > 200 ? msg.substring(0, 200) + "...": msg; 
+
+                    	System.out.println("Request received from " + s.getPort() + ": " + requestStr + " ---- " + new Date().toString());
                     	System.out.println();
                     	
                       if (requestObject != null) {

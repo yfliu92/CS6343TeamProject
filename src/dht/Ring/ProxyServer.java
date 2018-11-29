@@ -529,7 +529,9 @@ public class ProxyServer extends PhysicalNode {
 	                    break; 
 	                }
 	                else { // msg != null
-                    	System.out.println("Request received from " + s.getPort() + ": " + msg + " ---- " + new Date().toString());
+						String requestStr = msg.length() > 200 ? msg.substring(0, 200) + "...": msg; 
+
+                    	System.out.println("Request received from " + s.getPort() + ": " + requestStr + " ---- " + new Date().toString());
                     	System.out.println();
                     	
                     	Command command = new Command(msg);
@@ -538,8 +540,10 @@ public class ProxyServer extends PhysicalNode {
 
                     	output.println(response);
                     	output.flush();
+
+						String responseStr = response.length() > 200 ? response.substring(0, 200) + "...": response; 
                     	
-                        System.out.println("Response sent to " + s.getPort() + ": " + response + " ---- " + new Date().toString());
+                        System.out.println("Response sent to " + s.getPort() + ": " + responseStr + " ---- " + new Date().toString());
                         System.out.println();
                         
                         if (!response.startsWith("false|")) {
