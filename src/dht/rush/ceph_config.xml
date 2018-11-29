@@ -13,7 +13,7 @@
     <!-- All nodes will use this port as default port number -->
     <!-- <port>9092</port> -->
     <proxy>
-        <ip>localhost</ip>
+        <ip>192.168.0.204</ip>
         <port>9092</port>
     </proxy>
 
