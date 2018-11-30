@@ -7,24 +7,25 @@
 
 <config>
     <!-- Number of Commands needed to be generated -->
-    <commandNumber>500</commandNumber>
+    <commandNumber>100</commandNumber>
     <!-- Central server ip and the root url for HTTP request  -->
     <!-- <ip>localhost</ip> -->
     <!-- All nodes will use this port as default port number -->
     <!-- <port>9092</port> -->
     <proxy>
         <ip>192.168.0.204</ip>
+        <!--<ip>localhost</ip>-->
         <port>9092</port>
     </proxy>
 
     <!-- Number of Replicas -->
     <replicationDegree>3</replicationDegree>
     <!-- Number of placement groups -->
-    <placementGroupNumber>8192</placementGroupNumber>
+    <placementGroupNumber>512</placementGroupNumber>
     <!-- Node initial weight -->
     <weight>1.0</weight>
     <!-- The physical nodes number of each sub cluster -->
-    <offset>1000</offset>
+    <offset>10</offset>
 
     <subClusters>
         <subCluster>

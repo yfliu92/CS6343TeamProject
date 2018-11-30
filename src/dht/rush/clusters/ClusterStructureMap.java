@@ -248,6 +248,7 @@ public class ClusterStructureMap {
      */
     public Map<String, Cluster[]> transferedMap(Cluster c) {
         Map<String, Cluster[]> ret = null;
+        List<String> toBeRemoved = new ArrayList<>();
 
         if (c.getPlacementGroupMap().size() > 0) {
             ret = new HashMap<>();
@@ -259,8 +260,15 @@ public class ClusterStructureMap {
 
                 if (!destination.getPlacementGroupMap().containsKey(id)) {
                     destination.getPlacementGroupMap().put(id, replica);
+                    toBeRemoved.add(id);
                     ret.put(id, new Cluster[]{c, destination});
                 }
+            }
+        }
+
+        if(toBeRemoved.size()>0){
+            for(String s: toBeRemoved){
+                c.getPlacementGroupMap().remove(s);
             }
         }
 

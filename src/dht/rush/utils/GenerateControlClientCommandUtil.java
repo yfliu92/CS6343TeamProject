@@ -18,7 +18,7 @@ public class GenerateControlClientCommandUtil {
     private static String[] commands = new String[]{"addnode", "deletenode", "changeweight"};
     private static String newNodeIp = "192.168.0.8";
     private static int portBase = 7000;
-    private static int range = 1000;
+    private static int range = 10;
     private static Set<Integer> portPool = new HashSet<>();
 
     public static void run() {

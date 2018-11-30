@@ -15,7 +15,7 @@ import java.net.SocketAddress;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class test {
-    static int port = 8100;
+    static int port = 9092;
     static String address = "localhost";
 
     public static void main(String[] args) {
@@ -44,16 +44,16 @@ public class test {
 //                    .build();
 
             /********deleteNode************/
-//            JsonObject params = Json.createObjectBuilder()
-//                    .add("subClusterId", "S0")
-//                    .add("ip", "192.168.0.201")
-//                    .add("port", "8100")
-//                    .build();
-//
-//            JsonObject jobj = Json.createObjectBuilder()
-//                    .add("method", "deletenode")
-//                    .add("parameters", params)
-//                    .build();
+            JsonObject params = Json.createObjectBuilder()
+                    .add("subClusterId", "S0")
+                    .add("ip", "192.168.0.212")
+                    .add("port", "7000")
+                    .build();
+
+            JsonObject jobj = Json.createObjectBuilder()
+                    .add("method", "deletenode")
+                    .add("parameters", params)
+                    .build();
 
 //            JsonObject params = Json.createObjectBuilder()
 //                    .add("pgid", "PG1")
@@ -76,14 +76,14 @@ public class test {
 //                    .build();
 
             /************** get structure map  *****************/
-            JsonObject params = Json.createObjectBuilder()
-                    .add("test", "test")
-                    .build();
-
-            JsonObject jobj = Json.createObjectBuilder()
-                    .add("method", "getmap")
-                    .add("parameters", params)
-                    .build();
+//            JsonObject params = Json.createObjectBuilder()
+//                    .add("test", "test")
+//                    .build();
+//
+//            JsonObject jobj = Json.createObjectBuilder()
+//                    .add("method", "getmap")
+//                    .add("parameters", params)
+//                    .build();
 
 
             /******Change node weight*******/

@@ -5,6 +5,7 @@ import dht.rush.clusters.Cluster;
 import dht.rush.clusters.ClusterStructureMap;
 import dht.rush.commands.*;
 import dht.rush.utils.ConfigurationUtil;
+import dht.rush.utils.GenerateControlClientCommandUtil;
 import dht.rush.utils.StreamUtil;
 import dht.server.Command;
 
@@ -102,7 +103,7 @@ public class CentralServer {
 //        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
 
         String xmlPath = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
-        
+
         cs.initializeRush(xmlPath);
         cs.clusterStructureMap = ConfigurationUtil.parseConfig(cs.config);
 
