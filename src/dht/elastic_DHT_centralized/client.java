@@ -422,12 +422,15 @@ class RWClient {
     			System.out.println("Local DHT built, with epoch number " + this.myclient.getDHTEpoch());
     		}
     		else if (command.getCommandSeries().size() > 1 && command.getCommandSeries().get(0).equals("head") && command.getCommandSeries().get(1).equals("print")) {
-    			LookupTable lookupTable = new LookupTable();
-    			client newclient = new client();
-    			newclient.buildTable(lookupTable, res.getJsonObject("jsonResult"));
+//    			LookupTable lookupTable = new LookupTable();
+//    			client newclient = new client();
+//    			newclient.buildTable(lookupTable, res.getJsonObject("jsonResult"));
 //    			System.out.println("Remote DHT, epoch number " + lookupTable.getEpoch());
 //    			lookupTable.print();
 //    			newclient.printTable();
+    			this.myclient.buildTable(res.getJsonObject("jsonResult"));
+    			System.out.println("Local DHT built, with epoch number " + this.myclient.getDHTEpoch());
+    			this.myclient.printTable();
     		}
     	}
     	else if (command.getAction().equals("read") || command.getAction().equals("write")) {
