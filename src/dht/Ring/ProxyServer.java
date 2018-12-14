@@ -159,7 +159,7 @@ public class ProxyServer extends PhysicalNode {
 		Element port = config.getRootElement().element("port");
 		int startPort = Integer.parseInt(port.element("startPort").getStringValue());
 		int portRange = Integer.parseInt(port.element("portRange").getStringValue());
-		int hashRange = Integer.parseInt(port.element("portRange").getStringValue());
+		int hashRange = Integer.parseInt(config.getRootElement().element("hashRange").getStringValue());
 		
 		Element nodes = config.getRootElement().element("nodes");
         List<Element> listOfNodes = nodes.elements();

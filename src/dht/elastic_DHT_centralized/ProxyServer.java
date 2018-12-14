@@ -56,10 +56,11 @@ public class ProxyServer extends Proxy {
         Element port = rootElement.element("port");
         int startPort = Integer.parseInt(port.element("startPort").getStringValue());
         int portRange = Integer.parseInt(port.element("portRange").getStringValue());
+        int hashRange = Integer.parseInt(rootElement.element("initial_hash_range").getStringValue());
         
 		for (int j = 0; j < portRange; j++){
 			int portNum = startPort + j;
-	    	Thread t = new RunDataNode_Elastic(thisIP, portNum, ProxyServer.INITIAL_HASH_RANGE);
+	    	Thread t = new RunDataNode_Elastic(thisIP, portNum, hashRange);
 	    	t.start();
 		}
 	}
@@ -177,6 +178,7 @@ public class ProxyServer extends Proxy {
 		
 		int startPort = Integer.parseInt(port.element("startPort").getStringValue());
 		int portRange = Integer.parseInt(port.element("portRange").getStringValue());
+		int hashRange = Integer.parseInt(config.getRootElement().element("initial_hash_range").getStringValue());
 		
 		Element nodes = config.getRootElement().element("nodes");
         List<Element> listOfNodes = nodes.elements();
@@ -188,7 +190,7 @@ public class ProxyServer extends Proxy {
 			for (int j = 0; j < portRange; j++){
 //	    		Thread t = new RunDataNode(ip, startPort + j);
 //	    		t.start();
-				pushDHT(ip, startPort + j, proxy);
+				pushDHT(ip, startPort + j, proxy, hashRange);
 
 			}
         }
@@ -289,18 +291,18 @@ public class ProxyServer extends Proxy {
 	public void pushDHTAll(Proxy proxy) {
 		System.out.println("Beginning to push DHT to all physical nodes");
 		for(PhysicalNode node: proxy.getLookupTable().getPhysicalNodesMap().values()) {
-			pushDHT(node.getIp(), node.getPort(), proxy);
+			pushDHT(node.getIp(), node.getPort(), proxy, INITIAL_HASH_RANGE);
 		}
 	}
     
-	public boolean pushDHT(String serverAddress, int port, Proxy proxy) {
+	public boolean pushDHT(String serverAddress, int port, Proxy proxy, int hashRange) {
 		try {
 			ProxyClient_Elastic client = new ProxyClient_Elastic(this);
 	    	boolean connected = client.connectServer(serverAddress, port);
 	    	
 	    	Thread t = null;
 	    	if (!connected) {
-	    		t = new RunDataNode_Elastic(serverAddress, port, ProxyServer.INITIAL_HASH_RANGE);
+	    		t = new RunDataNode_Elastic(serverAddress, port, hashRange);
 	    		t.start();
 	    		
 	    		Thread.sleep(1000);
@@ -440,7 +442,7 @@ public class ProxyServer extends Proxy {
 					if (command.getCommandSeries().size() == 3) {
 						String ip = command.getCommandSeries().get(1);
 						int port = Integer.valueOf(command.getCommandSeries().get(2));
-						pushDHT(ip, port, proxy);
+						pushDHT(ip, port, proxy, INITIAL_HASH_RANGE);
 						return new Response(true, "DHT pushed for " + ip + " " + port).serialize();
 					}
 					else if (command.getCommandSeries().size() == 1) {
@@ -566,8 +568,7 @@ public class ProxyServer extends Proxy {
 	    } 
 	}
 	
-    public static void main(String[] args) throws IOException { 
-    	
+    public static void main(String[] args) throws IOException {
     	if (args.length > 0) {
     		if (args.length == 3 || args.length == 2) {
     			String ip = args.length == 3 ? args[2] : "localhost";
