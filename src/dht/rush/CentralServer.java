@@ -65,10 +65,10 @@ public class CentralServer {
         Element rootElement = config.getRootElement();
         int startPort = Integer.parseInt(rootElement.element("subClusters").element("subCluster").element("port").getStringValue());
         int portRange = Integer.parseInt(rootElement.element("offset").getStringValue());
+        int hashRange = Integer.valueOf(config.getRootElement().element("placementGroupNumber").getStringValue());
         
 		for (int j = 0; j < portRange; j++){
 			int portNum = startPort + j;
-			System.out.println(portNum);
 	    	Thread t = new RunDataNode_Rush(thisIP, portNum, hashRange);
 	    	t.start();
 		}
@@ -154,7 +154,7 @@ public class CentralServer {
     
         try {
         	if (!root.getId().equals("R") && !root.getPort().equals("")) {
-        		pushDHT(root.getIp(), Integer.valueOf(root.getPort()));
+        		pushDHT(root.getIp(), Integer.valueOf(root.getPort()), hashRange);
         		System.out.println("DHT successfully pushed to Data Node " + root.getIp() + ":" + root.getPort());
         	}
         }
@@ -170,14 +170,14 @@ public class CentralServer {
         }
 	}
 	
-	public boolean pushDHT(String serverAddress, int port) {
+	public boolean pushDHT(String serverAddress, int port, int hashRange) {
 		try {
 			ProxyClient_Rush client = new ProxyClient_Rush(this);
 	    	boolean connected = client.connectServer(serverAddress, port);
 	    	
 	    	Thread t = null;
 	    	if (!connected) {
-	    		t = new RunDataNode_Rush(serverAddress, port, CentralServer.hashRange);
+	    		t = new RunDataNode_Rush(serverAddress, port, hashRange);
 	    		t.start();
 	    		
 	    		Thread.sleep(1000);

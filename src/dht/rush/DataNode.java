@@ -26,7 +26,7 @@ public class DataNode {
 	
 	String IP;
 	int port;
-	int epoch = 0;
+//	int epoch = 0;
 	int hashRange;
 	
 	public DataNode() {
@@ -115,9 +115,9 @@ public class DataNode {
 		return epoch;
 	}
 	
-	public int getDataEpoch() {
-		return this.epoch;
-	}
+//	public int getDataEpoch() {
+//		return this.epoch;
+//	}
 	
 	public String getHashBucket() {
 		return Arrays.toString(this.hashBucket.toArray());
@@ -165,12 +165,14 @@ public class DataNode {
         		dataNode = new DataNode(args[0], Integer.valueOf(args[1]), Integer.valueOf(args[2]));
         	}
         	catch (Exception e) {
-        		System.out.println("input parameters <IP> <port> <hashRange> to start data node");
+        		System.out.println("Input parameters <IP> <port> <hashRange> to start data node");
         		return;
         	}
         }
         else {
-        	dataNode = new DataNode();
+//        	dataNode = new DataNode();
+        	System.out.println("Input parameters <IP> <port> <hashRange> to start data node");
+        	return;
         }
 
 		int port = dataNode.port;
@@ -315,9 +317,9 @@ class ClientHandler extends Thread
 					return new Response(false, "DHT table not initialized").serialize();
 				}
 			}
-			else if (commandStr.equals("info epoch")) {
-				return new Response(true, String.valueOf(dataNode.getDataEpoch()), "Data Epoch from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();
-			}
+//			else if (commandStr.equals("info epoch")) {
+//				return new Response(true, String.valueOf(dataNode.getDataEpoch()), "Data Epoch from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();
+//			}
 			else if (commandStr.equals("info bucket")) {
 				return new Response(true, dataNode.getHashBucket(), "Hash Bucket from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();
 			}
@@ -337,7 +339,7 @@ class ClientHandler extends Thread
 					message = dataStr + " (hash value: " + rawhash + ") not found in this Data Node " + dataNode.IP + ":" + dataNode.port + ".";
 					message += " It can be found in Data Node " + dataNode.findNodeInfo(rawhash);
 				}
-				return new Response(true, message).serialize();
+				return new Response(true, dataNode.getDHTEpoch(), message).serialize();
 			}
 			else if (command.getAction().equals("write")) {
 				String dataStr = command.getCommandSeries().get(0);
@@ -354,10 +356,10 @@ class ClientHandler extends Thread
 					message = dataStr + " (hash value: " + rawhash + ") not able to be written to this Data Node " + dataNode.IP + ":" + dataNode.port + ".";
 					message += " It can be written to Data Node " + dataNode.findNodeInfo(rawhash);
 				}
-				if (isFound) {
-					dataNode.epoch++;
-				}
-				return new Response(true, message).serialize();
+//				if (isFound) {
+//					dataNode.epoch++;
+//				}
+				return new Response(true, dataNode.getDHTEpoch(), message).serialize();
 			}
 			else {
 				return new Response(false, "Command not supported by Data Node").serialize();

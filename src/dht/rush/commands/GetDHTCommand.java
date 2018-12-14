@@ -23,7 +23,7 @@ public class GetDHTCommand extends ServerCommand {
         
         JsonObject params = null;
         if (operation.equalsIgnoreCase("pull")) {
-        	params = new Response(true, clusterStructureMap.toJSON(), "Ring DHT table").toJSON();
+        	params = new Response(true, clusterStructureMap.toJSON(), "Rush DHT table").toJSON();
         }
         else if (operation.equalsIgnoreCase("head")) {
         	params = new Response(true, String.valueOf(clusterStructureMap.getEpoch()), "Current epoch number:").toJSON();
@@ -37,7 +37,7 @@ public class GetDHTCommand extends ServerCommand {
 			if (commandSeries.size() == 3) {
 				String ip = commandSeries.get(1);
 				int port = Integer.valueOf(commandSeries.get(2));
-				cs.pushDHT(ip, port);
+				cs.pushDHT(ip, port, cs.hashRange);
 				params = new Response(true, "DHT pushed for " + ip + " " + port).toJSON();
 			}
 			else if (commandSeries.size() == 1) {
