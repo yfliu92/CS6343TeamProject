@@ -54,10 +54,11 @@ public class ProxyServer extends PhysicalNode {
 		Element port = config.getRootElement().element("port");
 		int startPort = Integer.parseInt(port.element("startPort").getStringValue());
 		int portRange = Integer.parseInt(port.element("portRange").getStringValue());
+		int hashRange = Integer.parseInt(config.getRootElement().element("hashRange").getStringValue());
         
 		for (int j = 0; j < portRange; j++){
 			int portNum = startPort + j;
-	    	Thread t = new RunDataNode_Ring(thisIP, portNum, ProxyServer.hashRange);
+	    	Thread t = new RunDataNode_Ring(thisIP, portNum, hashRange);
 	    	t.start();
 		}
 	}
@@ -158,6 +159,7 @@ public class ProxyServer extends PhysicalNode {
 		Element port = config.getRootElement().element("port");
 		int startPort = Integer.parseInt(port.element("startPort").getStringValue());
 		int portRange = Integer.parseInt(port.element("portRange").getStringValue());
+		int hashRange = Integer.parseInt(port.element("portRange").getStringValue());
 		
 		Element nodes = config.getRootElement().element("nodes");
         List<Element> listOfNodes = nodes.elements();
@@ -169,7 +171,7 @@ public class ProxyServer extends PhysicalNode {
 			for (int j = 0; j < portRange; j++){
 //	    		Thread t = new RunDataNode(ip, startPort + j);
 //	    		t.start();
-				pushDHT(ip, startPort + j);
+				pushDHT(ip, startPort + j, hashRange);
 
 			}
         }
@@ -316,18 +318,18 @@ public class ProxyServer extends PhysicalNode {
 	public void pushDHTAll() {
 		System.out.println("Beginning to push DHT to all physical nodes");
 		for(PhysicalNode node: super.getLookupTable().getPhysicalNodeMap().values()) {
-			pushDHT(node.getAddress(), node.getPort());
+			pushDHT(node.getAddress(), node.getPort(), hashRange);
 		}
 	}
 	
-	public boolean pushDHT(String serverAddress, int port) {
+	public boolean pushDHT(String serverAddress, int port, int hashRange) {
 		try {
 		   	ProxyClient_Ring client = new ProxyClient_Ring(this);
 	    	boolean connected = client.connectServer(serverAddress, port);
 	    	
 	    	Thread t = null;
 	    	if (!connected) {
-	    		t = new RunDataNode_Ring(serverAddress, port, ProxyServer.hashRange);
+	    		t = new RunDataNode_Ring(serverAddress, port, hashRange);
 	    		t.start();
 	    		
 	    		Thread.sleep(1000);
@@ -480,7 +482,7 @@ public class ProxyServer extends PhysicalNode {
 					if (command.getCommandSeries().size() == 3) {
 						String ip = command.getCommandSeries().get(1);
 						int port = Integer.valueOf(command.getCommandSeries().get(2));
-						pushDHT(ip, port);
+						pushDHT(ip, port, hashRange);
 						return new Response(true, "DHT pushed for " + ip + " " + port).serialize();
 					}
 					else if (command.getCommandSeries().size() == 1) {
