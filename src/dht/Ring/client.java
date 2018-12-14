@@ -67,6 +67,20 @@ public class client {
 		return true;
 	}
 	
+	public boolean buildTable(LookupTable lookupTable, JsonObject data) {
+		if (data.containsKey("epoch")) {
+			lookupTable.setEpoch(Long.valueOf(data.get("epoch").toString()));
+		}
+		if (data.containsKey("table")) {
+			JsonArray jsonArray = data.get("table").asJsonArray();
+			for(int i = 0; i < jsonArray.size(); i++) {
+				lookupTable.getTable().add(new VirtualNode(jsonArray.getJsonObject(i)));
+			}
+		}
+		
+		return true;
+	}
+	
 	public void printTableInfo() {
 		int items = lookupTable != null ? lookupTable.getTable().size() : 0;
 		String epoch = items != 0 ? String.valueOf(lookupTable.getEpoch()): "";
@@ -423,6 +437,12 @@ class RWClient {
     		if (command.getCommandSeries().size() > 0 && command.getCommandSeries().get(0).equals("pull")) {
     			this.myclient.buildTable(res.getJsonObject("jsonResult"));
     			System.out.println("Local DHT built, with epoch number " + this.myclient.getDHTEpoch());
+    		}
+    		else if (command.getCommandSeries().size() > 1 && command.getCommandSeries().get(0).equals("head") && command.getCommandSeries().get(1).equals("print")) {
+    			LookupTable lookupTable = new LookupTable();
+    			this.myclient.buildTable(lookupTable, res.getJsonObject("jsonResult"));
+    			System.out.println("Remote DHT, epoch number " + lookupTable.getEpoch());
+    			lookupTable.print();
     		}
     	}
     	else if (command.getAction().equals("read") || command.getAction().equals("write")) {
