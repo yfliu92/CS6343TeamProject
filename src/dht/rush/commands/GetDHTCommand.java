@@ -70,7 +70,9 @@ public class GetDHTCommand extends ServerCommand {
         }
         
         if (operation.equalsIgnoreCase("push") && commandSeries.size() == 1) {
-        	this.cs.initializeDataNode(this.cs.getRoot());
+        	synchronized(this.cs) {
+        		this.cs.initializeDataNode(this.cs.getRoot());
+        	}
         }
 
     }

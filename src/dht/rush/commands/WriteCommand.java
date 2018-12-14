@@ -46,7 +46,9 @@ public class WriteCommand extends ServerCommand {
             System.out.println("Response Sent");
         }
         
-        this.cs.initializeDataNode(this.cs.getRoot());
+    	synchronized(this.cs) {
+    		this.cs.initializeDataNode(this.cs.getRoot());
+    	}
     }
 
     public String getFileName() {

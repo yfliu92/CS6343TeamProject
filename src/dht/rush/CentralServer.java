@@ -28,6 +28,7 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,6 +39,9 @@ public class CentralServer {
     int port;
     String IP;
     public static int hashRange;
+//    public boolean dhtPushing = false;
+//    public int dhtPushingEpoch = -1;
+    public HashSet<Integer> epochPushing = new HashSet<Integer>();
     
     public ClusterStructureMap getClusterMap() {
     	return this.clusterStructureMap;
@@ -59,7 +63,7 @@ public class CentralServer {
         	config = reader.read(inputFile);
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
         
         Element rootElement = config.getRootElement();
@@ -128,7 +132,7 @@ public class CentralServer {
         try {
             cs.startup(cs);
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
     
@@ -143,7 +147,7 @@ public class CentralServer {
             hashRange = Integer.valueOf(config.getRootElement().element("placementGroupNumber").getStringValue());
         }catch(Exception e) {
         	System.out.println("Failed to initialize");
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
     
@@ -163,11 +167,18 @@ public class CentralServer {
 //        	System.out.println(root.toJSON());
         }
         
-        if (root.getSubClusters() != null && root.getSubClusters().size() > 0) {
-        	for(Cluster cluster: root.getSubClusters()) {
-        		initializeDataNode(cluster);
-        	}
+        
+        try {
+            if (root.getSubClusters() != null && root.getSubClusters().size() > 0) {
+            	synchronized (root) {
+                	for(Cluster cluster: root.getSubClusters()) {
+                		initializeDataNode(cluster);
+                	}
+            	}
+            }
+        }catch(Exception ee) {
         }
+
 	}
 	
 	public boolean pushDHT(String serverAddress, int port, int hashRange) {
@@ -321,7 +332,7 @@ public class CentralServer {
 	        	this.input.close();
 	              
 	        }catch(IOException e){ 
-	            e.printStackTrace(); 
+//	            e.printStackTrace(); 
 	        } 
 	    } 
 	}
@@ -354,12 +365,12 @@ public class CentralServer {
             } 
             catch (Exception e){ 
                 s.close(); 
-                e.printStackTrace(); 
+//                e.printStackTrace(); 
             } 
         } 
 	}
 
-    private ServerCommand dispatchCommand(JsonObject requestObject, CentralServer server) throws IOException {
+    private ServerCommand dispatchCommand(JsonObject requestObject, CentralServer server) {
         String method = requestObject.getString("method").toLowerCase();
         ServerCommand serverCommand = null;
         JsonObject params = null;
@@ -688,8 +699,10 @@ class ProxyClient_Rush{
     	processCommandRing(cmd, 3);
     }
     
-    public void processCommand(int typeDHT, String cmd) throws Exception {
-    	switch(typeDHT) {
+    public void processCommand(int typeDHT, String cmd) {
+    	
+    	try {
+        	switch(typeDHT) {
 	    	case 1:
 	    		processCommandRing(cmd);
 	    		break;
@@ -700,6 +713,11 @@ class ProxyClient_Rush{
 	    		processCommandElastic(cmd);
 	    		break;
     	}
+    	}
+    	catch (Exception e) {
+    		}
+    	
+
     }
     
     public static String getHelpText(int dhtType) {
@@ -769,12 +787,12 @@ class RunDataNode_Rush extends Thread {
 				p.waitFor();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 			success = true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
         
         return success;
