@@ -106,11 +106,11 @@ public class storage_server {
 	        ReentrantLock lock = locks.get(fileName);
 	        if(lock.tryLock())
 	        {
-	            try{
-	                Thread.sleep(1000);
-	            }
-	            catch (Exception e)
-	            {}
+	            // try{
+	            //     // Thread.sleep(1000);
+	            // }
+	            // catch (Exception e)
+	            // {}
 	            lock.unlock();
 	            System.out.println("write " + fileName + " success;");
 	            return "write " + fileName + " success;";

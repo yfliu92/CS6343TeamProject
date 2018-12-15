@@ -21,6 +21,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.io.Console;
 import java.util.Vector;
@@ -247,11 +249,11 @@ public class control_client {
     		}
     	}
 
-    	System.out.println("Sending command" + " ---- " + command.getRawCommand() + " ---- " + new Date().toString());
+    	System.out.println("Sending command" + " ---- " + command.getRawCommand() + " ---- " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
             output.println(command.getRawCommand());
             output.flush();
         String response = input.readLine();
-        System.out.println("Response received: " + response + " ---- " + new Date().toString());
+        System.out.println("Response received: " + response + " ---- " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
     }
     
     public boolean processBatchRequest(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
@@ -280,7 +282,7 @@ public class control_client {
     
     public void sendCommandStr_JsonRes(Command command, int dhtType, BufferedReader input, PrintWriter output) throws Exception {
     	
-    	String timeStamp = new Date().toString();
+    	String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
     	System.out.println("Sending command" + " ---- " + command.getRawCommand() + " ---- " + timeStamp);
         output.println(command.getRawCommand());
         output.flush();
@@ -385,7 +387,7 @@ public class control_client {
     		return;
     	}
     	
-    	String timeStamp = new Date().toString();
+    	String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
     	System.out.println("Sending command" + " ---- " + timeStamp);
     	System.out.println();
         

@@ -7,6 +7,8 @@ import dht.rush.clusters.ClusterStructureMap;
 import javax.json.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class GetDHTCommand extends ServerCommand {
@@ -70,6 +72,8 @@ public class GetDHTCommand extends ServerCommand {
         }
         
         if (operation.equalsIgnoreCase("push") && commandSeries.size() == 1) {
+    		System.out.println("Beginning to push DHT to all physical nodes --- " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+
         	synchronized(this.cs) {
         		this.cs.initializeDataNode(this.cs.getRoot());
         	}

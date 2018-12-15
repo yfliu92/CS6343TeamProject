@@ -7,6 +7,9 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import javax.json.Json;
@@ -316,7 +319,7 @@ public class ProxyServer extends PhysicalNode {
 	}
 	
 	public void pushDHTAll() {
-		System.out.println("Beginning to push DHT to all physical nodes");
+		System.out.println("Beginning to push DHT to all physical nodes --- " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
 		for(PhysicalNode node: super.getLookupTable().getPhysicalNodeMap().values()) {
     		synchronized(node) {
     			pushDHT(node.getAddress(), node.getPort(), hashRange);
@@ -335,11 +338,11 @@ public class ProxyServer extends PhysicalNode {
 	    		t = new RunDataNode_Ring(serverAddress, port, hashRange);
 	    		t.start();
 	    		
-	    		Thread.sleep(1000);
+	    		// Thread.sleep(1000);
 	    		connected = client.connectServer(serverAddress, port);
 	    	}
 	    	
-	    	Thread.sleep(1000);
+	    	// Thread.sleep(1000);
 			if (connected) {
 				
 				System.out.println("Connected to Data Node Server at " + serverAddress + ":" + port);
@@ -361,7 +364,7 @@ public class ProxyServer extends PhysicalNode {
 		        JsonObject res = parseRequest(client.input);
 		        if (res != null) {
 		            System.out.println();
-		        	System.out.println("Response received at " + new Date() + " ---- " + res.toString());
+		        	System.out.println("Response received at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")) + " ---- " + res.toString());
 		            if (res.containsKey("status") && res.containsKey("message")) {
 		                System.out.println("REPONSE STATUS: " + res.getString("status") + ", " + "message: " + res.getString("message"));
 		            }
@@ -546,7 +549,7 @@ public class ProxyServer extends PhysicalNode {
 	            try {
 	            	msg = input.readLine(); 
 	                if (msg == null) {
-                		System.out.println("Connection end " + " ---- " + new Date().toString());
+                		System.out.println("Connection end " + " ---- " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
                 		break;
 	                }
 	                  
@@ -561,7 +564,7 @@ public class ProxyServer extends PhysicalNode {
 	                else { // msg != null
 						String requestStr = msg.length() > 200 ? msg.substring(0, 200) + "...": msg; 
 
-                    	System.out.println("Request received from " + s.getPort() + ": " + requestStr + " ---- " + new Date().toString());
+                    	System.out.println("Request received from " + s.getPort() + ": " + requestStr + " ---- " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
                     	System.out.println();
                     	
                     	Command command = new Command(msg);
@@ -573,7 +576,7 @@ public class ProxyServer extends PhysicalNode {
 
 						String responseStr = response.length() > 200 ? response.substring(0, 200) + "...": response; 
                     	
-                        System.out.println("Response sent to " + s.getPort() + ": " + responseStr + " ---- " + new Date().toString());
+                        System.out.println("Response sent to " + s.getPort() + ": " + responseStr + " ---- " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
                         System.out.println();
                         
                         if (!response.startsWith("false|")) {
@@ -736,7 +739,7 @@ class ProxyClient_Ring{
     
     
     public void sendCommandStr_JsonRes(Command command, BufferedReader input, PrintWriter output) throws Exception {
-    	String timeStamp = new Date().toString();
+    	String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
     	System.out.println("Sending command" + " ---- " + timeStamp);
         output.println(command.getRawCommand());
         output.flush();
@@ -780,7 +783,7 @@ class ProxyClient_Ring{
     public void processCommandRush(String cmd) throws Exception {
     	Command command = new Command(cmd);
     	
-    	String timeStamp = new Date().toString();
+    	String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
     	System.out.println("Sending command" + " ---- " + timeStamp);
     	System.out.println();
         
