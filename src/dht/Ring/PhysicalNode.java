@@ -272,7 +272,7 @@ public class PhysicalNode {
         return result;
     }
 
-    //// Delete virtual node by its hash value
+    //// Delete virtual node with a VirtualNode as an input
     public String deleteNode(VirtualNode node){
         int index = Collections.binarySearch(lookupTable.getTable(), node);
         if (index < 0){

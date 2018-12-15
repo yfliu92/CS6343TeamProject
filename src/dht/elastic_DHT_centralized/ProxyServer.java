@@ -70,7 +70,7 @@ public class ProxyServer extends Proxy {
     public static Proxy initializeEDHT(){
         try {
             // Read from the configuration file "config_ring.xml"
-//            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+            //String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
             String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
 
             File inputFile = new File(xmlPath);
@@ -200,17 +200,37 @@ public class ProxyServer extends Proxy {
         return result;
 	}
     
-    public void CCcommands(Proxy proxy) {
+    public void CCcommands(Proxy proxy, String filename) {
         BufferedWriter writer = null;
         String rootPath = System.getProperty("user.dir");
-//        String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "elastic_CCcommands.txt";
-        String path = rootPath + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "elastic_CCcommands.txt";
-		System.out.println("writing to file");
+        String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + filename;
+        //String path = rootPath + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + filename;
+		String ip_addr= "";
+		try {
+			// Read from the configuration file "config_ring.xml"
+			//String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+			String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "elastic_DHT_centralized" + File.separator + "config_ElasticDHT.xml";
+
+			File inputFile = new File(xmlPath);
+			SAXReader reader = new SAXReader();
+			config = reader.read(inputFile);
+
+			// Get the IPs
+			Element nodes = config.getRootElement().element("nodes");
+
+			ip_addr = nodes.elements().get(0).element("ip").getStringValue();
+
+		}catch(DocumentException e) {
+			System.out.println("Failed to initialize");
+			e.printStackTrace();
+		}
+
+        System.out.println("writing to file");
         try {
             writer = new BufferedWriter(new FileWriter(path), 32768);
-            String[] availableCommands = {"add", "remove", "loadbalance"};
-            String[] expand_shrink_commands = {"expand", "shrink"};
-            String[] availableIPs = {"192.168.0.219","192.168.0.221"};
+//            String[] availableCommands = {"add", "remove", "loadbalance"};
+//            String[] expand_shrink_commands = {"expand", "shrink"};
+            /*String[] availableIPs = {"192.168.0.219","192.168.0.221"};
             String[] availablePorts = {"8101", "8102", "8103", "8104", "8105", "8106", "8107", "8108", "8109", "8110",
                     "8111", "8112", "8113", "8114", "8115", "8116", "8117", "8118", "8119", "8120"};
             ArrayList<String> availablePNodes = new ArrayList<>();
@@ -219,6 +239,14 @@ public class ProxyServer extends Proxy {
                     availablePNodes.add(ip + " " + port);
                 }
             }
+            */
+			String[] availablePorts = {"8301", "8302", "8303", "8304", "8305", "8306", "8307", "8308", "8309", "8310",
+					"8311", "8312", "8313", "8314", "8315", "8316", "8317", "8318", "8319", "8320",
+					"8321", "8322", "8323", "8324", "8325", "8326", "8327", "8328", "8329", "8330"};
+			ArrayList<String> availablePNodes = new ArrayList<>();
+			for (String port : availablePorts) {
+				availablePNodes.add(ip_addr + " " + port);
+			}
             // Get the current physicalIDs after initialization
             Set<String> pNodes = proxy.getLookupTable().getPhysicalNodesMap().keySet();
             List<String> currentPNodes = new ArrayList<>();
@@ -226,64 +254,64 @@ public class ProxyServer extends Proxy {
                 String[] lst = node.split("-");
                 currentPNodes.add(lst[0] + " " + lst[1]);
             }
-            // Write control client commands into the "elastic_CCcommands.txt" file (in the root folder by default)
-            for (int i = 0; i < TOTAL_CCCOMMANDS; i++){
-                Random ran = new Random();
-                // Randomly pick a command between "expand" and "shrink" when i is 99, 199, 299....
-                if (i % 200 == 199){
-                    String command = expand_shrink_commands[ran.nextInt(expand_shrink_commands.length)];
-                    writer.write(command + "\n");
-                    continue;
-                }
-                // Randomly pick a command from available commands
-                String command = availableCommands[ran.nextInt(availableCommands.length)];
 
-                // add means to add a physical node and specify for what range of buckets it will serve as a replica
-                // Use addNode(String ip, int port, int start, int end)
-                if (command.equals("add")){
-                    if (availablePNodes.size() == 0){
-                        continue;
-                    }
-                    String ip_port = availablePNodes.get(ran.nextInt(availablePNodes.size()));
-                    availablePNodes.remove(ip_port);
-                    currentPNodes.add(ip_port);
-                    int ran_start = ran.nextInt(INITIAL_HASH_RANGE);
-                    int ran_end = (ran_start + LOAD_PER_LOAD) % INITIAL_HASH_RANGE;
-                    writer.write("add " + ip_port + " " + ran_start + " " + ran_end + "\n");
-                }
-                // remove means to remove a physical node
-                // use deleteNode(String ip, int port) for this command
-                else if (command.equals("remove")){
-                    if (currentPNodes.size() == 0){
-                        continue;
-                    }
-                    String ip_port = currentPNodes.get(ran.nextInt(currentPNodes.size()));
-                    currentPNodes.remove(ip_port);
-                    availablePNodes.add(ip_port);
-                    writer.write("remove " + ip_port + "\n");
-                }
-                // use loadBalance(String fromID, String toID, int numOfBuckets) for this command
-                else if (command.equals("loadbalance")) {
-                    if (currentPNodes.size() <= 1){
-                        continue;
-                    }
-                    String fromID = currentPNodes.get(ran.nextInt(currentPNodes.size()));
-                    String toID;
-                    do {
-                        toID = currentPNodes.get(ran.nextInt(currentPNodes.size()));
-                    } while (toID == fromID);
 
-                    int numOfBuckets = ran.nextInt(15) + 10;
-                    writer.write("loadbalance " + fromID + " " + toID + " " + numOfBuckets + "\n");
-                }
-            }
+			if (filename.equals("add_delete_commands.txt")) {
+				String[] availableCommands = {"add", "remove"};
+				// Write control client commands into the "elastic_CCcommands.txt" file (in the root folder by default)
+				for (int i = 0; i < TOTAL_CCCOMMANDS / 2; i++){
+					Random ran = new Random();
+					// Randomly pick a command from available commands
+					String command = availableCommands[ran.nextInt(availableCommands.length)];
+
+					// add means to add a physical node and specify for what range of buckets it will serve as a replica
+					// Use addNode(String ip, int port, int start, int end)
+					if (command.equals("add")){
+						if (availablePNodes.size() == 0){
+							continue;
+						}
+						String ip_port = availablePNodes.get(ran.nextInt(availablePNodes.size()));
+						availablePNodes.remove(ip_port);
+						currentPNodes.add(ip_port);
+						int ran_start = ran.nextInt(INITIAL_HASH_RANGE);
+						int ran_end = (ran_start + LOAD_PER_LOAD) % INITIAL_HASH_RANGE;
+						writer.write("add " + ip_port + " " + ran_start + " " + ran_end + "\n");
+					}
+					// remove means to remove a physical node
+					// use deleteNode(String ip, int port) for this command
+					else if (command.equals("remove")){
+						if (currentPNodes.size() == 0){
+							continue;
+						}
+						String ip_port = currentPNodes.get(ran.nextInt(currentPNodes.size()));
+						currentPNodes.remove(ip_port);
+						availablePNodes.add(ip_port);
+						writer.write("remove " + ip_port + "\n");
+					}
+				}
+			}
+			else if (filename.equals("loadbalance_commands.txt")) {
+				for (int i = 0; i < TOTAL_CCCOMMANDS; i++) {
+					Random ran = new Random();
+					if (currentPNodes.size() <= 1) {
+						continue;
+					}
+					String fromID = currentPNodes.get(ran.nextInt(currentPNodes.size()));
+					String toID;
+					do {
+						toID = currentPNodes.get(ran.nextInt(currentPNodes.size()));
+					} while (toID == fromID);
+
+					int numOfBuckets = ran.nextInt(15) + 10;
+					writer.write("loadbalance " + fromID + " " + toID + " " + numOfBuckets + "\n");
+				}
+			}
         } catch (IOException ex) {
             // Report
         } finally {
             try {writer.close();}
             catch (Exception ex) {/*ignore*/}
         }
-
     }
 
     public static String getFindInfo(String input) {
@@ -601,7 +629,9 @@ public class ProxyServer extends Proxy {
 		ProxyServer proxyServer = new ProxyServer();
         //Initialize the Elastic DHT cluster
 	    Proxy proxy = initializeEDHT();
-		proxyServer.CCcommands(proxy);
+		//proxyServer.CCcommands(proxy, "loadbalance_commands.txt");
+		//proxyServer.CCcommands(proxy, "add_delete_commands.txt");
+		//System.out.println("Commands done");
 	    proxyServer.initializeDataNode(proxy);
 
 

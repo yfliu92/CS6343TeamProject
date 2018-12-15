@@ -70,7 +70,7 @@ public class ProxyServer extends PhysicalNode {
         try {
             // Read from the configuration file "config_ring.xml"
 			String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
-//            String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+            //String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
             System.out.println(xmlPath);
             File inputFile = new File(xmlPath);
             SAXReader reader = new SAXReader();
@@ -182,123 +182,153 @@ public class ProxyServer extends PhysicalNode {
         return result;
 	}
 	
-	public void CCcommands(){
+	public void CCcommands(String filename){
 		BufferedWriter writer = null;
 		String rootPath = System.getProperty("user.dir");
-//		String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "ring_CCcommands.txt";
+	 //	String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + filename;
+	 	String path = rootPath + File.separator + "dht" + File.separator + "Ring" + File.separator + filename;
+		String ip_addr= "";
+		try {
+			// Read from the configuration file "config_ring.xml"
+			String xmlPath = System.getProperty("user.dir") + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+			//String xmlPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "dht" + File.separator + "Ring" + File.separator + "config_ring.xml";
+			System.out.println(xmlPath);
+			File inputFile = new File(xmlPath);
+			SAXReader reader = new SAXReader();
+			config = reader.read(inputFile);
 
-		String path = rootPath + File.separator + "dht" + File.separator + "Ring" + File.separator + "ring_CCcommands.txt";
+			// Get the IPs
+			Element nodes = config.getRootElement().element("nodes");
+
+			ip_addr = nodes.elements().get(0).element("ip").getStringValue();
+
+		}catch(DocumentException e) {
+			System.out.println("Failed to initialize");
+			e.printStackTrace();
+		}
+
 
 		try {
 			writer = new BufferedWriter(new FileWriter(path), 32768);
-			String[] availableCommands = {"add1", "add2", "remove1", "remove2", "loadbalance"};
-			String[] availableIPs = {"192.168.0.219","192.168.0.221"};
+
+			/*String[] availableIPs = {"192.168.0.214", "192.168.0.215"};
 			String[] availablePorts = {"8101", "8102", "8103", "8104", "8105", "8106", "8107", "8108", "8109", "8110",
 					"8111", "8112", "8113", "8114", "8115", "8116", "8117", "8118", "8119", "8120"};
 			ArrayList<String> availablePNodes = new ArrayList<>();
-			for (String ip : availableIPs){
-				for (String port : availablePorts){
+			for (String ip : availableIPs) {
+				for (String port : availablePorts) {
 					availablePNodes.add(ip + " " + port);
 				}
+			} */
+			String[] availablePorts = {"8301", "8302", "8303", "8304", "8305", "8306", "8307", "8308", "8309", "8310",
+					"8311", "8312", "8313", "8314", "8315", "8316", "8317", "8318", "8319", "8320",
+					"8321", "8322", "8323", "8324", "8325", "8326", "8327", "8328", "8329", "8330"};
+			ArrayList<String> availablePNodes = new ArrayList<>();
+			for (String port : availablePorts) {
+				availablePNodes.add(ip_addr + " " + port);
 			}
 			// Get the current physicalIDs after initialization
 			Collection<PhysicalNode> pNodes = super.getLookupTable().getPhysicalNodeMap().values();
 			List<PhysicalNode> currentPNodes = new ArrayList<>();
-			for (PhysicalNode node : pNodes){
+			for (PhysicalNode node : pNodes) {
 				currentPNodes.add(node);
 			}
 			List<Integer> currentVNodes = new ArrayList<>();
-			for(VirtualNode node : super.getLookupTable().getTable()){
+			for (VirtualNode node : super.getLookupTable().getTable()) {
 				currentVNodes.add(node.getHash());
 			}
+			if (filename.equals("add_delete_commands.txt")) {
+				String[] availableCommands = {"add1", "add2", "remove1", "remove2"};
+				// Write control client commands into the "add_delete_commands.txt" file
+				for (int i = 0; i < total_CCcommands / 2; i++) {
+					// Randomly pick a command from available commands
+					Random ran = new Random();
+					String command = availableCommands[ran.nextInt(availableCommands.length)];
 
-			// Write control client commands into the "ring_CCcommands.txt" file
-			for (int i = 0; i < total_CCcommands; i++){
-				// Randomly pick a command from available commands
-				Random ran = new Random();
-				String command = availableCommands[ran.nextInt(availableCommands.length)];
-
-				// add1 means to add a virtual node for an existing physical node
-				// Use addNode(String ip, int port, int hash) for this command
-				if (command.equals("add1")){
-					if (currentPNodes.size() == 0){
-						continue;
-					}
-					String ip_port = currentPNodes.get(ran.nextInt(currentPNodes.size())).getId();
-					String[] lst = ip_port.split("-");
-					int ran_hash;
-					do {
-						ran_hash = ran.nextInt(hashRange);
-					} while (currentVNodes.contains(ran_hash));
-					currentVNodes.add(ran_hash);
-					writer.write("add " + lst[0] + " " + lst[1] + " " + ran_hash + "\n");
-				}
-
-				// add2 means to add a new physical node and map it to more than 1 virtual node
-				// Use addNode(String ip, int port, int[] hashes) for this command
-				else if (command.equals("add2")){
-					if (availablePNodes.size() == 0){
-						continue;
-					}
-					String ip_port = availablePNodes.get(ran.nextInt(availablePNodes.size()));
-					String[] lst = ip_port.split(" ");
-					String ip = lst[0];
-					int port = Integer.parseInt(lst[1]);
-					availablePNodes.remove(ip_port);
-					Set<Integer> hashes = new HashSet<>();
-					while (hashes.size() < vm_to_pm_ratio) {
+					// add1 means to add a virtual node for an existing physical node
+					// Use addNode(String ip, int port, int hash) for this command
+					if (command.equals("add1")) {
+						if (currentPNodes.size() == 0) {
+							continue;
+						}
+						String ip_port = currentPNodes.get(ran.nextInt(currentPNodes.size())).getId();
+						String[] lst = ip_port.split("-");
 						int ran_hash;
 						do {
 							ran_hash = ran.nextInt(hashRange);
 						} while (currentVNodes.contains(ran_hash));
-						hashes.add(ran_hash);
 						currentVNodes.add(ran_hash);
+						writer.write("add " + lst[0] + " " + lst[1] + " " + ran_hash + "\n");
+					}
 
-					}
-					List<VirtualNode> virtualNodes = new ArrayList<>();
-					String vNodes_to_add = "";
-					for (Integer hash : hashes){
-						VirtualNode vNode = new VirtualNode(hash);
-						virtualNodes.add(vNode);
-						vNodes_to_add += " " + hash;
-					}
-					PhysicalNode newNode = new PhysicalNode(ip + "-" + port, ip, port, "active");
-					newNode.setVirtualNodes(virtualNodes);
-					currentPNodes.add(newNode);
-					writer.write("add " + ip_port + vNodes_to_add + "\n");
-				}
+					// add2 means to add a new physical node and map it to more than 1 virtual node
+					// Use addNode(String ip, int port, int[] hashes) for this command
+					else if (command.equals("add2")) {
+						if (availablePNodes.size() == 0) {
+							continue;
+						}
+						String ip_port = availablePNodes.get(ran.nextInt(availablePNodes.size()));
+						String[] lst = ip_port.split(" ");
+						String ip = lst[0];
+						int port = Integer.parseInt(lst[1]);
+						availablePNodes.remove(ip_port);
+						Set<Integer> hashes = new HashSet<>();
+						while (hashes.size() < vm_to_pm_ratio) {
+							int ran_hash;
+							do {
+								ran_hash = ran.nextInt(hashRange);
+							} while (currentVNodes.contains(ran_hash));
+							hashes.add(ran_hash);
+							currentVNodes.add(ran_hash);
 
-				// remove1 means to remove a virtual node
-				// use deleteNode(int hash) for this command
-				else if (command.equals("remove1")){
-					if (currentVNodes.size() == 0){
-						continue;
+						}
+						List<VirtualNode> virtualNodes = new ArrayList<>();
+						String vNodes_to_add = "";
+						for (Integer hash : hashes) {
+							VirtualNode vNode = new VirtualNode(hash);
+							virtualNodes.add(vNode);
+							vNodes_to_add += " " + hash;
+						}
+						PhysicalNode newNode = new PhysicalNode(ip + "-" + port, ip, port, "active");
+						newNode.setVirtualNodes(virtualNodes);
+						currentPNodes.add(newNode);
+						writer.write("add " + ip_port + vNodes_to_add + "\n");
 					}
-					int ran_hash = currentVNodes.get(ran.nextInt(currentVNodes.size())) ;
-					currentVNodes.remove(Integer.valueOf(ran_hash));
-					writer.write("remove " + ran_hash + "\n");
-				}
 
-				// remove2 means to remove a physical node and all its corresponding virutal nodes
-				// use failNode(String ip, int port) for this command
-				else if (command.equals("remove2")){
-					if (currentPNodes.size() == 0){
-						continue;
+					// remove1 means to remove a virtual node
+					// use deleteNode(int hash) for this command
+					else if (command.equals("remove1")) {
+						if (currentVNodes.size() == 0) {
+							continue;
+						}
+						int ran_hash = currentVNodes.get(ran.nextInt(currentVNodes.size()));
+						currentVNodes.remove(Integer.valueOf(ran_hash));
+						writer.write("remove " + ran_hash + "\n");
 					}
-					PhysicalNode node_to_delete = currentPNodes.get(ran.nextInt(currentPNodes.size()));
-					String[] lst = node_to_delete.getId().split("-");
-					String id = lst[0] + " " + lst[1];
-					List<VirtualNode> vNodes = node_to_delete.getVirtualNodes();
-					for (VirtualNode vNode : vNodes){
-						currentVNodes.remove(Integer.valueOf(vNode.getHash()));
+
+					// remove2 means to remove a physical node and all its corresponding virutal nodes
+					// use failNode(String ip, int port) for this command
+					else if (command.equals("remove2")) {
+						if (currentPNodes.size() == 0) {
+							continue;
+						}
+						PhysicalNode node_to_delete = currentPNodes.get(ran.nextInt(currentPNodes.size()));
+						String[] lst = node_to_delete.getId().split("-");
+						String id = lst[0] + " " + lst[1];
+						List<VirtualNode> vNodes = node_to_delete.getVirtualNodes();
+						for (VirtualNode vNode : vNodes) {
+							currentVNodes.remove(Integer.valueOf(vNode.getHash()));
+						}
+						currentPNodes.remove(node_to_delete);
+						availablePNodes.add(id);
+						writer.write("remove " + id + "\n");
 					}
-					currentPNodes.remove(node_to_delete);
-					availablePNodes.add(id);
-					writer.write("remove " + id + "\n");
 				}
-				// use loadBalance(int delta, int hash) for this command
-				else if (command.equals("loadbalance")) {
-					if (currentVNodes.size() == 0){
+			}
+			else if (filename.equals("loadbalance_commands.txt")){
+				for (int i = 0; i < total_CCcommands; i++){
+					Random ran = new Random();
+			    	if (currentVNodes.size() == 0){
 						continue;
 					}
 					int ran_hash = currentVNodes.get(ran.nextInt(currentVNodes.size())) ;
@@ -306,7 +336,6 @@ public class ProxyServer extends PhysicalNode {
 					do {
 						ran_delta = ran.nextInt(100) - 50;
 					} while (ran_delta == 0);
-
 					writer.write("loadbalance " + ran_delta + " " + ran_hash + "\n");
 				}
 			}
@@ -641,8 +670,14 @@ public class ProxyServer extends PhysicalNode {
 		
 		//Initialize the ring cluster
 		proxy.initializeRing();
-		proxy.CCcommands();
-		proxy.initializeDataNode();
+
+		/* If you change the ip addresses in the configuration file or the addresses on Line 191 of this java file,
+		 * Uncomment one of the following commands to generate new loadbalance or add_delete commands:
+		 */
+		//proxy.CCcommands("loadbalance_commands.txt");
+		//proxy.CCcommands("add_delete_commands.txt");
+		//System.out.println("CC commands done.");
+ 		proxy.initializeDataNode();
 		
 
 		//System.out.println(proxy.loadBalance(-13, 320));

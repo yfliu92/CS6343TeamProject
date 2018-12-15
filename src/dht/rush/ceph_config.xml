@@ -13,52 +13,59 @@
     <!-- All nodes will use this port as default port number -->
     <!-- <port>9092</port> -->
     <proxy>
-        <ip>192.168.0.204</ip>
-        <!--<ip>localhost</ip>-->
+        <!--<ip>192.168.0.204</ip>-->
+        <ip>localhost</ip>
         <port>9092</port>
     </proxy>
 
     <!-- Number of Replicas -->
     <replicationDegree>3</replicationDegree>
     <!-- Number of placement groups -->
-    <placementGroupNumber>512</placementGroupNumber>
+    <placementGroupNumber>10000</placementGroupNumber>
     <!-- Node initial weight -->
     <weight>1.0</weight>
     <!-- The physical nodes number of each sub cluster -->
-    <offset>10</offset>
+    <offset>100</offset>
 
     <subClusters>
         <subCluster>
-            <ip>192.168.0.212</ip>
-            <port>7000</port>
-        </subCluster>
-        <subCluster>
-            <ip>192.168.0.216</ip>
-            <port>7000</port>
-        </subCluster>
-        <subCluster>
-            <ip>192.168.0.218</ip>
-            <port>7000</port>
-        </subCluster>
-        <subCluster>
-            <ip>192.168.0.222</ip>
-            <port>7000</port>
-        </subCluster>
-        <subCluster>
-            <ip>192.168.0.215</ip>
-            <port>7000</port>
-        </subCluster>
-        <subCluster>
-            <ip>192.168.0.219</ip>
-            <port>7000</port>
-        </subCluster>
-        <subCluster>
-            <ip>192.168.0.205</ip>
-            <port>7000</port>
-        </subCluster>
-        <subCluster>
-            <ip>192.168.0.221</ip>
+            <ip>127.0.0.1</ip>
             <port>7000</port>
         </subCluster>
     </subClusters>
+
+    <!--<subClusters>-->
+        <!--<subCluster>-->
+            <!--<ip>192.168.0.212</ip>-->
+            <!--<port>7000</port>-->
+        <!--</subCluster>-->
+        <!--<subCluster>-->
+            <!--<ip>192.168.0.216</ip>-->
+            <!--<port>7000</port>-->
+        <!--</subCluster>-->
+        <!--<subCluster>-->
+            <!--<ip>192.168.0.218</ip>-->
+            <!--<port>7000</port>-->
+        <!--</subCluster>-->
+        <!--<subCluster>-->
+            <!--<ip>192.168.0.222</ip>-->
+            <!--<port>7000</port>-->
+        <!--</subCluster>-->
+        <!--<subCluster>-->
+            <!--<ip>192.168.0.215</ip>-->
+            <!--<port>7000</port>-->
+        <!--</subCluster>-->
+        <!--<subCluster>-->
+            <!--<ip>192.168.0.219</ip>-->
+            <!--<port>7000</port>-->
+        <!--</subCluster>-->
+        <!--<subCluster>-->
+            <!--<ip>192.168.0.205</ip>-->
+            <!--<port>7000</port>-->
+        <!--</subCluster>-->
+        <!--<subCluster>-->
+            <!--<ip>192.168.0.221</ip>-->
+            <!--<port>7000</port>-->
+        <!--</subCluster>-->
+    <!--</subClusters>-->
 </config>

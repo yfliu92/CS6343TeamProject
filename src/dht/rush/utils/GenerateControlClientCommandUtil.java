@@ -119,4 +119,85 @@ public class GenerateControlClientCommandUtil {
         }
         return ret;
     }
+
+    public static void generateChangeWeight(int number) {
+        String rootPath = System.getProperty("user.dir");
+        String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "cephChangeWeight.txt";
+        try {
+
+            File filename = new File(path);
+
+            // create txt file first
+            if (!filename.exists()) {
+                filename.createNewFile();
+            }
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true));
+
+            for (int i = 0; i < number; i++) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("changeweight");
+
+                // get sub cluster id
+                String subClusterId = getSubClusterId();
+                sb.append(" " + subClusterId);
+
+                String ipAndPort = getActivePhysicalNodeIpAndPort(subClusterId);
+                sb.append(ipAndPort);
+                String[] data = ipAndPort.split(" ");
+                double weight = new Random().nextInt(10) * 1.0 + 1;
+                sb.append(" " + weight);
+
+                map.changeNodeWeight(subClusterId, data[1], data[2], weight);
+                String content = sb.toString();
+                System.out.println("command " + i + ": " + content);
+                writer.write(content + System.lineSeparator());
+            }
+            writer.close();
+            System.out.println("Generating commands finished");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void generateReadWrite(int num) {
+
+        String rootPath = System.getProperty("user.dir");
+        String path = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "cephReadWrite.txt";
+        try {
+
+            File filename = new File(path);
+
+            // create txt file first
+            if (!filename.exists()) {
+                filename.createNewFile();
+            }
+            String lastWriteFileName = "";
+            BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true));
+
+            for (int i = 0; i < num; i++) {
+                StringBuilder sb = new StringBuilder();
+
+                if (i % 2 == 0) {
+                    sb.append("write");
+                    lastWriteFileName = "File" + i;
+                    sb.append(" " + lastWriteFileName);
+                }
+
+                if (i % 2 != 0) {
+                    sb.append("read" + " " + lastWriteFileName);
+                }
+
+                String content = sb.toString();
+                System.out.println("command " + i + ": " + content);
+                writer.write(content + System.lineSeparator());
+            }
+            writer.close();
+            System.out.println("Generating commands finished");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
