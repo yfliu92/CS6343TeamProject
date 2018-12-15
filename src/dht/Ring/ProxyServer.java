@@ -672,9 +672,9 @@ public class ProxyServer extends PhysicalNode {
 		 * Uncomment one of the following commands to generate new loadbalance or add_delete commands:
 		 */
 		//proxy.CCcommands("loadbalance_commands.txt");
-		proxy.CCcommands("add_delete_commands.txt");
-		System.out.println("CC commands done.");
-//		proxy.initializeDataNode();
+		//proxy.CCcommands("add_delete_commands.txt");
+		//System.out.println("CC commands done.");
+ 		proxy.initializeDataNode();
 		
 
 		//System.out.println(proxy.loadBalance(-13, 320));
