@@ -104,9 +104,9 @@ public class CentralServer {
     	
         CentralServer cs = new CentralServer();
         String rootPath = System.getProperty("user.dir");
-//        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+        String xmlPath = rootPath + File.separator + "src" + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
 
-        String xmlPath = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
+//        String xmlPath = rootPath + File.separator + "dht" + File.separator + "rush" + File.separator + "ceph_config.xml";
 
         cs.initializeRush(xmlPath);
         cs.clusterStructureMap = ConfigurationUtil.parseConfig(cs.config);
@@ -119,7 +119,13 @@ public class CentralServer {
         /**
          * Will generate the control client commands, will be executed only one time, after generating the commands, comment the following code
          */
-//        GenerateControlClientCommandUtil.setMap(cs.clusterStructureMap);
+        GenerateControlClientCommandUtil.setMap(cs.clusterStructureMap);
+
+        // Generate changeweight commands which is the actual load balancing command
+        GenerateControlClientCommandUtil.generateChangeWeight(100);
+
+        // Generate read and write
+//        GenerateControlClientCommandUtil.generateReadWrite(100);
 //        GenerateControlClientCommandUtil.run();
 
         cs.root = cs.clusterStructureMap.getChildrenList().get("R");
