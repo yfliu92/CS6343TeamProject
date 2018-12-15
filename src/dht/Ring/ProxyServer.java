@@ -48,7 +48,7 @@ public class ProxyServer extends PhysicalNode {
         	config = reader.read(inputFile);
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
         
 		Element port = config.getRootElement().element("port");
@@ -151,7 +151,7 @@ public class ProxyServer extends PhysicalNode {
 			System.out.println("Initialized successfully: " + physicalNodes.values().size() + " physical nodes, " + t.getTable().size() + " virtual nodes");
         }catch(DocumentException e) {
         	System.out.println("Failed to initialize");
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 	
@@ -347,7 +347,10 @@ public class ProxyServer extends PhysicalNode {
 	public void pushDHTAll() {
 		System.out.println("Beginning to push DHT to all physical nodes");
 		for(PhysicalNode node: super.getLookupTable().getPhysicalNodeMap().values()) {
-			pushDHT(node.getAddress(), node.getPort(), hashRange);
+    		synchronized(node) {
+    			pushDHT(node.getAddress(), node.getPort(), hashRange);
+    		}
+			
 		}
 	}
 	
@@ -607,10 +610,11 @@ public class ProxyServer extends PhysicalNode {
                             for (String cmd: updateCommands) { 
                             	if (command.getAction().equals(cmd)) {
                             		pushDHTAll();
+                            		
                             		break;
                             	}
                             	else if (command.getAction().equals("dht") && command.getCommandSeries().size() == 1 && command.getCommandSeries().get(0).equals("push")) {
-                             		pushDHTAll();
+                            		pushDHTAll();
                             		break;
                             	}
                             }
@@ -630,7 +634,7 @@ public class ProxyServer extends PhysicalNode {
 	        	this.input.close();
 	              
 	        }catch(IOException e){ 
-	            e.printStackTrace(); 
+//	            e.printStackTrace(); 
 	        } 
 	    } 
 	}
@@ -708,7 +712,7 @@ public class ProxyServer extends PhysicalNode {
             } 
             catch (Exception e){ 
                 s.close(); 
-                e.printStackTrace(); 
+//                e.printStackTrace(); 
             } 
         } 
     }
@@ -986,12 +990,12 @@ class RunDataNode_Ring extends Thread {
 				p.waitFor();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 			success = true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
         
         return success;

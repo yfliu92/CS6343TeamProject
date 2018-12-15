@@ -65,7 +65,9 @@ public class AddNodeCommand extends ServerCommand {
         }
         
         if (status == 1) {
-        	this.cs.initializeDataNode(this.cs.getRoot());
+        	synchronized(this.cs) {
+        		this.cs.initializeDataNode(this.cs.getRoot());
+        	}
         }
     }
 

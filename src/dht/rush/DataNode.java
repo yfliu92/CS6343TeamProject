@@ -309,6 +309,14 @@ class ClientHandler extends Thread
 			else if (commandStr.equals("dht head")) {
 				return new Response(true, dataNode.getDHTEpoch(), "DHT Epoch from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();
 			}
+			else if (commandStr.equals("dht head print")) {
+				if (dataNode.getLookupTable() != null) {
+					return new Response(true, dataNode.getLookupTable().toJSON(), "DHT Table from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();
+				}
+				else {
+					return new Response(false, "DHT table not initialized").serialize();
+				}
+			}
 			else if (commandStr.equals("dht pull")) {
 				if (dataNode.getLookupTable() != null) {
 					return new Response(true, dataNode.getLookupTable().toJSON(), "DHT Table from Data Node " + dataNode.IP + ":" + dataNode.port).serialize();

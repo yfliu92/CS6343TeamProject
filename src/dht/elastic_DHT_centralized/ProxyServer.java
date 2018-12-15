@@ -49,7 +49,7 @@ public class ProxyServer extends Proxy {
         	config = reader.read(inputFile);
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
         
         Element rootElement = config.getRootElement();
@@ -166,7 +166,7 @@ public class ProxyServer extends Proxy {
 
         }catch(DocumentException e) {
             System.out.println("Initialization failed");
-            e.printStackTrace();
+//            e.printStackTrace();
             return null;
         }
 
@@ -290,9 +290,14 @@ public class ProxyServer extends Proxy {
     
 	public void pushDHTAll(Proxy proxy) {
 		System.out.println("Beginning to push DHT to all physical nodes");
-		for(PhysicalNode node: proxy.getLookupTable().getPhysicalNodesMap().values()) {
-			pushDHT(node.getIp(), node.getPort(), proxy, INITIAL_HASH_RANGE);
+		synchronized(proxy.getLookupTable().getPhysicalNodesMap()) {
+			for(PhysicalNode node: proxy.getLookupTable().getPhysicalNodesMap().values()) {
+				synchronized(node) {
+					pushDHT(node.getIp(), node.getPort(), proxy, INITIAL_HASH_RANGE);
+				}
+			}
 		}
+
 	}
     
 	public boolean pushDHT(String serverAddress, int port, Proxy proxy, int hashRange) {
@@ -474,7 +479,7 @@ public class ProxyServer extends Proxy {
 			}
 		}
 		catch (Exception ee) {
-			ee.printStackTrace();
+//			ee.printStackTrace();
 			return "Illegal command";
 		}
 
@@ -563,7 +568,7 @@ public class ProxyServer extends Proxy {
 	        	this.input.close();
 	              
 	        }catch(IOException e){ 
-	            e.printStackTrace(); 
+//	            e.printStackTrace(); 
 	        } 
 	    } 
 	}
@@ -644,7 +649,7 @@ public class ProxyServer extends Proxy {
             } 
             catch (Exception e){ 
                 s.close(); 
-                e.printStackTrace(); 
+//                e.printStackTrace(); 
             } 
         } 
     }
@@ -921,12 +926,12 @@ class RunDataNode_Elastic extends Thread {
 				p.waitFor();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 			success = true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
         
         return success;
